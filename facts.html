@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE — Algorithm to Data Structure Architecture Matrix</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&family=JetBrains+Mono:wght=400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #0f766e; /* Deep Teal for structural taxonomy */
+            --brand-accent: #f0fdfa;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        #app-sidebar {
+            width: 320px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 320px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1250px;
+            width: calc(100% - 320px);
+        }
+
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #ccfbf1; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #e2e8f0; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: var(--brand-primary); width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        .grid-block { margin-bottom: 2.5rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: var(--brand-primary); text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 1rem; border-left: 4px solid var(--brand-primary); padding-left: 0.5rem; }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); min-width: 1000px; }
+        th, td { padding: 1rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        .ds-badge { display: inline-block; padding: 0.25rem 0.5rem; background-color: var(--brand-accent); color: var(--brand-primary); border: 1px solid #b2f5ea; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 600; }
+        .diagnostic-tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .tag-fail { background-color: #fee2e2; color: #b91c1c; }
+        
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>GATE Taxonomer</h2>
+            <p>DS-to-Algorithm Bindings</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Mapping Core Progress</div>
+            <div class="metric-value" id="metric-text">0/4 Completed</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Graph Infrastructure</div>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-ds-graphs')">
+                    <span>1. Graph & Routing DS</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-ds-graphs" onclick="event.stopPropagation(); syncCheckbox('ds-graphs')">
+                </div>
+            </li>
+
+            <div class="nav-heading">Sorting & Priority Systems</div>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-ds-sorting')">
+                    <span>2. Sorting & Queue Heaps</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-ds-sorting" onclick="event.stopPropagation(); syncCheckbox('ds-sorting')">
+                </div>
+            </li>
+
+            <div class="nav-heading">Text & Associative Search</div>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-ds-string')">
+                    <span>3. String & Hash Subsystems</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-ds-string" onclick="event.stopPropagation(); syncCheckbox('ds-string')">
+                </div>
+            </li>
+
+            <div class="nav-heading">Basic Systems Operations</div>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-ds-ops')">
+                    <span>4. Fundamental System Tasks</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-ds-ops" onclick="event.stopPropagation(); syncCheckbox('ds-ops')">
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>Algorithm to Data Structure Structural Dependency Engine</h1>
+            <p>An exact trace mapping algorithms and operational workflows to their optimal data structures, complete with performance limits and alternative models.</p>
+        </header>
+
+        <section class="content-card" id="sec-ds-graphs">
+            <div class="card-header-row">
+                <h2>1. Graph Traversals, Optimizations & Routing Systems</h2>
+                <button class="action-button" id="btn-ds-graphs" onclick="toggleTopicState('ds-graphs')">Mark Completed</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Graph Structural Bindings</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Algorithm / Task</th><th>Primary Data Structure</th><th>Operation Complexity within Algorithm</th><th>Role / Purpose of the Structure</th><th>Alternative Structure & Failure Vectors</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>BFS (Breadth-First Search)</strong></td>
+                                <td><span class="ds-badge">FIFO Queue</span></td>
+                                <td>Enqueue: $\mathcal{O}(1)$<br>Dequeue: $\mathcal{O}(1)$</td>
+                                <td>Tracks discovered nodes sequentially to process the graph level-by-level (FIFO ordering).</td>
+                                <td>Using a **Stack** switches the traversal mechanism from level-by-level BFS to depth-first DFS.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DFS (Depth-First Search)</strong></td>
+                                <td><span class="ds-badge">LIFO Stack</span></td>
+                                <td>Push: $\mathcal{O}(1)$<br>Pop: $\mathcal{O}(1)$</td>
+                                <td>Tracks the current path across deep processing lines (reused via the operating system run stack or explicit structures).</td>
+                                <td><span class="diagnostic-tag tag-fail">Fails on Space</span>: Can throw a stack overflow on deep, linear graph topologies if memory limits are reached.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dijkstra (Shortest Path)</strong></td>
+                                <td><span class="ds-badge">Min-Priority Queue</span> (Binary/Fibonacci Heap)</td>
+                                <td>Extract-Min: $\mathcal{O}(\log V)$<br>Decrease-Key: $\mathcal{O}(\log V)$</td>
+                                <td>Extracts the unvisited vertex with the minimum tentative distance estimate.</td>
+                                <td>An unindexed **Array** scales poorly to $\mathcal{O}(V^2)$ on extraction phases. Fibonacci heaps optimize decrease-key operations to amortized $\mathcal{O}(1)$.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Kruskal’s MST</strong></td>
+                                <td><span class="ds-badge">Disjoint-Set (Union-Find)</span></td>
+                                <td>Find: $\mathcal{O}(\alpha(V))$<br>Union: $\mathcal{O}(\alpha(V))$</td>
+                                <td>Tracks connectivity partitions to check if adding an edge will introduce a cycle.</td>
+                                <td>Using standard DFS cycle checks forces processing limits down to an inefficient $\mathcal{O}(E \cdot V)$ runtime.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-ds-sorting">
+            <div class="card-header-row">
+                <h2>2. Sorting Mechanics & Dynamic Priority Systems</h2>
+                <button class="action-button" id="btn-ds-sorting" onclick="toggleTopicState('ds-sorting')">Mark Completed</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Sorting Structural Dependencies</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Algorithm / Task</th><th>Primary Data Structure</th><th>Operation Complexity within Algorithm</th><th>Role / Purpose of the Structure</th><th>Alternative Structure & Failure Vectors</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Heap Sort</strong></td>
+                                <td><span class="ds-badge">Max/Min Heap (Array backed)</span></td>
+                                <td>Heapify Step: $\mathcal{O}(\log N)$<br>Build Heap: $\mathcal{O}(N)$</td>
+                                <td>Maintains a complete binary tree shape within an array workspace to extract extreme elements sequentially.</td>
+                                <td>Using an **Unsorted Array** shifts processing overhead up to $\mathcal{O}(N^2)$ for extraction sweeps.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Radix / Counting Sort</strong></td>
+                                <td><span class="ds-badge">Queue Array / Bucket List</span></td>
+                                <td>Bucket Insertion: $\mathcal{O}(1)$<br>Value Collection: $\mathcal{O}(N + K)$</td>
+                                <td>Groups matching values into sorted buckets to bypass comparison limits.</td>
+                                <td><span class="diagnostic-tag tag-fail">Fails on Space</span> if value ranges ($K$) grow large (e.g., $K = 2^N$). Non-applicable unless values are closely bounded.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-ds-string">
+            <div class="card-header-row">
+                <h2>3. Pattern Matching & Associative Keyword Systems</h2>
+                <button class="action-button" id="btn-ds-string" onclick="toggleTopicState('ds-string')">Mark Completed</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">String & Search Tree Mappings</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Algorithm / Task</th><th>Primary Data Structure</th><th>Operation Complexity within Algorithm</th><th>Role / Purpose of the Structure</th><th>Alternative Structure & Failure Vectors</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Rabin-Karp Pattern Match</strong></td>
+                                <td><span class="ds-badge">Hash Map / Rolling Hash</span></td>
+                                <td>Hash Re-computation: $\mathcal{O}(1)$</td>
+                                <td>Computes numerical hash signatures over text windows to filter out mismatching substrings quickly.</td>
+                                <td><span class="diagnostic-tag tag-fail">Degrades</span> to $\mathcal{O}(N \cdot M)$ if hash collisions occur frequently due to a poorly chosen prime modulus.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Prefix Auto-Complete</strong></td>
+                                <td><span class="ds-badge">Trie (Prefix Tree)</span></td>
+                                <td>Character Lookup: $\mathcal{O}(L)$ (length $L$)</td>
+                                <td>Stores string paths along shared character nodes to enable fast prefix lookups.</td>
+                                <td>Using a **Hash Map** allows exact matches but cannot perform prefix scanning or range filters efficiently.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-ds-ops">
+            <div class="card-header-row">
+                <h2>4. Fundamental System Operations & Language Runtimes</h2>
+                <button class="action-button" id="btn-ds-ops" onclick="toggleTopicState('ds-ops')">Mark Completed</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">System Task Mappings</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>System Task / Context</th><th>Primary Data Structure</th><th>Operation Complexity within Task</th><th>Role / Purpose of the Structure</th><th>Alternative Structure & Failure Vectors</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Compiler Parenthesis Scope Matching</strong></td>
+                                <td><span class="ds-badge">LIFO Stack</span></td>
+                                <td>Push / Pop: $\mathcal{O}(1)$</td>
+                                <td>Saves open braces and pairs them against closing braces in reverse order to validate nested structural boundaries.</td>
+                                <td>Queues cannot match nested boundaries because they process tokens in a first-in, first-out (FIFO) order.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>OS Process Scheduling</strong></td>
+                                <td><span class="ds-badge">Queue / Red-Black Tree</span></td>
+                                <td>Min Fetch: $\mathcal{O}(\log N)$ or $\mathcal{O}(1)$</td>
+                                <td>Manages ready processes. Round-Robin scheduling uses FIFO queues; Linux Completely Fair Scheduling (CFS) relies on Red-Black Trees.</td>
+                                <td>Linear collections force task lookups to scan the entire set, scaling poorly at $\mathcal{O}(N)$.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Undo-Redo Operations</strong></td>
+                                <td><span class="ds-badge">Dual LIFO Stacks</span></td>
+                                <td>Push / Pop: $\mathcal{O}(1)$</td>
+                                <td>One stack records your active history; items are popped and moved to a second stack when rolling back changes.</td>
+                                <td>Single linear lists require moving index elements forward and backward, which complicates state tracking.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+  <script>
+        const totalTopics = 4;
+        
+        // 1. Core State Initialization: Pulling valid keys matching the taxonomy identifiers
+        const stateTracker = {
+            'ds-graphs': localStorage.getItem('gate_ds_ds-graphs') === 'true',
+            'ds-sorting': localStorage.getItem('gate_ds_ds-sorting') === 'true',
+            'ds-string': localStorage.getItem('gate_ds_ds-string') === 'true',
+            'ds-ops': localStorage.getItem('gate_ds_ds-ops') === 'true'
+        };
+
+        // 2. Lifecycle Hook: Render saved state onto the UI cleanly on initial load
+        window.addEventListener('DOMContentLoaded', () => {
+            for (let key in stateTracker) {
+                const chk = document.getElementById('nav-chk-' + key);
+                if (chk) chk.checked = stateTracker[key];
+                updateDomState(key);
+            }
+            recalculateMetrics();
+        });
+
+        function scrollToCard(id) {
+            const element = document.getElementById(id);
+            if(element) element.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 3. Persistent Mutators: Syncing local states directly to the sandboxed storage disk
+        function syncCheckbox(key) {
+            const chk = document.getElementById('nav-chk-' + key);
+            stateTracker[key] = chk.checked;
+            localStorage.setItem('gate_ds_' + key, stateTracker[key]);
+            updateDomState(key);
+            recalculateMetrics();
+        }
+
+        function toggleTopicState(key) {
+            stateTracker[key] = !stateTracker[key];
+            const chk = document.getElementById('nav-chk-' + key);
+            if (chk) chk.checked = stateTracker[key];
+            localStorage.setItem('gate_ds_' + key, stateTracker[key]);
+            updateDomState(key);
+            recalculateMetrics();
+        }
+
+        function updateDomState(key) {
+            const btn = document.getElementById('btn-' + key);
+            if (!btn) return;
+            
+            if(stateTracker[key]) {
+                btn.innerText = "Completed ✓";
+                btn.classList.add('completed');
+            } else {
+                btn.innerText = "Mark Completed";
+                btn.classList.remove('completed');
+            }
+        }
+
+        function recalculateMetrics() {
+            let count = 0;
+            for(let key in stateTracker) {
+                if(stateTracker[key]) count++;
+            }
+            document.getElementById('metric-text').innerText = count + "/" + totalTopics + " Completed";
+            const percent = (count / totalTopics) * 100;
+            document.getElementById('metric-fill').style.width = percent + "%";
+        }
+    </script>
+</body>
+</html>

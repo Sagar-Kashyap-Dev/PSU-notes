@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE — C Programming Language Core Engine</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #0284c7;
+            --brand-accent: #f0f9ff;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* Split Pane Workspace Layout */
+        #app-sidebar {
+            width: 320px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 320px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1150px;
+            width: calc(100% - 320px);
+        }
+
+        /* Sidebar UI */
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #bae6fd; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #e2e8f0; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: var(--brand-primary); width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        /* Content Presentation Panels */
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        /* Fact Summary Badge Grid Layout */
+        .summary-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; background: var(--bg-workspace); padding: 1rem; border-radius: var(--radius-interactive); border: 1px solid var(--border-color); }
+        .summary-badge { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-bold); font-weight: 500; }
+        .summary-badge strong { color: var(--brand-primary); }
+
+        /* Subsection Block Elements */
+        .grid-block { margin-bottom: 2rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: var(--brand-primary); text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 0.75rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); }
+        th, td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        pre { background-color: #0f172a; color: #f8fafc; padding: 1.25rem; border-radius: var(--radius-interactive); overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; margin: 0.75rem 0; }
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        .alert-box ul { margin-left: 1.25rem; }
+        .alert-box li { color: #7f1d1d; }
+
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+        pre code { background: none; padding: 0; color: inherit; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>C Language Core</h2>
+            <p>Syllabus Knowledge Engine</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Total Progress</div>
+            <div class="metric-value" id="metric-text">0/9 Modules Done</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Foundations</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-lexical')"><span>1. Lexical Elements</span><input type="checkbox" class="nav-checkbox" id="nav-chk-lexical" onclick="event.stopPropagation(); syncCheckbox('lexical')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-operators')"><span>2. Operators & Conversions</span><input type="checkbox" class="nav-checkbox" id="nav-chk-operators" onclick="event.stopPropagation(); syncCheckbox('operators')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-control')"><span>3. Control & Loops</span><input type="checkbox" class="nav-checkbox" id="nav-chk-control" onclick="event.stopPropagation(); syncCheckbox('control')"></div></li>
+            
+            <div class="nav-heading">Modular Components</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-functions')"><span>4. Functions & Recursion</span><input type="checkbox" class="nav-checkbox" id="nav-chk-functions" onclick="event.stopPropagation(); syncCheckbox('functions')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-arrays-strings')"><span>5. Arrays & Strings</span><input type="checkbox" class="nav-checkbox" id="nav-chk-arrays-strings" onclick="event.stopPropagation(); syncCheckbox('arrays-strings')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-pointers')"><span>6. Advanced Pointers</span><input type="checkbox" class="nav-checkbox" id="nav-chk-pointers" onclick="event.stopPropagation(); syncCheckbox('pointers')"></div></li>
+            
+            <div class="nav-heading">System Programming</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-structures')"><span>7. Structs, Unions & Enums</span><input type="checkbox" class="nav-checkbox" id="nav-chk-structures" onclick="event.stopPropagation(); syncCheckbox('structures')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-memory-classes')"><span>8. Memory & Storage Classes</span><input type="checkbox" class="nav-checkbox" id="nav-chk-memory-classes" onclick="event.stopPropagation(); syncCheckbox('memory-classes')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-preprocessor')"><span>9. Preprocessors & Files</span><input type="checkbox" class="nav-checkbox" id="nav-chk-preprocessor" onclick="event.stopPropagation(); syncCheckbox('preprocessor')"></div></li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>C Language Core Specification</h1>
+            <p>A full analytical reference framework mapping standard compilation behaviors, evaluation models, and system behaviors.</p>
+        </header>
+
+        <section class="content-card" id="sec-lexical">
+            <div class="card-header-row">
+                <h2>1. Lexical Elements (Tokens, Keywords, Variables, Data Types)</h2>
+                <button class="action-button" id="btn-lexical" onclick="toggleTopicState('lexical')">Mark Completed</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Smallest Unit: <strong>Token</strong></div>
+                <div class="summary-badge">Keywords: <strong>32 Standard (C89)</strong></div>
+                <div class="summary-badge">Variable: <strong>L-value Address Named</strong></div>
+                <div class="summary-badge">Data Types: <strong>Primitive / Derived / User-defined</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Tokens & Keywords Theory</div>
+                <ul>
+                    <li><strong>Tokens:</strong> The basic building blocks of a C program that the compiler reads during its lexical analysis phase. Tokens are categorized into **Identifiers, Keywords, Constants, String Literals, Operators, and Punctuators**.</li>
+                    <li><strong>Keywords:</strong> Reserved words that have predefined meanings to the compiler and cannot be repurposed as user-defined identifiers. There are **32 standard keywords** defined in C89 (e.g., `auto`, `volatile`, `register`).</li>
+                    <li><strong>Identifiers:</strong> User-defined names for variables, functions, and arrays. Must begin with a letter or an underscore `_`, and are case-sensitive.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Variables & Hardware Data Types</div>
+                <ul>
+                    <li><strong>Variables:</strong> A named location in memory that holds a value. It represents an explicit **L-value** (a memory address where data can be written) and an **R-value** (the actual data stored at that address).</li>
+                    <li><strong>Data Type Sizes & Alignment Rules (Typical 32/64-bit Systems):</strong></li>
+                </ul>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Data Type Class</th><th>Keyword Identifier</th><th>Typical Size (Bytes)</th><th>Format Specifier</th><th>Value Range Representation Bounds</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Character</td><td><code>char</code></td><td>1</td><td><code>%c</code> / <code>%d</code></td><td>$-128$ to $+127$ (Signed) / $0$ to $255$ (Unsigned)</td></tr>
+                            <tr><td>Integer</td><td><code>int</code></td><td>2 or 4</td><td><code>%d</code></td><td>$-2^{31}$ to $2^{31}-1$ (for 4 bytes)</td></tr>
+                            <tr><td>Floating-point</td><td><code>float</code></td><td>4</td><td><code>%f</code></td><td>IEEE 754 Single-Precision Profile</td></tr>
+                            <tr><td>Double Precision</td><td><code>double</code></td><td>8</td><td><code>%lf</code></td><td>IEEE 754 Double-Precision Profile</td></tr>
+                            <tr><td>Void (Incomplete)</td><td><code>void</code></td><td>0</td><td>N/A</td><td>Represents an empty or unspecified data type</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Compilation Traps:</strong>
+                    <ul>
+                        <li><strong>Identifier Naming Restrictions:</strong> Keywords cannot be used as identifiers. For example, `int float;` will fail to compile, but `int Float;` is perfectly valid because identifiers are case-sensitive.</li>
+                        <li><strong>Uninitialized Variables:</strong> Local variables declared within functions are not automatically cleared to zero. Instead, they contain arbitrary **garbage values** left over in memory, which can lead to unpredictable runtime behavior if read before being initialized.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-operators">
+            <div class="card-header-row">
+                <h2>2. Operators, Expressions & Type Conversions</h2>
+                <button class="action-button" id="btn-operators" onclick="toggleTopicState('operators')">Mark Completed</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Highest Precedence: <strong>Postfix (), []</strong></div>
+                <div class="summary-badge">Lowest Precedence: <strong>Comma (,) Operator</strong></div>
+                <div class="summary-badge">Short-circuit: <strong>&& and || Operators</strong></div>
+                <div class="summary-badge">Type Cast: <strong>Implicit Promotes / Explicit Demotes</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Operator Precedence and Associativity Matrix</div>
+                <p>When an expression contains multiple operators, their evaluation order is determined by their relative precedence and structural associativity:</p>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Precedence Rank</th><th>Operator Group Symbol Class</th><th>Description</th><th>Associativity Direction</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1 (Highest)</td><td><code>()  []  -&gt;  .</code></td><td>Function calls, Array subscripting, Struct members</td><td>Left-to-Right</td></tr>
+                            <tr><td>2</td><td><code>+  -  ++  --  !  ~  * &amp;  (type)  sizeof</code></td><td>Unary operators, Type casts, Dereference, Address-of</td><td>Right-to-Left</td></tr>
+                            <tr><td>3</td><td><code>* /  %</code></td><td>Multiplicative arithmetic operators</td><td>Left-to-Right</td></tr>
+                            <tr><td>4</td><td><code>+  -</code></td><td>Additive arithmetic operators</td><td>Left-to-Right</td></tr>
+                            <tr><td>5</td><td><code>&lt;&lt;  &gt;&gt;</code></td><td>Bitwise bit-shifting operators</td><td>Left-to-Right</td></tr>
+                            <tr><td>6</td><td><code>&lt;  &lt;=  &gt;  &gt;=</code></td><td>Relational comparison inequalities</td><td>Left-to-Right</td></tr>
+                            <tr><td>7</td><td><code>==  !=</code></td><td>Relational equality matching comparisons</td><td>Left-to-Right</td></tr>
+                            <tr><td>8</td><td><code>&amp;</code></td><td>Bitwise AND operator</td><td>Left-to-Right</td></tr>
+                            <tr><td>9</td><td><code>^</code></td><td>Bitwise exclusive OR (XOR) operator</td><td>Left-to-Right</td></tr>
+                            <tr><td>10</td><td><code>|</code></td><td>Bitwise inclusive OR operator</td><td>Left-to-Right</td></tr>
+                            <tr><td>11</td><td><code>&amp;&amp;</code></td><td>Logical AND short-circuit operator</td><td>Left-to-Right</td></tr>
+                            <tr><td>12</td><td><code>||</code></td><td>Logical OR short-circuit operator</td><td>Left-to-Right</td></tr>
+                            <tr><td>13</td><td><code>?:</code></td><td>Ternary conditional expression operator</td><td>Right-to-Left</td></tr>
+                            <tr><td>14</td><td><code>=  +=  -=  *=  /=  %=  &amp;=  ^=  |=  &lt;&lt;=  &gt;&gt;=</code></td><td>Assignment operations</td><td>Right-to-Left</td></tr>
+                            <tr><td>15 (Lowest)</td><td><code>,</code></td><td>Comma evaluation sequencing chain</td><td>Left-to-Right</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Short-Circuit Evaluation Rules</div>
+                <ul>
+                    <li><strong>Logical AND (`&&`):</strong> Evaluates from left to right. If the left operand evaluates to `0` (false), the entire expression is guaranteed to be false, so the **right operand is completely skipped** and not evaluated at all.</li>
+                    <li><strong>Logical OR (`||`):</strong> Evaluates from left to right. If the left operand evaluates to a non-zero value (true), the entire expression is guaranteed to be true, so the **right operand is completely skipped** and not evaluated at all.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Type Conversion Rules</div>
+                <ul>
+                    <li><strong>Implicit Conversion (Arithmetic Promotion Hierarchy):</strong> The compiler automatically promotes mixed-type operands to the highest precision type in the expression to prevent data loss before performing an operation:
+                        $$\text{char} \rightarrow \text{int} \rightarrow \text{unsigned int} \rightarrow \text{long} \rightarrow \text{unsigned long} \rightarrow \text{float} \rightarrow \text{double}$$
+                    </li>
+                    <li><strong>Explicit Casting:</strong> A manual type conversion specified by the programmer using a cast expression (e.g., `(int)var`). This allows explicit type conversion, which can intentionally truncate or change data representations.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Compilation Traps:</strong>
+                    <ul>
+                        <li><strong>Side-Effects in Short-Circuiting:</strong> Be careful with expressions inside short-circuiting operators. For example, in `int x = 0; if (x && ++y)`, the `++y` expression is never executed, meaning variable `y` retains its original value.</li>
+                        <li><strong>Integer Division Truncation:</strong> Dividing two integers in C always produces an integer result, throwing away any fractional remainder. For example, `5 / 2` evaluates to `2`. To get a floating-point result like `2.5`, at least one operand must be explicitly cast or written as a float: `5.0 / 2`.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-control">
+            <div class="card-header-row">
+                <h2>3. Control Statements & Loop Semantics</h2>
+                <button class="action-button" id="btn-control" onclick="toggleTopicState('control')">Mark Completed</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Branching: <strong>if-else / switch-case</strong></div>
+                <div class="summary-badge">Switch Condition: <strong>Integral Constants Only</strong></div>
+                <div class="summary-badge">Entry-Controlled: <strong>while / for loops</strong></div>
+                <div class="summary-badge">Exit-Controlled: <strong>do-while (Runs ≥ 1 Time)</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Conditional Branching Mechanics</div>
+                <ul>
+                    <li><strong>if-else Statements:</strong> Evaluates a conditional expression. If the expression yields a non-zero value, the `if` block executes; otherwise, the `else` block executes. Dangling `else` branches always match with the nearest un-isolated `if` block.</li>
+                    <li><strong>switch Statement Constraints:</strong> Directs execution path control across distinct `case` labels.
+                        <ul>
+                            <li>The control expression inside a `switch()` statement **must evaluate to an integer or character type**. Floating-point types (`float`, `double`) are strictly prohibited.</li>
+                            <li>Case labels must be **compile-time constant expressions**. Variables cannot be used as case values.</li>
+                            <li><strong>Fall-Through Behavior:</strong> Once execution jumps to a matching case label, it will continue executing code down into subsequent cases unless stopped by an explicit `break;` statement.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Loop Mechanics & Interruption Directives</div>
+                <ul>
+                    <li><strong>while Loop:</strong> An entry-controlled loop that evaluates its condition before executing the loop body. If the condition starts out false, the body does not execute at all.</li>
+                    <li><strong>for Loop Structure:</strong> Combines initialization, condition verification, and iteration steps into a single control line: `for(initialization; condition; increment/decrement)`.</li>
+                    <li><strong>do-while Loop:</strong> An exit-controlled loop that executes its body first before evaluating the condition. This guarantees that the loop body **will always execute at least once**.</li>
+                    <li><strong>break vs. continue:</strong>
+                        <ul>
+                            <li>`break;` immediately terminates the innermost loop or switch statement, jumping execution out past the block.</li>
+                            <li>`continue;` skips the rest of the current loop iteration and jumps execution straight to the loop's condition/update step to start the next pass.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Compilation Traps:</strong>
+                    <ul>
+                        <li><strong>The Accidental Assignment Trap:</strong> Writing `if (x = 5)` instead of `if (x == 5)` uses the assignment operator instead of equality. This assigns `5` to `x`, which evaluates to `5` (true), causing the `if` block to always execute regardless of what `x` originally was.</li>
+                        <li><strong>Missing Switch Breaks:</strong> Forgetting a `break;` at the end of a case block causes execution to cascade into the next case's code. This unexpected fall-through behavior is a frequent source of logic bugs.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-functions">
+            <div class="card-header-row">
+                <h2>4. Functions & Recursion Execution Engine</h2>
+                <button class="action-button" id="btn-functions" onclick="toggleTopicState('functions')">Mark Completed</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Call Convention: <strong>Call-by-Value Only</strong></div>
+                <div class="summary-badge">Call-by-Reference: <strong>Simulated via Pointers</strong></div>
+                <div class="summary-badge">Stack Frame: <strong>Activation Record Allocations</strong></div>
+                <div class="summary-badge">Recursion: <strong>Base Case Requirement</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Parameter Passing Conventions</div>
+                <ul>
+                    <li><strong>Call-by-Value:</strong> C's native parameter passing mechanism. It copies the *value* of the argument directly into the function's local parameter variable. Modifications made to the parameter inside the function **have no effect on the original argument variable** in the calling function.</li>
+                    <li><strong>Call-by-Reference Simulation:</strong> C simulates pass-by-reference by passing the *memory address* of a variable (a pointer) to the function instead. This allows the function to modify the original variable's value by dereferencing the pointer.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Activation Records & Stack Architecture</div>
+                <p>Every function call triggers the allocation of an **Activation Record (Stack Frame)** on the runtime call stack. This frame stores parameters, local variables, and the return address link. When a function finishes and returns, its stack frame is popped and destroyed.</p>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Recursion & Tail Call Properties</div>
+                <ul>
+                    <li><strong>Recursion:</strong> An algorithmic pattern where a function calls itself, directly or indirectly, to break a problem down into smaller sub-problems. Every recursive function **must have a base case** to stop the recursion; omitting it causes infinite recursion and results in a **Stack Overflow** crash.</li>
+                    <li><strong>Tail Recursion:</strong> A specific recursive pattern where the recursive call is the absolute final action performed in the function before returning. Advanced compilers can optimize tail-recursive functions into simple loops, reusing the same stack frame to save memory.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Compilation Traps:</strong>
+                    <ul>
+                        <li><strong>Returning Local Addresses:</strong> Never return the address of a local variable from a function (e.g., `return &local_var;`). Once the function exits, its stack frame is destroyed, turning that returned pointer into a **dangling pointer** targeting invalid or reused memory.</li>
+                        <li><strong>Static Variables in Recursion:</strong> Local variables declared as `static` inside a recursive function are not re-allocated with each call. Instead, a single instance is shared across all recursive frames, meaning changes to a static variable persist across all levels of the recursion.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-arrays-strings">
+            <div class="card-header-row">
+                <h2>5. Arrays & String Mechanics</h2>
+                <button class="action-button" id="btn-arrays-strings" onclick="toggleTopicState('arrays-strings')">Mark Completed</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Array Layout: <strong>Contiguous Sequence</strong></div>
+                <div class="summary-badge">Array Name: <strong>Constant Pointer to Index 0</strong></div>
+                <div class="summary-badge">String Type: <strong>Null-Terminated char Array</strong></div>
+                <div class="summary-badge">Sentinel Value: <strong>'\0' (ASCII 0) Mark</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Array Contiguity & Decay Properties</div>
+                <ul>
+                    <li><strong>Array Foundations:</strong> A collection of identical data types stored sequentially in a continuous block of memory. Elements can be accessed instantly by index.</li>
+                    <li><strong>Pointer Decay Behavior:</strong> In most contexts, an array's name implicitly "decays" or evaluates to a **constant pointer targeting its first element** (`&array[0]`).
+                        <br>For an array `int A[10];`, writing `A` is functionally equivalent to writing `&A[0]`.
+                    </li>
+                    <li><strong>Multi-Dimensional Addressing:</strong> For a 2D array defined as `int A[M][N];`, the memory location of element `A[i][j]` is computed using a row-major layout formula:
+                        $$\text{Address}(A[i][j]) = \text{Base Address} + \left(i \times N + j\right) \times \text{sizeof(int)}$$
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">String Architecture & Standard Library Utilities</div>
+                <ul>
+                    <li><strong>String Definition:</strong> C does not have a native string data type. Strings are implemented as simple **arrays of characters terminated by a null character `\0`** (ASCII value 0).</li>
+                    <li>The string `\"GATE\"` takes up **5 bytes** of storage because the compiler automatically appends the trailing `\0` sentinel character to mark the end of the string.</li>
+                    <li><strong>Standard Library String Functions (`<string.h>`):</strong>
+                        <ul>
+                            <li>`strlen(s)`: Counts and returns the number of characters in a string up to, but not including, the terminating `\0` character.</li>
+                            <li>`strcpy(dest, src)`: Copies characters from the source string into the destination buffer, including the trailing `\0`.</li>
+                            <li>`strcat(dest, src)`: Appends the source string onto the end of the destination string, overwriting the destination's original `\0` character.</li>
+                            <li>`strcmp(s1, s2)`: Performs a lexicographical comparison of two strings character by character. Returns `0` if they match perfectly, a positive value if `s1 > s2`, or a negative value if `s1 < s2`.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Compilation Traps:</strong>
+                    <ul>
+                        <li><strong>Array Bounds Violations:</strong> C does not perform any runtime bounds checking on arrays. Accessing an index outside an array's declared size (e.g., accessing `A[12]` on a 10-element array) results in **undefined behavior**, which can corrupt data or cause segmentation faults.</li>
+                        <li><strong>String Literals vs. Character Arrays:</strong> Modifying a string defined as a pointer literal (like `char *ptr = "Hello"; ptr[0] = 'M';`) causes a runtime crash because literals are typically stored in read-only memory. To create a modifiable string, declare it as a standard character array instead: `char arr[] = "Hello"; arr[0] = 'M';`.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-pointers">
+            <div class="card-header-row">
+                <h2>6. Advanced Pointers & Arithmetic Blueprint</h2>
+                <button class="action-button" id="btn-pointers" onclick="toggleTopicState('pointers')">Mark Completed</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Pointer: <strong>Variable Storing Address</strong></div>
+                <div class="summary-badge">Scale Factor: <strong>sizeof(*ptr) Bytes</strong></div>
+                <div class="summary-badge">Double Pointer: <strong>Pointer to a Pointer</strong></div>
+                <div class="summary-badge">Function Pointer: <strong>Execution Code Address</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Pointer Operators & Arithmetic Rules</div>
+                <ul>
+                    <li><strong>Operators:</strong> The address-of operator `&` extracts a variable's memory address, while the dereference operator `*` accesses the value stored at a pointer's target address.</li>
+                    <li><strong>Pointer Arithmetic Scaling Rules:</strong> Adding or subtracting an integer value $K$ to a pointer does not shift its value by exactly $K$ bytes. Instead, the address is scaled based on the size of the data type the pointer targets:
+                        $$\text{New Address} = \text{Current Address} + \left(K \times \text{sizeof}(\text{*pointer})\right)$$
+                    </li>
+                    <li>Subtracting one pointer from another within the same array returns the **number of array elements between them**, rather than the raw number of bytes separating them.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Double Pointers (Pointers-to-Pointers)</div>
+                <p>A double pointer (e.g., `int **ptr;`) stores the memory address of another pointer variable. Double pointers are commonly used to update a pointer variable inside a function call, or to manage dynamic 2D array structures.</p>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Function Pointers Syntax & Logic</div>
+                <p>Function pointers store the entry address of executable code sections in memory, allowing code to invoke functions dynamically.
+                    <br>Syntax template: `void (*fptr)(int);` declares a pointer named `fptr` that can target functions taking an integer parameter and returning void.
+                </p>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Compilation Traps:</strong>
+                    <ul>
+                        <li><strong>Operator Precedence Layout Mistakes:</strong> The expression `*ptr++` reads the value at `ptr` first and then increments the pointer address itself, because postfix `++` has higher precedence than unary `*`. Conversely, `(*ptr)++` increments the actual value being targeted by `ptr` without changing the pointer's address.</li>
+                        <li><strong>The Void Pointer Limitation:</strong> A generic void pointer (`void *`) can store any object's address, but it **cannot be dereferenced directly or used in pointer arithmetic** without first being explicitly cast to a specific type, since the compiler does not know the underlying data type's size.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-structures">
+            <div class="card-header-row">
+                <h2>7. User-Defined Structures (Structs, Unions, Enumerations)</h2>
+                <button class="action-button" id="btn-structures" onclick="toggleTopicState('structures')">Mark Completed</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Struct: <strong>Independent Member Locations</strong></div>
+                <div class="summary-badge">Union: <strong>Shared Member Memory Space</strong></div>
+                <div class="summary-badge">Enum: <strong>Named Integer Constant List</strong></div>
+                <div class="summary-badge">Padding: <strong>Hardware Alignment Insertion</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Structures & Hardware Data Alignment Padding</div>
+                <ul>
+                    <li><strong>Structure (`struct`):</strong> A user-defined data type that groups related variables of different types into a single named structure. Each member is allocated its own distinct memory location within the structure.</li>
+                    <li><strong>Data Alignment & Padding Rules:</strong> Modern CPUs read memory in aligned word chunks (e.g., 4 or 8 bytes) rather than individual bytes. To optimize access speeds, compilers insert unused bytes—called **padding**—between structure members to ensure each data type aligns with natural memory boundaries.</li>
+                    <li>The total size of a structure can be larger than the sum of its individual members' sizes due to these padding bytes.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Unions Memory Overlay Architecture</div>
+                <ul>
+                    <li><strong>Union (`union`):</strong> A user-defined data type where **all members share the exact same starting memory address**.</li>
+                    <li>The total size allocated for a union is determined by the size of its **single largest member**. Modifying one union member overwrites the shared memory space, corrupting the data values of any other members.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Enumerations (`enum`)</div>
+                <p>Enumerations define a user-specified type whose values are restricted to a list of named integer constants. By default, the first identifier is assigned a value of `0`, and each subsequent name increments by `1` (e.g., `enum State { FALSE, TRUE };`), unless specific values are manually assigned.</p>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Compilation Traps:</strong>
+                    <ul>
+                        <li><strong>Self-Referential Struct Declarations:</strong> A structure cannot contain an instance of itself as a direct member, as this would create an infinitely recursive size. However, a structure **can contain a pointer to an instance of itself**, which is the foundational building block for linked data structures like nodes in linked lists or trees.</li>
+                        <li><strong>Union Member Overwrite Risks:</strong> Remember that a union can only hold one valid member value at any given time. Reading a member after modifying a different member will interpret the raw bytes through the lens of the newly requested data type, often yielding garbage results.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-memory-classes">
+            <div class="card-header-row">
+                <h2>8. Dynamic Memory Allocation & Storage Classes</h2>
+                <button class="action-button" id="btn-memory-classes" onclick="toggleTopicState('memory-classes')">Mark Completed</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">malloc: <strong>Allocates Raw Garbage Bytes</strong></div>
+                <div class="summary-badge">calloc: <strong>Allocates Zero-Cleared Blocks</strong></div>
+                <div class="summary-badge">realloc: <strong>Resizes Extends / Relocates Blocks</strong></div>
+                <div class="summary-badge">free: <strong>Reclaims Heap Allocations</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Dynamic Heap Allocator Core APIs (`<stdlib.h>`)</div>
+                <ul>
+                    <li><strong>`malloc(size_t size)`:</strong> Allocates a continuous block of memory of the specified size in bytes on the heap. It returns a generic `void *` pointer targeting the start of the block. The allocated memory is uninitialized and **contains garbage values**. If allocation fails, it returns `NULL`.</li>
+                    <li><strong>`calloc(size_t num, size_t size)`:</strong> Allocates memory on the heap for an array of elements. It initializes the entire block's bits to **zero**. Takes slightly longer to execute than `malloc` due to this initialization step.</li>
+                    <li><strong>`realloc(void *ptr, size_t new_size)`:</strong> Resizes an existing heap allocation block. It attempts to expand or contract the block in-place. If adjacent memory isn't available, it allocates an entirely new block elsewhere, copies the existing data over, automatically frees the old block, and returns the new pointer.</li>
+                    <li><strong>`free(void *ptr)`:</strong> Releases an allocated block of heap memory back to the system. Passing a pointer that has already been freed—or one that wasn't returned by an allocator API—causes undefined behavior and can result in **double-free memory corruption** crashes.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Storage Classes Matrix Specification</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Storage Class Specific Keyword Identifier</th><th>Scope Domain</th><th>Default Initial Value</th><th>Lifetime Bound Duration</th><th>Physical Hardware Storage Location Target</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>auto</code></td><td>Local Block Scope</td><td>Garbage Value</td><td>Block execution span</td><td>CPU stack memory frame</td></tr>
+                            <tr><td><code>register</code></td><td>Local Block Scope</td><td>Garbage Value</td><td>Block execution span</td><td>High-speed CPU registers</td></tr>
+                            <tr><td><code>static</code></td><td>Local Block / Global File</td><td>Zero (0)</td><td>Full program execution timeline</td><td>Data Segment / BSS Segment</td></tr>
+                            <tr><td><code>extern</code></td><td>Global Program Scope</td><td>Zero (0)</td><td>Full program execution timeline</td><td>Data Segment / BSS Segment</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Compilation Traps:</strong>
+                    <ul>
+                        <li><strong>Memory Leaks:</strong> A memory leak occurs when dynamically allocated heap memory is orphaned without being freed. This happens when the last pointer tracking an allocation address is reassigned or goes out of scope, leaving the block unreachable and permanently consuming memory.</li>
+                        <li><strong>Dangling Pointers:</strong> Calling `free(ptr)` releases the memory block, but does not modify the pointer variable itself. The pointer continues to store the now-invalid address. Accessing or dereferencing this **dangling pointer** results in undefined behavior. It is safe practice to set pointers to `NULL` immediately after freeing them.</li>
+                        <li><strong>The Address-of Register Restriction:</strong> Variables declared with the `register` keyword cannot have the address-of operator `&` applied to them, because CPU registers do not reside in system RAM and lack a physical memory address.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-preprocessor">
+            <div class="card-header-row">
+                <h2>9. Preprocessor Directives, File Handling & Command Line Arguments</h2>
+                <button class="action-button" id="btn-preprocessor" onclick="toggleTopicState('preprocessor')">Mark Completed</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Preprocessor: <strong>Text Substitution Engine</strong></div>
+                <div class="summary-badge">Macros: <strong>No Runtime Function Overhead</strong></div>
+                <div class="summary-badge">FILE: <strong>System Stream Control Block Descriptor</strong></div>
+                <div class="summary-badge">argv[0]: <strong>Execution Command String Link</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Preprocessor Directives Pipeline</div>
+                <ul>
+                    <li>The preprocessor is a text-substitution engine that handles directives starting with a hash symbol `#` before compilation begins. It strips comments and modifies source text without evaluating code logic.</li>
+                    <li><strong>Macro Substitution (`#define`):</strong> Replaces instances of a macro identifier with a specified replacement string.
+                        <br>Macros do not have function call overhead, but they do not perform parameter type checking.
+                    </li>
+                    <li><strong>Conditional Directives (`#ifdef`, `#ifndef`, `#endif`):</strong> Controls which sections of source code are passed to the compiler, which is useful for writing cross-platform code or preventing duplicate header files.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">File Handling Streams Engine (`<stdio.h>`)</div>
+                <ul>
+                    <li>Files are processed through an opaque structure type called a `FILE` stream pointer descriptor.</li>
+                    <li><strong>Core File Operations:</strong>
+                        <ul>
+                            <li>`fopen("file.txt", "r")`: Opens a communication stream. Modes include `"r"` (read), `"w"` (write, which truncates existing file contents), and `"a"` (append). Returns `NULL` if the file cannot be opened.</li>
+                            <li>`fclose(FILE *fp)`: Closes an open file stream, ensuring all buffered data is written to disk.</li>
+                            <li>`fscanf() / fprintf()`: Performs formatted input and output operations on file streams.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Command Line Arguments Passing</div>
+                <p>Arguments passed to a program at execution are captured by the parameters defined in `main()`:
+                    <br><code>int main(int argc, char *argv[])</code>
+                </p>
+                <ul>
+                    <li>`argc` (Argument Count): An integer that tracks the total number of arguments passed, including the program's executable name.</li>
+                    <li>`argv` (Argument Vector): An array of character pointers (strings) representing each argument. The first entry, **`argv[0]`**, always stores the name or path of the running executable program.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Compilation Traps:</strong>
+                    <ul>
+                        <li><strong>Macro Evaluation Ordering Bugs:</strong> Macros are expanded as raw text substitutions, which can lead to expression evaluation bugs if parameters are not wrapped in parentheses. For example, `#define SQUARE(x) x * x` translates `SQUARE(2 + 3)` into `2 + 3 * 2 + 3`, which evaluates to `11` instead of `25`. To fix this, wrap macro arguments in parentheses: `#define SQUARE(x) ((x) * (x))`.</li>
+                        <li><strong>Missing EOF Verifications:</strong> When reading files character by character, always check for the `EOF` (End of File) sentinel value using an integer type (`int ch`), rather than a `char` type, to ensure the sentinel value can be correctly recognized.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Interactive Progress Tracker System
+        const modulesRegistry = [
+            { id: "lexical" },
+            { id: "operators" },
+            { id: "control" },
+            { id: "functions" },
+            { id: "arrays-strings" },
+            { id: "pointers" },
+            { id: "structures" },
+            { id: "memory-classes" },
+            { id: "preprocessor" }
+        ];
+
+        function scrollToCard(targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initAppTracker() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_c_dashboard_progress')) || {};
+            
+            modulesRegistry.forEach(mod => {
+                const status = !!userProgress[mod.id];
+                
+                // Sync Checkboxes
+                const chk = document.getElementById(`nav-chk-${mod.id}`);
+                if (chk) chk.checked = status;
+
+                // Sync Content Buttons
+                const btn = document.getElementById(`btn-${mod.id}`);
+                if (btn) {
+                    if (status) {
+                        btn.innerText = "✓ Completed";
+                        btn.classList.add('completed');
+                    } else {
+                        btn.innerText = "Mark Completed";
+                        btn.classList.remove('completed');
+                    }
+                }
+            });
+            evaluateMetrics();
+        }
+
+        function updateProgressState(id, statusValue) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_c_dashboard_progress')) || {};
+            userProgress[id] = statusValue;
+            localStorage.setItem('gate_c_dashboard_progress', JSON.stringify(userProgress));
+
+            const chk = document.getElementById(`nav-chk-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (chk) chk.checked = statusValue;
+            if (btn) {
+                if (statusValue) {
+                    btn.innerText = "✓ Completed";
+                    btn.classList.add('completed');
+                } else {
+                    btn.innerText = "Mark Completed";
+                    btn.classList.remove('completed');
+                }
+            }
+            evaluateMetrics();
+        }
+
+        function toggleTopicState(id) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_c_dashboard_progress')) || {};
+            updateProgressState(id, !userProgress[id]);
+        }
+
+        function syncCheckbox(id) {
+            const chk = document.getElementById(`nav-chk-${id}`);
+            if (chk) updateProgressState(id, chk.checked);
+        }
+
+        function evaluateMetrics() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_c_dashboard_progress')) || {};
+            let matchCounter = 0;
+
+            modulesRegistry.forEach(mod => {
+                if (userProgress[mod.id] === true) matchCounter++;
+            });
+
+            const ratioFactor = modulesRegistry.length > 0 ? Math.round((matchCounter / modulesRegistry.length) * 100) : 0;
+            document.getElementById('metric-fill').style.width = ratioFactor + '%';
+            document.getElementById('metric-text').innerText = `${matchCounter}/${modulesRegistry.length} Modules Done (${ratioFactor}%)`;
+        }
+
+        window.onload = initAppTracker;
+    </script>
+</body>
+</html>

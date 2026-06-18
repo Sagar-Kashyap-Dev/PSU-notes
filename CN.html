@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE — Computer Networks (CN) Master Engine</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #7c3aed;
+            --brand-accent: #f5f3ff;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* Split-Pane Control Interface */
+        #app-sidebar {
+            width: 330px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 330px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1180px;
+            width: calc(100% - 330px);
+        }
+
+        /* Sidebar Panels */
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #ddd6fe; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #6d28d9; letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #cbd5e1; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #6d28d9; width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        /* Document Layout Architecture */
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        /* Informational Badge Elements */
+        .summary-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; background: var(--bg-workspace); padding: 1rem; border-radius: var(--radius-interactive); border: 1px solid var(--border-color); }
+        .summary-badge { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-bold); font-weight: 500; }
+        .summary-badge strong { color: #6d28d9; }
+
+        .grid-block { margin-bottom: 2rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: #6d28d9; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 0.75rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); }
+        th, td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        .alert-box ul { margin-left: 1.25rem; }
+        .alert-box li { color: #7f1d1d; }
+
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>CN Core Engine</h2>
+            <p>Computer Networks Suite</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Engine Verification</div>
+            <div class="metric-value" id="metric-text">0/8 Modules Mastered</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Architectures & Models</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-models')"><span>1. Architectural Topologies</span><input type="checkbox" class="nav-checkbox" id="nav-chk-models" onclick="event.stopPropagation(); syncCheckbox('models')"></div></li>
+            
+            <div class="nav-heading">Data Link Layer Mechanics</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-dll')"><span>2. Framing & Error Coding</span><input type="checkbox" class="nav-checkbox" id="nav-chk-dll" onclick="event.stopPropagation(); syncCheckbox('dll')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-mac')"><span>3. MAC Protocol Matrices</span><input type="checkbox" class="nav-checkbox" id="nav-chk-mac" onclick="event.stopPropagation(); syncCheckbox('mac')"></div></li>
+            
+            <div class="nav-heading">Routing & IP Infrastructure</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-network')"><span>4. IP Subnetting Primitives</span><input type="checkbox" class="nav-checkbox" id="nav-chk-network" onclick="event.stopPropagation(); syncCheckbox('network')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-routing')"><span>5. Routing Algorithms</span><input type="checkbox" class="nav-checkbox" id="nav-chk-routing" onclick="event.stopPropagation(); syncCheckbox('routing')"></div></li>
+            
+            <div class="nav-heading">Transport & Allocation</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-transport')"><span>6. End-to-End Transport</span><input type="checkbox" class="nav-checkbox" id="nav-chk-transport" onclick="event.stopPropagation(); syncCheckbox('transport')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-flow')"><span>7. Flow & Congestion Control</span><input type="checkbox" class="nav-checkbox" id="nav-chk-flow" onclick="event.stopPropagation(); syncCheckbox('flow')"></div></li>
+            
+            <div class="nav-heading">Application & Core Hardware</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-application')"><span>8. Application Layer & Devices</span><input type="checkbox" class="nav-checkbox" id="nav-chk-application" onclick="event.stopPropagation(); syncCheckbox('application')"></div></li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>Computer Networks Specification</h1>
+            <p>Error detection polynomials, subnet mask matrices, sliding window limits, and application-layer delivery protocols.</p>
+        </header>
+
+        <section class="content-card" id="sec-models">
+            <div class="card-header-row">
+                <h2>1. Network Baselines & Reference Models</h2>
+                <button class="action-button" id="btn-models" onclick="toggleTopicState('models')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">LAN: <strong>High-Speed Local Domain</strong></div>
+                <div class="summary-badge">WAN: <strong>Broad Inter-City Spans</strong></div>
+                <div class="summary-badge">OSI: <strong>7-Layer Conceptual Stack</strong></div>
+                <div class="summary-badge">TCP/IP: <strong>4/5-Layer Implementable Suite</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Topological Scale Categories</div>
+                <ul>
+                    <li><strong>LAN (Local Area Network):</strong> Spans small areas like homes or offices. Offers high data transfer rates, minimal propagation delays, and low error rates, typically utilizing Ethernet or Wi-Fi.</li>
+                    <li><strong>MAN (Metropolitan Area Network):</strong> Extends across a town or entire city (e.g., cable television networks).</li>
+                    <li><strong>WAN (Wide Area Network):</strong> Covers long distances across countries or continents. Suffers from higher propagation delays and relies on leased lines, fiber backbones, and satellite links.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">OSI Model vs. TCP/IP Architecture Matrix</div>
+                <p>The OSI reference model defines structural abstraction boundaries, whereas TCP/IP represents the standard production protocol implementation hierarchy:</p>
+                
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>OSI Architectural Layer</th><th>Encapsulated Data Unit</th><th>Primary Protocol Responsibility</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>7. Application</strong></td><td>Data / Message</td><td>Provides network access directly to user applications (HTTP, SMTP).</td></tr>
+                            <tr><td><strong>6. Presentation</strong></td><td>Data</td><td>Handles data translation, encryption, and compression formatting.</td></tr>
+                            <tr><td><strong>5. Session</strong></td><td>Data</td><td>Manages, synchronizes, and maintains active conversation dialogues.</td></tr>
+                            <tr><td><strong>4. Transport</strong></td><td>Segment (TCP) / Datagram (UDP)</td><td>Ensures end-to-end reliability, process-level addressing, and flow control.</td></tr>
+                            <tr><td><strong>3. Network</strong></td><td>Packet</td><td>Determines path routing and logical address translation (IPv4/IPv6).</td></tr>
+                            <tr><td><strong>2. Data Link</strong></td><td>Frame</td><td>Handles point-to-point transmission, physical addressing, and error filtering.</td></tr>
+                            <tr><td><strong>1. Physical</strong></td><td>Bits</td><td>Transmits raw, unstructured bitstreams over physical mediums.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-dll">
+            <div class="card-header-row">
+                <h2>2. Data Link Layer (Framing & Error Engineering)</h2>
+                <button class="action-button" id="btn-dll" onclick="toggleTopicState('dll')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Framing: <strong>Bit & Byte Stuffing Boundary Checks</strong></div>
+                <div class="summary-badge">CRC: <strong>Polynomial Modulo-2 Engineering</strong></div>
+                <div class="summary-badge">Hamming: <strong>Single Error Correcting Matrix</strong></div>
+                <div class="summary-badge">Hamming Dist: <strong>$d+1$ Detect / $2d+1$ Correct</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Framing Strategies</div>
+                <ul>
+                    <li><strong>Character Count:</strong> Uses a header field to specify the frame length. Highly vulnerable to corruption; if a count bit changes, the receiver loses alignment with subsequent frames.</li>
+                    <li><strong>Byte Stuffing:</strong> Delineates frames using dedicated flag bytes. If a flag pattern occurs naturally within the payload, a special escape byte (`ESC`) is stuffed before it.</li>
+                    <li><strong>Bit Stuffing:</strong> Uses a unique bit pattern flag (typically `01111110`). Whenever the transmitter encounters five consecutive `1`s in the payload, it automatically injects a dummy `0` to prevent accidental flag creation.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Error Detection via Cyclic Redundancy Check (CRC)</div>
+                <p>Given a data bitstream string $D$ and a generator polynomial divisor $G$ of degree $r$:</p>
+                <ol>
+                    <li>Append $r$ zeros to the end of the data payload string $D$.</li>
+                    <li>Perform **Modulo-2 Binary Division** (using bitwise XOR operations instead of standard subtraction) on the appended data string using the divisor $G$.</li>
+                    <li>The resulting remainder of length $r$ bits replaces the appended zeros to form the transmitted frame. If the receiver obtains a non-zero remainder upon division, an error has occurred.</li>
+                </ol>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Hamming Code Error Correction Geometry</div>
+                <p>Enables Single-Error Correction (SEC) by inserting parity bits at power-of-2 index locations ($1, 2, 4, 8, \dots$).</p>
+                <ul>
+                    <li><strong>Parity Structural Rule Inequality:</strong> For $m$ data bits and $p$ parity bits, the relation must satisfy:
+                        $$2^p \ge m + p + 1$$
+                    </li>
+                    <li><strong>Distance Mechanics:</strong> To detect $k$ errors, the minimum Hamming distance between any two valid code words must be at least **$k + 1$**. To correct $t$ errors, the minimum distance must be at least **$2t + 1$**.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-mac">
+            <div class="card-header-row">
+                <h2>3. Medium Access Control (MAC) Protocols</h2>
+                <button class="action-button" id="btn-mac" onclick="toggleTopicState('mac')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Pure ALOHA: <strong>18.4% Max Efficiency Bound</strong></div>
+                <div class="summary-badge">Slotted ALOHA: <strong>36.8% Max Efficiency Bound</strong></div>
+                <div class="summary-badge">CSMA/CD: <strong>Carrier Sense Collision Detect</strong></div>
+                <div class="summary-badge">Min Frame Rule: <strong>$L \ge 2 \cdot R \cdot T_p$</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">ALOHA Variations</div>
+                <ul>
+                    <li><strong>Pure ALOHA:</strong> Stations transmit frames immediately whenever data is ready. Collisions occur if any part of a frame overlaps with another. Maximum throughput is bounded at:
+                        $$\eta = G \cdot e^{-2G} \implies \eta_{\text{max}} = \frac{1}{2e} \approx 18.4\%$$
+                    </li>
+                    <li><strong>Slotted ALOHA:</strong> Divides time into discrete slots matching a standard frame transmission time. Stations can only begin transmitting at the start of a time slot, cutting the vulnerable period in half. Maximum throughput:
+                        $$\eta = G \cdot e^{-G} \implies \eta_{\text{max}} = \frac{1}{e} \approx 36.8\%$$
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">CSMA/CD Engine Mechanics</div>
+                <p>Stations listen to the channel before transmitting ("carrier sense"). If the channel is busy, they defer; if idle, they transmit while continuing to listen to detect collisions.</p>
+                <div class="alert-box">
+                    <strong>Critical Frame Length Constraint Equation:</strong>
+                    <ul>
+                        <li>To ensure a transmitting station can reliably detect a collision before it finishes sending its frame, the frame length must satisfy the minimum size requirement:
+                            $$\text{Frame Length } (L) \ge 2 \cdot \text{Bandwidth } (R) \cdot \text{Propagation Delay } (T_p)$$
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-network">
+            <div class="card-header-row">
+                <h2>4. Network Layer (IPv4, IPv6 & Subnetting)</h2>
+                <button class="action-button" id="btn-network" onclick="toggleTopicState('network')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">IPv4 Address Space: <strong>32-Bit Linear Space</strong></div>
+                <div class="summary-badge">IPv6 Address Space: <strong>128-Bit Hex Space</strong></div>
+                <div class="summary-badge">CIDR Notation: <strong>Variable Length Subnet Mask</strong></div>
+                <div class="summary-badge">Usable Host Formula: <strong>$2^H - 2$ Addresses</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">IP Addressing Protocols</div>
+                <ul>
+                    <li><strong>IPv4 Header:</strong> 32-bit source and destination addresses. Key fields include: *Time to Live (TTL)* to prevent routing loops, *Header Checksum* for integrity verification, and fields for *Fragmentation* (Identification, Flags, Fragment Offset).</li>
+                    <li><strong>IPv6 Header:</strong> 128-bit source and destination addresses. Simplifies routing by using a fixed 40-byte base header and removing the header checksum field.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Subnet Arithmetic Engine</div>
+                <p>Classless Inter-Domain Routing (CIDR) groups IP addresses into blocks using variable-length masks (e.g., `/24`).
+                    <br>For a network mask with $H$ bits allocated for the host portion:
+                </p>
+                <ul>
+                    <li>Total address space allocations within the block = $2^H$</li>
+                    <li><strong>Total usable host addresses per subnet:</strong> $$2^H - 2$$
+                        *(Subtracts the Network Address where all host bits are 0, and the Directed Broadcast Address where all host bits are 1).*
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-routing">
+            <div class="card-header-row">
+                <h2>5. Routing Optimization Core</h2>
+                <button class="action-button" id="btn-routing" onclick="toggleTopicState('routing')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Distance Vector: <strong>Bellman-Ford Matrix Engine</strong></div>
+                <div class="summary-badge">Link State: <strong>Dijkstra Global Map Engine</strong></div>
+                <div class="summary-badge">Count-to-Infinity: <strong>Routing Vector Loop Anomaly</strong></div>
+                <div class="summary-badge">Split Horizon: <strong>Reverse Route Advertisement Block</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Routing Protocols Infrastructure Comparison</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Routing Strategy Metric</th><th>Distance Vector Routing (DVR)</th><th>Link State Routing (LSR)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Algorithmic Base</strong></td><td>Bellman-Ford equation metrics.</td><td>Dijkstra's shortest-path tree search.</td></tr>
+                            <tr><td><strong>Knowledge Distribution</strong></td><td>Shares its entire routing table, but only with its immediate neighbors.</td><td>Floods information about its local links to all routers in the network.</td></tr>
+                            <tr><td><strong>Convergence Speed</strong></td><td>Slow convergence; vulnerable to **Count-to-Infinity routing loops**.</td><td>Fast convergence; maintains a complete topology map.</td></tr>
+                            <tr><td><strong>Mitigation Policies</strong></td><td>Uses Split Horizon and Poison Reverse rules to prevent loops.</td><td>Uses sequence tracking numbers to discard stale link-state updates.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-transport">
+            <div class="card-header-row">
+                <h2>6. Transport Layer (TCP vs. UDP Architecture)</h2>
+                <button class="action-button" id="btn-transport" onclick="toggleTopicState('transport')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">TCP: <strong>Connection-Oriented Byte Stream</strong></div>
+                <div class="summary-badge">UDP: <strong>Connectionless Unreliable Datagram</strong></div>
+                <div class="summary-badge">3-Way Handshake: <strong>SYN → SYN-ACK → ACK Matrix</strong></div>
+                <div class="summary-badge">Pseudo Header: <strong>Cross-Layer UDP Integrity Check</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Transport Protocols Comparison</div>
+                <ul>
+                    <li><strong>TCP (Transmission Control Protocol):</strong> Reliable, connection-oriented, and byte-stream based. Enforces delivery tracking using sequence and acknowledgment numbers. Features error validation, flow management, and congestion control.</li>
+                    <li><strong>UDP (User Datagram Protocol):</strong> Lightweight, connectionless, and unreliable. Minimal 8-byte overhead header (Source Port, Destination Port, Length, Checksum). Preferable for real-time video and DNS lookups where speed is prioritized over retransmission delays.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">TCP Connection Control States</div>
+                
+                <ul>
+                    <li><strong>Establishment (Three-Way Handshake):</strong> `SYN` $\to$ `SYN-ACK` $\to$ `ACK`. Coordinates initial sequence numbers (ISNs) securely between hosts.</li>
+                    <li><strong>Teardown (Four-Wave Closure):</strong> `FIN` $\to$ `ACK` $\to$ `FIN` $\to$ `ACK`. Requires a `TIME_WAIT` state to ensure any delayed packets remaining in the network clear before the socket closes.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-flow">
+            <div class="card-header-row">
+                <h2>7. Flow Control, Windows & Congestion Management</h2>
+                <button class="action-button" id="btn-flow" onclick="toggleTopicState('flow')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Stop & Wait Efficiency: <strong>$\eta = 1 / (1 + 2a)$</strong></div>
+                <div class="summary-badge">Sliding Window Size: <strong>$1 + 2a$ Upper Bound</strong></div>
+                <div class="summary-badge">Slow Start: <strong>Exponential CWND Increase</strong></div>
+                <div class="summary-badge">AIMD Phase: <strong>Additive Up / Multiplicative Down</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Flow Control Efficiency Mathematics</div>
+                <p>Let $a = \frac{T_p}{T_t}$, where $T_p$ is propagation delay and $T_t$ is packet transmission delay ($T_t = \frac{\text{Packet Size}}{\text{Bandwidth}}$):</p>
+                <ul>
+                    <li><strong>Stop-and-Wait Efficiency:</strong>
+                        $$\eta = \frac{1}{1 + 2a}$$
+                    </li>
+                    <li><strong>Sliding Window Utilization:</strong> To achieve $100\%$ link utilization ($\eta = 1$), the sender's window size ($W$) must satisfy:
+                        $$W \ge 1 + 2a$$
+                    </li>
+                    <li><strong>Go-Back-N (GBN) vs. Selective Repeat (SR) Window Constraints:</strong>
+                        <ul>
+                            <li>*GBN:* Sender Window = $2^n - 1$, Receiver Window = $1$ (Discards out-of-order packets).</li>
+                            <li>*SR:* Sender Window = $2^{n-1}$, Receiver Window = $2^{n-1}$ (Buffers out-of-order packets).</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">TCP Congestion Control States Engine</div>
+                <p>The Congestion Window (`cwnd`) dynamically adapts based on network indicators:</p>
+                <ol>
+                    <li><strong>Slow Start Phase:</strong> `cwnd` starts at 1 MSS and **doubles every Round Trip Time (RTT)** until it reaches the slow-start threshold (`ssthresh`).</li>
+                    <li><strong>Congestion Avoidance (AIMD):</strong> Once `cwnd` $\ge$ `ssthresh`, it increases **linearly by 1 MSS per RTT**.</li>
+                    <li><strong>Timeout Recovery:</strong> If a timeout occurs, `ssthresh` is set to $\frac{\text{cwnd}}{2}$, and `cwnd` resets to 1 MSS, restarting the Slow Start phase.</li>
+                    <li><strong>Fast Recovery (3 Duplicate ACKs):</strong> Triggered by receiving three duplicate ACKs. The system drops `ssthresh` to $\frac{\text{cwnd}}{2}$ and sets `cwnd` equal to `ssthresh`, entering Congestion Avoidance directly instead of resetting to 1.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-application">
+            <div class="card-header-row">
+                <h2>8. Application Infrastructure & Network Hardware</h2>
+                <button class="action-button" id="btn-application" onclick="toggleTopicState('application')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">DNS: <strong>UDP 53 Name Translation</strong></div>
+                <div class="summary-badge">DHCP: <strong>UDP 67/68 IP Allocation</strong></div>
+                <div class="summary-badge">Switch: <strong>Layer 2 ASIC Collision Separator</strong></div>
+                <div class="summary-badge">Router: <strong>Layer 3 Domain Isolation Engine</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Application Layer Protocols Core Profiles</div>
+                <ul>
+                    <li><strong>DNS (Domain Name System):</strong> Translates domain names to IP addresses. Operates primarily over UDP port 53.</li>
+                    <li><strong>DHCP (Dynamic Host Configuration Protocol):</strong> Dynamically assigns IP addresses, subnet masks, and default gateways to joining hosts. Relies on a four-step lease process: Discover, Offer, Request, Acknowledgment (DORA).</li>
+                    <li><strong>Mail Delivery Suite:</strong> **SMTP** pushes emails from clients to servers or between mail servers (TCP port 25). **POP3** (TCP port 110) and **IMAP** (TCP port 143) pull emails from servers to local clients.</li>
+                    <li><strong>Web Access Layer:</strong> **HTTP** (TCP port 80) transmits plaintext web pages. **HTTPS** (TCP port 443) secures data transfers by encrypting traffic using Transport Layer Security (TLS).</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Network Interconnectivity Hardware Ecosystem</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Hardware Device Node</th><th>Native OSI Layer</th><th>Collision & Broadcast Domain Isolation Profiles</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Hub</strong></td><td>Layer 1 (Physical)</td><td>Creates a single collision domain and single broadcast domain. Acts as a transparent multi-port repeater that broadcasts incoming signals to all ports.</td></tr>
+                            <tr><td><strong>Switch</strong></td><td>Layer 2 (Data Link)</td><td>**Separates collision domains per port**, but maintains a single broadcast domain. Uses an internal MAC address table to forward frames directly to target ports.</td></tr>
+                            <tr><td><strong>Router</strong></td><td>Layer 3 (Network)</td><td>**Isolates both collision domains and broadcast domains**. Uses IP routing tables to forward packets across distinct network boundaries.</td></tr>
+                            <tr><td><strong>Gateway</strong></td><td>Layers 4-7 (Upper Stack)</td><td>Translates data formats, packaging structures, and connection profiles across entirely incompatible network systems.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Interactive Dashboard Metrics Controller
+        const CN_Registry = [
+            { id: "models" },
+            { id: "dll" },
+            { id: "mac" },
+            { id: "network" },
+            { id: "routing" },
+            { id: "transport" },
+            { id: "flow" },
+            { id: "application" }
+        ];
+
+        function scrollToCard(targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initAppTracker() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_cn_dashboard_progress')) || {};
+            
+            CN_Registry.forEach(module => {
+                const status = !!userProgress[module.id];
+                
+                // Sync Checkboxes
+                const chk = document.getElementById(`nav-chk-${module.id}`);
+                if (chk) chk.checked = status;
+
+                // Sync Content Action Buttons
+                const btn = document.getElementById(`btn-${module.id}`);
+                if (btn) {
+                    if (status) {
+                        btn.innerText = "✓ Mastered";
+                        btn.classList.add('completed');
+                    } else {
+                        btn.innerText = "Mark Mastered";
+                        btn.classList.remove('completed');
+                    }
+                }
+            });
+            evaluateMetrics();
+        }
+
+        function updateProgressState(id, statusValue) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_cn_dashboard_progress')) || {};
+            userProgress[id] = statusValue;
+            localStorage.setItem('gate_cn_dashboard_progress', JSON.stringify(userProgress));
+
+            const chk = document.getElementById(`nav-chk-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (chk) chk.checked = statusValue;
+            if (btn) {
+                if (statusValue) {
+                    btn.innerText = "✓ Mastered";
+                    btn.classList.add('completed');
+                } else {
+                    btn.innerText = "Mark Mastered";
+                    btn.classList.remove('completed');
+                }
+            }
+            evaluateMetrics();
+        }
+
+        function toggleTopicState(id) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_cn_dashboard_progress')) || {};
+            updateProgressState(id, !userProgress[id]);
+        }
+
+        function syncCheckbox(id) {
+            const chk = document.getElementById(`nav-chk-${id}`);
+            if (chk) updateProgressState(id, chk.checked);
+        }
+
+        function evaluateMetrics() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_cn_dashboard_progress')) || {};
+            let matchCounter = 0;
+
+            CN_Registry.forEach(module => {
+                if (userProgress[module.id] === true) matchCounter++;
+            });
+
+            const ratioFactor = CN_Registry.length > 0 ? Math.round((matchCounter / CN_Registry.length) * 100) : 0;
+            document.getElementById('metric-fill').style.width = ratioFactor + '%';
+            document.getElementById('metric-text').innerText = `${matchCounter}/${CN_Registry.length} Modules Mastered (${ratioFactor}%)`;
+        }
+
+        window.onload = initAppTracker;
+    </script>
+</body>
+</html>

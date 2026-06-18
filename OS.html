@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE — Operating Systems (OS) Master Engine</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #0284c7;
+            --brand-accent: #e0f2fe;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* Split-Pane Control Interface */
+        #app-sidebar {
+            width: 330px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 330px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1180px;
+            width: calc(100% - 330px);
+        }
+
+        /* Sidebar Panels */
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #bae6fd; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #0369a1; letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #cbd5e1; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #0369a1; width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        /* Document Architecture Layouts */
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        /* Fact Summary Layouts */
+        .summary-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; background: var(--bg-workspace); padding: 1rem; border-radius: var(--radius-interactive); border: 1px solid var(--border-color); }
+        .summary-badge { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-bold); font-weight: 500; }
+        .summary-badge strong { color: #0369a1; }
+
+        .grid-block { margin-bottom: 2rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: #0369a1; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 0.75rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); }
+        th, td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        .alert-box ul { margin-left: 1.25rem; }
+        .alert-box li { color: #7f1d1d; }
+
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>OS Core Engine</h2>
+            <p>Operating Systems Mechanics</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Engine Validation</div>
+            <div class="metric-value" id="metric-text">0/8 Modules Mastered</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Foundations & Processes</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-basics')"><span>1. OS Architectural Basics</span><input type="checkbox" class="nav-checkbox" id="nav-chk-basics" onclick="event.stopPropagation(); syncCheckbox('basics')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-threads')"><span>2. Processes & Threads</span><input type="checkbox" class="nav-checkbox" id="nav-chk-threads" onclick="event.stopPropagation(); syncCheckbox('threads')"></div></li>
+            
+            <div class="nav-heading">Resource Orchestration</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-cpu')"><span>3. CPU Scheduling Metrics</span><input type="checkbox" class="nav-checkbox" id="nav-chk-cpu" onclick="event.stopPropagation(); syncCheckbox('cpu')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-sync')"><span>4. Process Synchronization</span><input type="checkbox" class="nav-checkbox" id="nav-chk-sync" onclick="event.stopPropagation(); syncCheckbox('sync')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-deadlock')"><span>5. Deadlock Mitigation Matrix</span><input type="checkbox" class="nav-checkbox" id="nav-chk-deadlock" onclick="event.stopPropagation(); syncCheckbox('deadlock')"></div></li>
+            
+            <div class="nav-heading">Memory & Storage Systems</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-memory')"><span>6. Memory Management Core</span><input type="checkbox" class="nav-checkbox" id="nav-chk-memory" onclick="event.stopPropagation(); syncCheckbox('memory')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-replacement')"><span>7. Page Replacement Engine</span><input type="checkbox" class="nav-checkbox" id="nav-chk-replacement" onclick="event.stopPropagation(); syncCheckbox('replacement')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-storage')"><span>8. File Systems & Disk Tracks</span><input type="checkbox" class="nav-checkbox" id="nav-chk-storage" onclick="event.stopPropagation(); syncCheckbox('storage')"></div></li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>OS Syllabus Specification</h1>
+            <p>Process control vectors, safe states, multi-level paging bounds, and hardware-level synchronization primitives.</p>
+        </header>
+
+        <section class="content-card" id="sec-basics">
+            <div class="card-header-row">
+                <h2>1. OS Basics & Services</h2>
+                <button class="action-button" id="btn-basics" onclick="toggleTopicState('basics')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Batch: <strong>Non-Interactive Jobs</strong></div>
+                <div class="summary-badge">Time-Sharing: <strong>CPU Multitasking Slots</strong></div>
+                <div class="summary-badge">Real-Time: <strong>Strict Deterministic Bounds</strong></div>
+                <div class="summary-badge">Dual-Mode: <strong>User (1) vs. Kernel (0)</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Taxonomy of Operating Systems</div>
+                <ul>
+                    <li><strong>Batch OS:</strong> Automates execution by grouping similar jobs without interactive user control. Minimizes operator overhead but suffers from high turnaround latency.</li>
+                    <li><strong>Time-Sharing OS:</strong> Utilizes clock-driven context switches to rotate the CPU among active users, providing an interactive environment.</li>
+                    <li><strong>Real-Time OS (RTOS):</strong> Guarantees completion within strict maximum timing limits. Split into *Hard RTOS* (missing a deadline equals critical failure) and *Soft RTOS* (deadlines are preferred but not catastrophic if missed).</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">System Execution Subsystems & Services</div>
+                <p>The kernel provides programmatic access via **System Calls** (e.g., `fork()`, `exec()`, `wait()`). Hardware isolation is enforced by the **Dual-Mode Execution Model** using a hardware mode bit:</p>
+                <ul>
+                    <li><strong>User Mode (Bit 1):</strong> Restricts access to sensitive hardware registers and memory areas. Attempting direct access triggers a hardware trap.</li>
+                    <li><strong>Kernel Mode / Supervisor Mode (Bit 0):</strong> Unrestricted access to physical devices, memory registers, and raw execution paths.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-threads">
+            <div class="card-header-row">
+                <h2>2. Process Architecture & Threading Models</h2>
+                <button class="action-button" id="btn-threads" onclick="toggleTopicState('threads')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">PCB: <strong>State Context Control Block</strong></div>
+                <div class="summary-badge">User Threads: <strong>Fast Non-Kernel Contexts</strong></div>
+                <div class="summary-badge">Kernel Threads: <strong>Scheduler Aware Threads</strong></div>
+                <div class="summary-badge">Context Switch: <strong>State Save & Restore</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Process Control Block (PCB) Structure</div>
+                <p>A data structure in protected kernel memory that tracks a process. It contains: the Process ID (PID), Process State, Program Counter (PC), CPU Registers, Memory Allocation Limits, and Open File Descriptors.</p>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Process State Transitions Diagram</div>
+                <p>Processes cycle through a finite state machine managed by schedulers:</p>
+                
+                <ul>
+                    <li><strong>New $\to$ Ready:</strong> Long-Term Scheduler regulates the degree of multiprogramming.</li>
+                    <li><strong>Ready $\to$ Running:</strong> Short-Term Scheduler dispatches the process using chosen allocation rules.</li>
+                    <li><strong>Running $\to$ Ready:</strong> Interrupted due to clock slice expiration or higher priority preemption.</li>
+                    <li><strong>Running $\to$ Waiting:</strong> Blocks on an asynchronous I/O request or synchronization condition.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Threading Models Comparison Matrix</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Threading Property</th><th>User-Level Threads (ULT)</th><th>Kernel-Level Threads (KLT)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Management Engine</strong></td><td>Handled entirely by user-space runtime libraries.</td><td>Managed directly by the OS kernel scheduler.</td></tr>
+                            <tr><td><strong>Context Switch Overhead</strong></td><td>Extremely fast; requires no mode switches to kernel space.</td><td>Slower; requires full mode transitions and kernel state tracking.</td></tr>
+                            <tr><td><strong>Blocking Behavior</strong></td><td>If one thread blocks, the **entire host process blocks**.</td><td>Independent; if one thread blocks, others continue running.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-cpu">
+            <div class="card-header-row">
+                <h2>3. CPU Scheduling Mechanics</h2>
+                <button class="action-button" id="btn-cpu" onclick="toggleTopicState('cpu')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">FCFS: <strong>Convoy Effect Risk</strong></div>
+                <div class="summary-badge">SJF: <strong>Provably Optimal Wait Profile</strong></div>
+                <div class="summary-badge">SRTF: <strong>Preemptive Mini-Remaining</strong></div>
+                <div class="summary-badge">Round Robin: <strong>Quantum-Driven Multitasking</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Performance Metrics Calculations</div>
+                <ul>
+                    <li>$$\text{Turnaround Time (TAT)} = \text{Completion Time} - \text{Arrival Time}$$</li>
+                    <li>$$\text{Waiting Time (WT)} = \text{Turnaround Time} - \text{Burst Time}$$</li>
+                    <li>$$\text{Response Time (RT)} = \text{First Allocation Time} - \text{Arrival Time}$$</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Scheduling Algorithms Engine Profile</div>
+                <ul>
+                    <li><strong>First-Come, First-Served (FCFS):</strong> Non-preemptive. Vulnerable to the **Convoy Effect**, where short processes wait a long time behind a single compute-bound, heavy process.</li>
+                    <li><strong>Shortest Job First (SJF):</strong> Non-preemptive. Selects the process with the shortest CPU burst. **Provably optimal** for minimizing average waiting times.</li>
+                    <li><strong>Shortest Remaining Time First (SRTF):</strong> Preemptive variant of SJF. Preempts the running process if a new arriving process has a shorter remaining burst time. Suffer from process **starvation** for long-running tasks.</li>
+                    <li><strong>Round Robin (RR):</strong> Preemptive. Assigns the CPU to tasks for a fixed time slice (Quantum $q$). Performance scales with the quantum size: if $q \to \infty$, it degrades into FCFS; if $q \to 0$, context-switch overhead dominates the system.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-sync">
+            <div class="card-header-row">
+                <h2>4. Process Synchronization Primitives</h2>
+                <button class="action-button" id="btn-sync" onclick="toggleTopicState('sync')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Mutex: <strong>Binary Locking Primitives</strong></div>
+                <div class="summary-badge">Semaphore: <strong>Integer State Control</strong></div>
+                <div class="summary-badge">Counting Sem: <strong>Bounded Resource Control</strong></div>
+                <div class="summary-badge">Monitor: <strong>Object-Level Isolation Encapsulation</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Bounded Critical Section Criteria</div>
+                <p>Any solution protecting a critical section from a race condition must satisfy three strict requirements:</p>
+                <ol>
+                    <li><strong>Mutual Exclusion:</strong> If process $P_i$ is executing inside its critical section, no other processes can enter their critical sections for that resource.</li>
+                    <li><strong>Progress:</strong> If no process is in its critical section, only processes wishing to enter can participate in deciding which process enters next, and this choice cannot be postponed indefinitely.</li>
+                    <li><strong>Bounded Waiting:</strong> There must be a limit on the number of times other processes can enter their critical sections after a process has requested entry, before that request is granted. Prevents process starvation.</li>
+                </ol>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Semaphore Operations Framework</div>
+                <p>An integer variable $S$ accessed exclusively via two atomic, non-divisible operations:</p>
+                <ul>
+                    <li><strong>Wait ($P(S)$):</strong> Decrements the resource counter:
+                        $$P(S): \text{ while } S \le 0 \text{ do skip}; \quad S = S - 1;$$
+                    </li>
+                    <li><strong>Signal ($V(S)$):</strong> Increments the resource counter:
+                        $$V(S): S = S + 1;$$
+                    </li>
+                    <li>*Counting Semaphore Range:* S can take any integer value. A negative value indicates the number of processes currently blocked, waiting for that semaphore.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Primitives Contrast:</strong>
+                    <ul>
+                        <li><strong>Mutex vs. Binary Semaphore Ownership:</strong> A **Mutex is an ownership-driven mechanism**. Only the specific execution thread that acquired the mutex lock can release it. A **Semaphore is a signaling mechanism**. Any active thread can signal ($V(S)$) a binary semaphore to unblock a waiting process, regardless of which thread originally called wait ($P(S)$).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-deadlock">
+            <div class="card-header-row">
+                <h2>5. Deadlock Handling & The Banker's Framework</h2>
+                <button class="action-button" id="btn-deadlock" onclick="toggleTopicState('deadlock')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Mutual Exclusion: <strong>Exclusive Allocation</strong></div>
+                <div class="summary-badge">Hold & Wait: <strong>Retain and Request</strong></div>
+                <div class="summary-badge">No Preemption: <strong>Voluntary Release Only</strong></div>
+                <div class="summary-badge">Circular Wait: <strong>Cyclic Dependency Chain</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Four Coffman Conditions</div>
+                <p>Deadlocks can occur if and only if all four conditions hold simultaneously:</p>
+                <ul>
+                    <li><strong>Mutual Exclusion:</strong> At least one resource must be held in a non-shareable mode.</li>
+                    <li><strong>Hold and Wait:</strong> A process must currently hold at least one resource while waiting to acquire additional resources held by other processes.</li>
+                    <li><strong>No Preemption:</strong> Resources cannot be forcibly taken from a process; they must be released voluntarily after the process finishes its task.</li>
+                    <li><strong>Circular Wait:</strong> A closed chain of processes exists, where each process holds one or more resources needed by the next process in the chain.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Deadlock Mitigation Systems</div>
+                <ul>
+                    <li><strong>Prevention:</strong> Eliminates deadlocks by design by breaking at least one of the four Coffman conditions (e.g., enforcing a strict global ordering on resource acquisition to eliminate Circular Wait).</li>
+                    <li><strong>Avoidance (Banker's Algorithm):</strong> Dynamic monitoring strategy. The OS tracks resource allocation states and only grants requests if the resulting system state remains **Safe** (meaning a sequence exists ensuring all processes can eventually finish).
+                        <br>Matrix Validation Condition Equation:
+                        $$\text{Need}[i][j] = \text{Max}[i][j] - \text{Allocation}[i][j]$$
+                        A request is granted only if: $\text{Request} \le \text{Available}$ AND $\text{Request} \le \text{Need}$.
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-memory">
+            <div class="card-header-row">
+                <h2>6. Memory Management Foundations</h2>
+                <button class="action-button" id="btn-memory" onclick="toggleTopicState('memory')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Paging: <strong>Fixed Physical Allocation</strong></div>
+                <div class="summary-badge">Segmentation: <strong>Variable Logical Views</strong></div>
+                <div class="summary-badge">Internal Frag: <strong>Unused Allocated Block Space</strong></div>
+                <div class="summary-badge">External Frag: <strong>Unallocated Contiguous Gaps</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Paging Mechanics Framework</div>
+                <p>Divides physical memory into fixed-size blocks called **Frames** and logical memory into blocks of the same size called **Pages**. Eliminates external fragmentation but can cause **Internal Fragmentation** (wasted space in the last allocated page).</p>
+                
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Multi-Level Paging Address Translation Architecture</div>
+                <p>Used to avoid storing large, contiguous page tables in main memory. For a linear logical address space mapped through a multi-level index:</p>
+                $$\text{Logical Address Structure: } \langle p_1, p_2, \dots, p_k, d \rangle$$
+                <p>Where $d$ represents the page offset, bounded directly by the physical page size ($2^d = \text{Page Size}$).</p>
+                <ul>
+                    <li><strong>Page Table Entry (PTE) Components:</strong> Frame Number, Valid/Invalid bit, Dirty bit, Reference bit, and Protection bits.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Segmentation Principles</div>
+                <p>Maps logical addresses to variable-sized blocks based on user-defined structural modules (e.g., code, stack, heap). Prone to **External Fragmentation**, where total free space is sufficient to satisfy a allocation request, but the space is not contiguous.</p>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-replacement">
+            <div class="card-header-row">
+                <h2>7. Virtual Memory & Page Replacement Engines</h2>
+                <button class="action-button" id="btn-replacement" onclick="toggleTopicState('replacement')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">FIFO: <strong>Queue Order Eviction</strong></div>
+                <div class="summary-badge">Belady's: <strong>More Frames, More Faults Anomaly</strong></div>
+                <div class="summary-badge">LRU: <strong>Past Reference Eviction</strong></div>
+                <div class="summary-badge">Optimal: <strong>Future Reference Horizon</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Page Eviction Algorithms Matrix</div>
+                <ul>
+                    <li><strong>First-In, First-Out (FIFO):</strong> Evicts the oldest page brought into memory. Simple to manage but vulnerable to **Belady's Anomaly**, where allocating more physical page frames results in an *increase* in the number of page faults for certain reference strings.</li>
+                    <li><strong>Least Recently Used (LRU):</strong> Evicts the page that has not been accessed for the longest period. Relies on the principle of temporal locality. Does not suffer from Belady's Anomaly.</li>
+                    <li><strong>Optimal Algorithm (OPT):</strong> Evicts the page that will not be used for the longest period in the future. Serves as a theoretical baseline for performance evaluations, as it requires perfect knowledge of future references.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Thrashing Dynamics</div>
+                <p>Occurs when a process spends more time swapping pages in and out of disk than executing instructions. This happens when a process's allocated page frames drop below the minimum required to support its active **Working Set Model** ($\sum \text{Working Sets} > \text{Total Memory}$).</p>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-storage">
+            <div class="card-header-row">
+                <h2>8. File Systems & Disk Scheduling Core</h2>
+                <button class="action-button" id="btn-storage" onclick="toggleTopicState('storage')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">SSTF: <strong>Shortest Seek Vector Risk</strong></div>
+                <div class="summary-badge">SCAN: <strong>Elevator Boundary Bounce</strong></div>
+                <div class="summary-badge">C-SCAN: <strong>One-Way Uniform Return</strong></div>
+                <div class="summary-badge">LOOK: <strong>Reverses at Last Request</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">File Allocation Strategies</div>
+                <ul>
+                    <li><strong>Contiguous Allocation:</strong> Fast sequential access, but prone to external fragmentation.</li>
+                    <li><strong>Linked Allocation:</strong> Flexible size growth with zero external fragmentation, but slow random access and vulnerable to pointer corruption.</li>
+                    <li><strong>Indexed Allocation (e.g., Unix Inode):</strong> Uses multi-level index blocks (direct, single indirect, double indirect pointers) to support large files and fast random access.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Disk Arm Scheduling Evaluation Matrix</div>
+                <p>Optimizes physical disk head movement (Total Seek Distance track count summaries):</p>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Algorithm</th><th>Operational Strategy Description</th><th>Inherent System Behavioral Trade-offs</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>FCFS</strong></td><td>Processes I/O track requests strictly in the order they arrive.</td><td>Fair and simple, but often results in large seek distances.</td></tr>
+                            <tr><td><strong>SSTF</strong></td><td>Selects the request closest to the current disk arm position.</td><td>Minimizes seek time, but can cause **starvation** for tracks far from the head.</td></tr>
+                            <tr><td><strong>SCAN</strong></td><td>Moves the arm toward one end, servicing requests along the way, until it reaches the final **disk boundary**, then reverses.</td><td>Also called the *Elevator Algorithm*. Provides low variance but favors tracks near the middle.</td></tr>
+                            <tr><td><strong>C-SCAN</strong></td><td>Moves the arm from one end to the other, servicing requests, then immediately returns to the start without servicing requests on the return trip.</td><td>Provides a more uniform waiting time across all track positions.</td></tr>
+                            <tr><td><strong>LOOK / C-LOOK</strong></td><td>Similar to SCAN/C-SCAN, but the arm only travels as far as the **last request** in the current direction before reversing or returning.</td><td>Saves seek time by avoiding unnecessary trips to the physical disk boundaries.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Interactive Dashboard Logic
+        const OS_Registry = [
+            { id: "basics" },
+            { id: "threads" },
+            { id: "cpu" },
+            { id: "sync" },
+            { id: "deadlock" },
+            { id: "memory" },
+            { id: "replacement" },
+            { id: "storage" }
+        ];
+
+        function scrollToCard(targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initAppTracker() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_os_dashboard_progress')) || {};
+            
+            OS_Registry.forEach(module => {
+                const status = !!userProgress[module.id];
+                
+                // Sync Checkboxes
+                const chk = document.getElementById(`nav-chk-${module.id}`);
+                if (chk) chk.checked = status;
+
+                // Sync Card Action Buttons
+                const btn = document.getElementById(`btn-${module.id}`);
+                if (btn) {
+                    if (status) {
+                        btn.innerText = "✓ Mastered";
+                        btn.classList.add('completed');
+                    } else {
+                        btn.innerText = "Mark Mastered";
+                        btn.classList.remove('completed');
+                    }
+                }
+            });
+            evaluateMetrics();
+        }
+
+        function updateProgressState(id, statusValue) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_os_dashboard_progress')) || {};
+            userProgress[id] = statusValue;
+            localStorage.setItem('gate_os_dashboard_progress', JSON.stringify(userProgress));
+
+            const chk = document.getElementById(`nav-chk-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (chk) chk.checked = statusValue;
+            if (btn) {
+                if (statusValue) {
+                    btn.innerText = "✓ Mastered";
+                    btn.classList.add('completed');
+                } else {
+                    btn.innerText = "Mark Mastered";
+                    btn.classList.remove('completed');
+                }
+            }
+            evaluateMetrics();
+        }
+
+        function toggleTopicState(id) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_os_dashboard_progress')) || {};
+            updateProgressState(id, !userProgress[id]);
+        }
+
+        function syncCheckbox(id) {
+            const chk = document.getElementById(`nav-chk-${id}`);
+            if (chk) updateProgressState(id, chk.checked);
+        }
+
+        function evaluateMetrics() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_os_dashboard_progress')) || {};
+            let matchCounter = 0;
+
+            OS_Registry.forEach(module => {
+                if (userProgress[module.id] === true) matchCounter++;
+            });
+
+            const ratioFactor = OS_Registry.length > 0 ? Math.round((matchCounter / OS_Registry.length) * 100) : 0;
+            document.getElementById('metric-fill').style.width = ratioFactor + '%';
+            document.getElementById('metric-text').innerText = `${matchCounter}/${OS_Registry.length} Modules Mastered (${ratioFactor}%)`;
+        }
+
+        window.onload = initAppTracker;
+    </script>
+</body>
+</html>

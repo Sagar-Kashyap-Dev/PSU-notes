@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE — Computer Organization & Architecture (COA) Master Engine</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #059669;
+            --brand-accent: #d1fae5;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* Split-Pane Control Interface */
+        #app-sidebar {
+            width: 330px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 330px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1180px;
+            width: calc(100% - 330px);
+        }
+
+        /* Sidebar Panels */
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #a7f3d0; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #065f46; letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #cbd5e1; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #065f46; width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        /* Document Architecture Layouts */
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        /* Fact Summary Layouts */
+        .summary-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; background: var(--bg-workspace); padding: 1rem; border-radius: var(--radius-interactive); border: 1px solid var(--border-color); }
+        .summary-badge { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-bold); font-weight: 500; }
+        .summary-badge strong { color: #059669; }
+
+        .grid-block { margin-bottom: 2rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: #059669; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 0.75rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); }
+        th, td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        .alert-box ul { margin-left: 1.25rem; }
+        .alert-box li { color: #7f1d1d; }
+
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>COA Core Engine</h2>
+            <p>Architecture Specifications</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Engine Validation</div>
+            <div class="metric-value" id="metric-text">0/8 Modules Mastered</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Data & Control Path</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-arithmetic')"><span>1. Numbers & Booth Arithmetic</span><input type="checkbox" class="nav-checkbox" id="nav-chk-arithmetic" onclick="event.stopPropagation(); syncCheckbox('arithmetic')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-cpu-org')"><span>2. CPU Control & Cycle</span><input type="checkbox" class="nav-checkbox" id="nav-chk-cpu-org" onclick="event.stopPropagation(); syncCheckbox('cpu-org')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-addressing')"><span>3. Addressing Modes Vector</span><input type="checkbox" class="nav-checkbox" id="nav-chk-addressing" onclick="event.stopPropagation(); syncCheckbox('addressing')"></div></li>
+            
+            <div class="nav-heading">Memory Hierarchy</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-cache')"><span>4. Cache Mapping Mechanics</span><input type="checkbox" class="nav-checkbox" id="nav-chk-cache" onclick="event.stopPropagation(); syncCheckbox('cache')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-memory-hierarchy')"><span>5. Main & Secondary Storage</span><input type="checkbox" class="nav-checkbox" id="nav-chk-memory-hierarchy" onclick="event.stopPropagation(); syncCheckbox('memory-hierarchy')"></div></li>
+            
+            <div class="nav-heading">I/O & Parallelism</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-io')"><span>6. Interrupts & DMA Engines</span><input type="checkbox" class="nav-checkbox" id="nav-chk-io" onclick="event.stopPropagation(); syncCheckbox('io')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-pipelining')"><span>7. Pipelining & Hazard Matrices</span><input type="checkbox" class="nav-checkbox" id="nav-chk-pipelining" onclick="event.stopPropagation(); syncCheckbox('pipelining')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-classification')"><span>8. RISC/CISC & Flynn Scale</span><input type="checkbox" class="nav-checkbox" id="nav-chk-classification" onclick="event.stopPropagation(); syncCheckbox('classification')"></div></li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>COA Syllabus Specification</h1>
+            <p>Instruction cycle boundaries, cache set-associativity logic, pipeline hazards, and hardware interfacing mechanisms.</p>
+        </header>
+
+        <section class="content-card" id="sec-arithmetic">
+            <div class="card-header-row">
+                <h2>1. Number Representation & Signed Arithmetic</h2>
+                <button class="action-button" id="btn-arithmetic" onclick="toggleTopicState('arithmetic')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">IEEE 754 Single: <strong>1 Sign | 8 Exp | 23 Mantissa</strong></div>
+                <div class="summary-badge">IEEE 754 Double: <strong>1 Sign | 11 Exp | 52 Mantissa</strong></div>
+                <div class="summary-badge">Bias Constant: <strong>$2^{k-1} - 1$ Factor</strong></div>
+                <div class="summary-badge">Booth Recoding: <strong>Bit-Pair Multiplier Reduction</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">IEEE 754 Floating-Point Framework</div>
+                <p>Normal floating-point values are structurally calculated as follows:</p>
+                $$\text{Value} = (-1)^{\text{Sign}} \times (1.\text{Mantissa}) \times 2^{\text{Exponent} - \text{Bias}}$$
+                <ul>
+                    <li><strong>Single-Precision (32-bit):</strong> Bias = 127. Exponent range `00000001` ($1$) to `11111110` ($254$). `00000000` is reserved for subnormal numbers/zero; `11111111` is reserved for $\pm \infty$ and NaN.</li>
+                    <li><strong>Double-Precision (64-bit):</strong> Bias = 1023.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Booth Multiplier Algorithm Logic</div>
+                <p>Enables efficient multiplication of signed 2's complement integers by looking at adjacent bit pairs $Q_n$ and $Q_{n+1}$ (initially $Q_{n+1} = 0$):</p>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Current Bit ($Q_n$)</th><th>Previous Bit ($Q_{n+1}$)</th><th>ALU Operational Response Action</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>0</td><td>0</td><td>No algebraic operations. Shift right arithmetically.</td></tr>
+                            <tr><td>0</td><td>1</td><td>Add Multiplicand ($M$) to Accumulator ($A$). Shift right arithmetically.</td></tr>
+                            <tr><td>1</td><td>0</td><td>Subtract Multiplicand ($M$) from Accumulator ($A$). Shift right arithmetically.</td></tr>
+                            <tr><td>1</td><td>1</td><td>No algebraic operations. Shift right arithmetically.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-cpu-org">
+            <div class="card-header-row">
+                <h2>2. CPU Internal Organization & Instruction Cycles</h2>
+                <button class="action-button" id="btn-cpu-org" onclick="toggleTopicState('cpu-org')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Program Counter: <strong>Next Address Reference</strong></div>
+                <div class="summary-badge">Instruction Reg: <strong>Opcode Storage Buffer</strong></div>
+                <div class="summary-badge">MAR / MDR: <strong>Bus Hardware Ports</strong></div>
+                <div class="summary-badge">Control Unit: <strong>Hardwired vs. Microprogrammed</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Hardware Register Assembly</div>
+                <ul>
+                    <li><strong>PC (Program Counter):</strong> Tracks the main memory address of the next instruction slated to execute.</li>
+                    <li><strong>IR (Instruction Register):</strong> Holds the binary pattern of the instruction currently being decoded.</li>
+                    <li><strong>MAR (Memory Address Register) & MDR (Memory Data Register):</strong> Interface directly with the physical system buses to coordinate reading or writing memory.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Sub-Cycle Execution Breakdown</div>
+                <p>Every instruction travels through a distinct state machine phase sequence:</p>
+                $$\text{Fetch} \longrightarrow \text{Decode} \longrightarrow \text{Evaluate Effective Address} \longrightarrow \text{Execute Data Operations} \longrightarrow \text{Write-Back}$$
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Control Unit Architectures Comparison</div>
+                <ul>
+                    <li><strong>Hardwired Control Unit:</strong> Built using combinational and sequential hardware circuits (logic gates, decoders). It is extremely fast but inflexible, meaning any change to the instruction set requires redesigning the physical layout.</li>
+                    <li><strong>Microprogrammed Control Unit:</strong> Uses low-level control code stored in a dedicated **Control Memory (ROM)**. It updates execution behavior via code modification rather than hardware alterations, though it incurs a latency penalty for memory lookups.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-addressing">
+            <div class="card-header-row">
+                <h2>3. Instruction Formats & Addressing Modes</h2>
+                <button class="action-button" id="btn-addressing" onclick="toggleTopicState('addressing')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Immediate: <strong>Operand is inside Instruction</strong></div>
+                <div class="summary-badge">Direct: <strong>EA = Address Field</strong></div>
+                <div class="summary-badge">Indirect: <strong>EA = Memory[Address Field]</strong></div>
+                <div class="summary-badge">Relative: <strong>EA = PC + Offset</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Effective Address (EA) Calculations Framework</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Addressing Schema Mode</th><th>Effective Address Math Mapping Function</th><th>Main Memory References Required</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Immediate</strong></td><td>No explicit address (Operand is embedded in the instruction)</td><td>0 Memory References</td></tr>
+                            <tr><td><strong>Register Direct</strong></td><td>$\text{EA} = R_i$ (Data resides inside a CPU register)</td><td>0 Memory References</td></tr>
+                            <tr><td><strong>Register Indirect</strong></td><td>$\text{EA} = [R_i]$ (Register holds the target pointer)</td><td>1 Memory Reference</td></tr>
+                            <tr><td><strong>Absolute / Direct</strong></td><td>$\text{EA} = A$ (Address field contains target location)</td><td>1 Memory Reference</td></tr>
+                            <tr><td><strong>Memory Indirect</strong></td><td>$\text{EA} = [A]$ (Address field points to a pointer)</td><td>2 Memory References</td></tr>
+                            <tr><td><strong>PC-Relative</strong></td><td>$\text{EA} = \text{PC} + \text{Offset}$ (Used for local branching)</td><td>1 Memory Reference</td></tr>
+                            <tr><td><strong>Indexed / Base-Register</strong></td><td>$\text{EA} = R_{\text{base/index}} + \text{Offset}$ (Used for array steps)</td><td>1 Memory Reference</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-cache">
+            <div class="card-header-row">
+                <h2>4. Cache Memory Optimization Core</h2>
+                <button class="action-button" id="btn-cache" onclick="toggleTopicState('cache')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Direct Map: <strong>Line = Block Modulo Cache-Lines</strong></div>
+                <div class="summary-badge">Fully Associative: <strong>Place Block in Any Line Slot</strong></div>
+                <div class="summary-badge">Set Associative: <strong>Set = Block Modulo Total-Sets</strong></div>
+                <div class="summary-badge">Miss Penalty: <strong>Main Memory Fetch Overhead Delay</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Address Field Bit-Slicing Architectures</div>
+                <p>Main memory blocks are mapped into cache lines by slicing the physical address bits into distinct hardware fields:</p>
+                [Image diagram of physical address field bit-splitting layout comparing Direct Mapping tag-line-word fields with Set-Associative tag-set-word fields]
+                <ul>
+                    <li><strong>Direct Mapping Fields:</strong> $\langle \text{Tag}, \text{Line Index}, \text{Block Offset} \rangle$
+                        <br>Line Index size is bounded by the total number of lines: $$\text{Lines} = \frac{\text{Cache Size}}{\text{Block Size}}$$
+                    </li>
+                    <li><strong>$k$-Way Set Associative Mapping Fields:</strong> $\langle \text{Tag}, \text{Set Index}, \text{Block Offset} \rangle$
+                        <br>Set Index size is bounded by the total number of sets: $$\text{Sets} = \frac{\text{Cache Size}}{k \times \text{Block Size}}$$
+                    </li>
+                    <li><strong>Fully Associative Mapping Fields:</strong> $\langle \text{Tag}, \text{Block Offset} \rangle$ (Blocks can reside in any cache line slot; tags are searched in parallel using content-addressable hardware).</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Performance Equation Matrices</div>
+                <p>Let $h$ represent cache hit ratio, $T_c$ denote internal cache lookup access latency, and $T_m$ denote main memory access latency:</p>
+                <ul>
+                    <li><strong>Simultaneous Access Average Access Latency:</strong>
+                        $$T_{\text{avg}} = h \cdot T_c + (1 - h) \cdot T_m$$
+                    </li>
+                    <li><strong>Hierarchical / Hierarchical Access Average Access Latency:</strong>
+                        $$T_{\text{avg}} = T_c + (1 - h) \cdot T_m$$
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-memory-hierarchy">
+            <div class="card-header-row">
+                <h2>5. Memory Hierarchy & Interleaving</h2>
+                <button class="action-button" id="btn-memory-hierarchy" onclick="toggleTopicState('memory-hierarchy')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">SRAM: <strong>6-Transistor Internal Cache Cell</strong></div>
+                <div class="summary-badge">DRAM: <strong>1-Capacitor Refresh-Driven Memory Cell</strong></div>
+                <div class="summary-badge">Interleaving: <strong>Parallel Module Memory Structuring</strong></div>
+                <div class="summary-badge">Disk Latency: <strong>Seek + Rotational + Transfer</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Main Memory Technologies</div>
+                <ul>
+                    <li><strong>SRAM (Static RAM):</strong> Built using multi-transistor cross-coupled latches (typically 6 transistors per cell). Fast and does not require periodic refresh cycles. Used for CPU caches.</li>
+                    <li><strong>DRAM (Dynamic RAM):</strong> Stores bits as charge on a single capacitor paired with an access transistor. It is highly dense and inexpensive, but requires periodic refresh cycles to counteract charge leakage. Used for system main memory.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Memory Interleaving Throughput Engine</div>
+                <p>Distributes consecutive memory addresses across distinct physical memory modules to support overlapping access cycles:</p>
+                <ul>
+                    <li><strong>Low-Order Interleaving:</strong> Uses the least significant bits of the address to select the memory module. This maps consecutive memory addresses to consecutive modules, allowing parallel pipelined access to consecutive data blocks.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-io">
+            <div class="card-header-row">
+                <h2>6. I/O Interfaces, Interrupts & DMA Cores</h2>
+                <button class="action-button" id="btn-io" onclick="toggleTopicState('io')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Programmed I/O: <strong>Polling-Driven CPU Stalls</strong></div>
+                <div class="summary-badge">Interrupt I/O: <strong>Asynchronous Event Signals</strong></div>
+                <div class="summary-badge">DMA Controller: <strong>Bus Master Cycle Stealer</strong></div>
+                <div class="summary-badge">Vectored Interrupt: <strong>Hardware Table Address Vector</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Data Transfer Operational Control Mechanics</div>
+                <ul>
+                    <li><strong>Programmed I/O:</strong> The CPU repeatedly checks device status registers in a loop ("polling"). This wastes CPU clock cycles in idle states.</li>
+                    <li><strong>Interrupt-Driven I/O:</strong> Hardware devices signal the CPU asynchronously over dedicated lines when data is ready. The CPU suspends its current execution path, saves its state context, and jumps to the corresponding **Interrupt Service Routine (ISR)**.</li>
+                    <li><strong>Direct Memory Access (DMA):</strong> Relieves the CPU of high-volume data transfer overhead. The DMA controller takes control of the system buses from the CPU ("cycle stealing" or "burst block mode") to transfer data directly between I/O peripherals and main memory.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-pipelining">
+            <div class="card-header-row">
+                <h2>7. Instruction Pipelining & Performance Hazard Profiles</h2>
+                <button class="action-button" id="btn-pipelining" onclick="toggleTopicState('pipelining')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Structural Hazard: <strong>Hardware Resource Collision</strong></div>
+                <div class="summary-badge">Data Hazard: <strong>RAW | WAR | WAW Dependencies</strong></div>
+                <div class="summary-badge">Control Hazard: <strong>Branch Misprediction Penalties</strong></div>
+                <div class="summary-badge">Ideal Speedup: <strong>$S_n = k$ (Stage Factor Lower Bound)</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Pipeline Throughput Mathematics</div>
+                <p>For an instruction stream executing on a $k$-stage pipeline processing $n$ instructions:</p>
+                <ul>
+                    <li><strong>Total Execution Time (Ideal Conditions):</strong>
+                        $$T_k = [k + (n - 1)] \cdot \tau$$
+                        *Where $\tau$ is the pipeline clock period, dictated by the slowest stage delay plus latch overhead:* $\tau = \max(t_{\text{stage}}) + t_{\text{latch}}$.
+                    </li>
+                    <li><strong>Actual Realized Performance Speedup Metrics:</strong>
+                        $$S = \frac{\text{Non-Pipelined Execution Time}}{\text{Pipelined Execution Time}} = \frac{n \cdot t_n}{[k + (n - 1)] \cdot \tau + \text{Stall Cycles}}$$
+                        As $n \to \infty$ under zero-hazard conditions, the speedup approaches the number of stages ($S \to k$).
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Data Dependency Hazards Taxonomy</div>
+                <ul>
+                    <li><strong>Read-After-Write (RAW / True Dependency):</strong> Instruction $I_j$ tries to read a source register before instruction $I_i$ writes to it. Resolved by **Operand Forwarding** or injecting stall cycles (bubbles).</li>
+                    <li><strong>Write-After-Read (WAR / Anti-Dependency):</strong> Instruction $I_j$ tries to write to a target register before instruction $I_i$ reads it.</li>
+                    <li><strong>Write-After-Write (WAW / Output Dependency):</strong> Instruction $I_j$ tries to write to a register before instruction $I_i$ writes to it.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-classification">
+            <div class="card-header-row">
+                <h2>8. Processing Framework Classifications</h2>
+                <button class="action-button" id="btn-classification" onclick="toggleTopicState('classification')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">RISC: <strong>Fixed Format Single-Cycle Pipes</strong></div>
+                <div class="summary-badge">CISC: <strong>Variable Length Complex Instructions</strong></div>
+                <div class="summary-badge">SISD / SIMD: <strong>Uniprocessor vs. Vector Frameworks</strong></div>
+                <div class="summary-badge">MIMD: <strong>Parallel Distributed Cluster Nodes</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Instruction Set Architectures Comparison</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Architectural Metric Property</th><th>Reduced Instruction Set Computer (RISC)</th><th>Complex Instruction Set Computer (CISC)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Instruction Length</strong></td><td>Fixed size formatting (typically 32-bit words).</td><td>Variable length instructions depending on the operation.</td></tr>
+                            <tr><td><strong>Memory Access Modes</strong></td><td>Enforces strict **Load/Store** architectures.</td><td>Allows instructions to perform arithmetic operations directly on memory.</td></tr>
+                            <tr><td><strong>Control Path Implementation</strong></td><td>Hardwired control logic for single-cycle execution.</td><td>Microprogrammed control logic parsing complex steps.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Flynn's Parallel Computing Taxonomy</div>
+                <p>Classifies processing engines based on the number of concurrent Instruction Streams ($I$) and Data Streams ($D$):</p>
+                <ol>
+                    <li><strong>SISD (Single Instruction, Single Data):</strong> Standard scalar uniprocessors executing sequential operations.</li>
+                    <li><strong>SIMD (Single Instruction, Multiple Data):</strong> Vector or array processors where a single control unit broadcasts the same instruction to multiple processing elements working on distinct data blocks.</li>
+                    <li><strong>MISD (Multiple Instruction, Single Data):</strong> Rare structural layout used for fault-tolerant computing systems.</li>
+                    <li><strong>MIMD (Multiple Instruction, Multiple Data):</strong> Distributed parallel computers and modern multi-core chips where independent processors concurrently execute distinct instruction streams on distinct data pools.</li>
+                </ol>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Interactive Dashboard Tracking Logic
+        const COA_Registry = [
+            { id: "arithmetic" },
+            { id: "cpu-org" },
+            { id: "addressing" },
+            { id: "cache" },
+            { id: "memory-hierarchy" },
+            { id: "io" },
+            { id: "pipelining" },
+            { id: "classification" }
+        ];
+
+        function scrollToCard(targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initAppTracker() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_coa_dashboard_progress')) || {};
+            
+            COA_Registry.forEach(module => {
+                const status = !!userProgress[module.id];
+                
+                // Sync Checkboxes
+                const chk = document.getElementById(`nav-chk-${module.id}`);
+                if (chk) chk.checked = status;
+
+                // Sync Card Action Buttons
+                const btn = document.getElementById(`btn-${module.id}`);
+                if (btn) {
+                    if (status) {
+                        btn.innerText = "✓ Mastered";
+                        btn.classList.add('completed');
+                    } else {
+                        btn.innerText = "Mark Mastered";
+                        btn.classList.remove('completed');
+                    }
+                }
+            });
+            evaluateMetrics();
+        }
+
+        function updateProgressState(id, statusValue) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_coa_dashboard_progress')) || {};
+            userProgress[id] = statusValue;
+            localStorage.setItem('gate_coa_dashboard_progress', JSON.stringify(userProgress));
+
+            const chk = document.getElementById(`nav-chk-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (chk) chk.checked = statusValue;
+            if (btn) {
+                if (statusValue) {
+                    btn.innerText = "✓ Mastered";
+                    btn.classList.add('completed');
+                } else {
+                    btn.innerText = "Mark Mastered";
+                    btn.classList.remove('completed');
+                }
+            }
+            evaluateMetrics();
+        }
+
+        function toggleTopicState(id) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_coa_dashboard_progress')) || {};
+            updateProgressState(id, !userProgress[id]);
+        }
+
+        function syncCheckbox(id) {
+            const chk = document.getElementById(`nav-chk-${id}`);
+            if (chk) updateProgressState(id, chk.checked);
+        }
+
+        function evaluateMetrics() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_coa_dashboard_progress')) || {};
+            let matchCounter = 0;
+
+            COA_Registry.forEach(module => {
+                if (userProgress[module.id] === true) matchCounter++;
+            });
+
+            const ratioFactor = COA_Registry.length > 0 ? Math.round((matchCounter / COA_Registry.length) * 100) : 0;
+            document.getElementById('metric-fill').style.width = ratioFactor + '%';
+            document.getElementById('metric-text').innerText = `${matchCounter}/${COA_Registry.length} Modules Mastered (${ratioFactor}%)`;
+        }
+
+        window.onload = initAppTracker;
+    </script>
+</body>
+</html>

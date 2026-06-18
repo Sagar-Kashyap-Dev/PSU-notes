@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COA Quick Revision Guide</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --border-color: #334155;
+            --success-color: #10b981;
+            --formula-bg: #090d16;
+            --table-border: #475569;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .reset-btn {
+            background-color: #f43f5e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .reset-btn:hover {
+            background-color: #e11d48;
+        }
+
+        .topic-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .topic-card.completed {
+            opacity: 0.4;
+            filter: grayscale(60%);
+            border-color: var(--success-color);
+        }
+
+        .topic-card.completed h2 {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--accent-color);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            user-select: none;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            transition: all 0.2s;
+        }
+
+        .checkbox-container:hover {
+            background: rgba(56, 189, 248, 0.2);
+        }
+
+        .checkbox-container input {
+            cursor: pointer;
+            accent-color: var(--success-color);
+            width: 16px;
+            height: 16px;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        ul {
+            margin: 0 0 15px 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .sub-list {
+            list-style-type: circle;
+            margin-top: 4px;
+        }
+
+        .formula-box {
+            background-color: var(--formula-bg);
+            padding: 12px 16px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+            font-family: "Consolas", "Courier New", monospace;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 15px 0;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            border: 1px solid var(--table-border);
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-color);
+        }
+
+        .none-text {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>COA Ultimate MCQ Revision Portal</h1>
+        <p>Track your Architecture preparation. Check off topics as you master them.</p>
+        <button class="reset-btn" onclick="clearProgress()">Reset All Progress</button>
+    </header>
+
+    <div class="topic-card" data-topic="coa_basics">
+        <div class="card-header">
+            <h2>1. COA Basics</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>COA deals explicitly with the operational structure and behavior of computer system hardware components.</li>
+            <li><strong>Organization:</strong> "How things are connected/interacted" (Hardware signals, interfaces, peripherals).</li>
+            <li><strong>Architecture:</strong> "What the system does" (Instruction Set Architecture (ISA), addressing modes, registers visible to the programmer).</li>
+        </ul>
+        <div class="section-title">Common MCQ Traps</div>
+        <ul>
+            <li>CPU = ALU + Control Unit + Internal Registers.</li>
+            <li>ALU executes raw arithmetic and logical bitwise computations.</li>
+            <li>Control Unit generates timing/control signals to direct hardware operations.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <p class="none-text">None.</p>
+    </div>
+
+    <div class="topic-card" data-topic="cpu_components">
+        <div class="card-header">
+            <h2>2. CPU Components & Registers</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Internal Architectural Registers</div>
+        <ul>
+            <li><strong>Accumulator (AC):</strong> Holds execution operands and temporary immediate calculation results natively inside the ALU.</li>
+            <li><strong>Program Counter (PC):</strong> Holds the explicit memory <strong>address of the next instruction</strong> scheduled to be fetched.</li>
+            <li><strong>Instruction Register (IR):</strong> Holds the actual binary macrocode of the <strong>current instruction</strong> being decoded/executed.</li>
+            <li><strong>MAR (Memory Address Register):</strong> Holds the specific target physical address currently being accessed for read/write.</li>
+            <li><strong>MDR / MBR (Memory Data / Buffer Register):</strong> Acts as a temporary hold buffer for data bytes received from or sent directly to memory storage.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>PC &rarr; Always holds address of the <strong>next</strong> instruction.</li>
+            <li>IR &rarr; Always holds the <strong>current execution code</strong> block itself.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="instruction_cycle">
+        <div class="card-header">
+            <h2>3. Instruction Cycle</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Sequential Phases</div>
+        <div class="formula-box" style="text-align: center;">
+            <strong>Fetch</strong> &rarr; <strong>Decode</strong> &rarr; <strong>Execute</strong> &rarr; <strong>Store (Write Back)</strong>
+        </div>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Fetch phase:</strong> Transfers raw instruction blocks directly from Main Memory into the CPU's internal Instruction Register (IR).</li>
+            <li><strong>Execute phase:</strong> Activates hardware ALU operations or logic pathways to process the decoded code instructions.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="instruction_formats">
+        <div class="card-header">
+            <h2>4. Instruction Formats</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Structural Formats</div>
+        <ul>
+            <li><strong>Zero-Address Format:</strong> Relies completely on an internal evaluation <strong>Stack</strong> architecture (e.g., uses implicit <code>PUSH</code> / <code>POP</code> / <code>ADD</code> triggers).</li>
+            <li><strong>One-Address Format:</strong> Utilizes an implicit dedicated <strong>Accumulator (AC)</strong> register for one of its operands.</li>
+            <li><strong>Two-Address Format:</strong> Specifies two distinct address fields (Source and Destination mix, e.g., <code>ADD R1, R2</code>).</li>
+            <li><strong>Three-Address Format:</strong> Explicitly separates arguments completely into [Destination, Source 1, Source 2] structures.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Most flexible format with least program line counts &rarr; <strong>Three-Address Instruction</strong></li>
+            <li>Most compact memory footprint encoding per individual instruction &rarr; <strong>Zero-Address (Stack-based) Instruction</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="addressing_modes">
+        <div class="card-header">
+            <h2>5. Addressing Modes</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Modes & Effective Address (EA) Mechanics</div>
+        <ul>
+            <li><strong>Immediate Mode:</strong> Operand value is explicitly part of the instruction fields itself. (Zero memory access overhead).</li>
+            <li><strong>Direct Mode:</strong> Instruction address field directly holds the exact address target location of the operand. (EA = Address Field).</li>
+            <li><strong>Indirect Mode:</strong> Instruction address field holds a pointer pointing to another address where the operand resides. Requires multiple pointers memory hops. (EA = Memory[Address Field]).</li>
+            <li><strong>Register Mode:</strong> Operand value resides natively within an internal designated general-purpose CPU register. (No memory access).</li>
+            <li><strong>Register Indirect Mode:</strong> Designated register contains the memory address pointer to the actual operand. (EA = [Register]).</li>
+            <li><strong>Indexed / Base Register Mode:</strong> Target location is evaluated by adding a fixed reference offset to a dynamic tracking register. (EA = Base/Index Register + Offset value).</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Fastest overall execution mode &rarr; <strong>Immediate Addressing</strong></li>
+            <li>Most programmatic flexibility but suffers from double-memory read cycle latency &rarr; <strong>Indirect Addressing</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="alu_details">
+        <div class="card-header">
+            <h2>6. ALU (Arithmetic Logic Unit)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Internal Operations</div>
+        <ul>
+            <li>Executes standard Arithmetic computations (Addition, Subtraction, Multiplication).</li>
+            <li>Processes fundamental Logical gates (AND, OR, NOT, XOR).</li>
+            <li>Applies structural Bitwise Shift variations (Arithmetic, Logical, Circular rotations).</li>
+        </ul>
+        <div class="section-title">Common MCQs Trap</div>
+        <ul>
+            <li>The ALU is strictly a computational data path. It does <strong>NOT</strong> handle, schedule, or route system memory allocations or control parameters.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="control_unit">
+        <div class="card-header">
+            <h2>7. Control Unit (CU) Architecture</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Design Paradigms</div>
+        <ul>
+            <li><strong>Hardwired Control Unit:</strong> Implemented via raw combinational logic gate state circuits, flip-flops, and encoders. Fixed logic. Extremely fast execution speed. High design modification difficulty.</li>
+            <li><strong>Microprogrammed Control Unit:</strong> Control signals are generated by parsing internal sequences of primitive control instructions (microcode) stored inside a specialized, dedicated high-speed Control Memory. Slower execution step overhead. High flexibility.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Easily modified, updated, or structurally extended &rarr; <strong>Microprogrammed CU</strong></li>
+            <li>Provides absolute peak execution speeds &rarr; <strong>Hardwired CU</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="memory_hierarchy">
+        <div class="card-header">
+            <h2>8. Memory Hierarchy</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Architectural Layout Order (Fastest/Costliest &rarr; Slowest/Cheapest)</div>
+        <div class="formula-box" style="text-align: center;">
+            <strong>Internal Registers</strong> &rarr; <strong>Cache Memory (SRAM)</strong> &rarr; <strong>Main Memory (DRAM)</strong> &rarr; <strong>Secondary Storage (SSD/HDD)</strong>
+        </div>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Fastest memory structure and smallest logical storage block component within a CPU &rarr; <strong>Registers</strong></li>
+            <li>Largest cost efficiency and overall capacity metric &rarr; <strong>Secondary Storage</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="cache_mapping">
+        <div class="card-header">
+            <h2>9. Cache Memory Concepts & Mapping</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Principles</div>
+        <ul>
+            <li>Temporarily stores frequently used instruction blocks to maximize processor speed via the principle of <strong>Locality of Reference</strong> (Spatial and Temporal).</li>
+        </ul>
+        <div class="section-title">Mapping Strategies</div>
+        <ul>
+            <li><strong>Direct Mapping:</strong> Each Main Memory block maps exclusively to exactly one specific predetermined Cache line frame. Highly prone to thrashing conflicts. Simple to implement.</li>
+            <li><strong>Fully Associative Mapping:</strong> Main Memory blocks can reside anywhere within any vacant Cache line dynamically. Maximizes efficiency but requires highly complex parallel tag matching hardware.</li>
+            <li><strong>K-Way Set Associative Mapping:</strong> Memory is split into sets. A block maps to a designated set but can reside anywhere within that set's internal lines (Combines best of both).</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Yields optimal hit performance with minimal mapping conflicts &rarr; <strong>Associative Mapping</strong></li>
+            <li>Least expensive hardware footprint and simplest architecture layout &rarr; <strong>Direct Mapping</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="cache_formulas">
+        <div class="card-header">
+            <h2>10. Cache Performance Metrics & Formulas</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Direct Mapping Frame Association Target</div>
+        <div class="formula-box">
+            Target Cache Line Index = (Memory Block Number) MOD (Total Lines in Cache Space)
+        </div>
+        <div class="section-title">Hit Dynamics Metrics</div>
+        <div class="formula-box">
+            Hit Ratio = Total Cache Hits / Total Memory Access Requests<br><br>
+            Miss Ratio = 1 &minus; Hit Ratio = Total Cache Misses / Total Memory Access Requests
+        </div>
+        <div class="section-title">Average Memory Access Time (AMAT) Formula</div>
+        <div class="formula-box">
+            AMAT = Hit Time + (Miss Rate &times; Miss Penalty)
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="main_memory">
+        <div class="card-header">
+            <h2>11. Main Memory</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Subdivisions</div>
+        <ul>
+            <li><strong>RAM (Random Access Memory):</strong> Volatile working workspace. Requires power to preserve logical states. Uses <strong>SRAM</strong> for fast cache configurations and <strong>DRAM</strong> for dense main system modules.</li>
+            <li><strong>ROM (Read Only Memory):</strong> Non-volatile structural system bios memory. Permanent layout.</li>
+        </ul>
+        <div class="section-title">ROM Architecture Configurations</div>
+        <ul>
+            <li><strong>PROM:</strong> Programmable ROM (Writable exactly once).</li>
+            <li><strong>EPROM:</strong> Erasable Programmable ROM (Data erased via concentrated Ultra-Violet exposure).</li>
+            <li><strong>EEPROM:</strong> Electrically Erasable Programmable ROM (Erased via internal electrical charge pulses).</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="pipelining">
+        <div class="card-header">
+            <h2>12. Pipelining</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Operational Principle</div>
+        <ul>
+            <li>Maximizes overall Instruction **Throughput** by overlapping separate sequential processing execution stages concurrently across incoming commands.</li>
+        </ul>
+        <div class="section-title">Standard Processing Pipeline Stages</div>
+        <div class="formula-box" style="text-align: center;">
+            <strong>Fetch (IF)</strong> &rarr; <strong>Decode (ID)</strong> &rarr; <strong>Execute (EX)</strong> &rarr; <strong>Memory Access (MEM)</strong> &rarr; <strong>Write Back (WB)</strong>
+        </div>
+        <div class="section-title">Common MCQs Metrics</div>
+        <ul>
+            <li>Under ideal conditions without stall bubbles, the maximum architectural speedup achieved via pipelining is mathematically equal to the total count of internal **Pipeline Stages (k)**.</li>
+            <li>Pipelining improves <strong>Throughput</strong> (completed operations per unit time); it does <strong>NOT</strong> reduce the individual structural instruction latency time.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="pipeline_hazards">
+        <div class="card-header">
+            <h2>13. Pipeline Hazards</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Hazard Core Categories</div>
+        <ul>
+            <li><strong>Structural Hazard:</strong> Resource conflict loops occurring when two separate active pipeline instructions try to use the same physical hardware component simultaneously (e.g., trying to access a single-ported main memory during both Fetch and MEM stages).</li>
+            <li><strong>Data Hazard:</strong> Occurs when an instruction depends on the data outcome result of a preceding instruction still active inside the pipeline stages. Includes Write-After-Read (WAR), Read-After-Write (RAW), and Write-After-Write (WAW) dependencies.</li>
+            <li><strong>Control Hazard (Branch Hazard):</strong> Caused by unconditional jumps or conditional branch operations that modify the Program Counter. The pipeline cannot safely predict the next fetch target instructions immediately, introducing stall cycles.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Branch operations or program jump statements systematically trigger **Control Hazards**.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="pipeline_performance">
+        <div class="card-header">
+            <h2>14. Pipelining Performance Formula</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Speedup (S) Equation</div>
+        <div class="formula-box">
+            Speedup (S) = Time taken without a pipeline (T<sub>n</sub>) / Time taken using a pipeline (T<sub>p</sub>)<br><br>
+            S = (n &times; t<sub>n</sub>) / [ (k + n &minus; 1) &times; t<sub>p</sub> ]<br><br>
+            Where:<br>
+            n = Total count of instructions parsed<br>
+            k = Count of pipeline stages available<br>
+            t<sub>p</sub> = Processing clock cycle period of the pipeline
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="risc_cisc">
+        <div class="card-header">
+            <h2>15. RISC vs CISC Architecture</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Architectural Attribute</th>
+                    <th>RISC (Reduced Instruction Set Computer)</th>
+                    <th>CISC (Complex Instruction Set Computer)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Instruction Complexity</strong></td>
+                    <td>Simple, elementary instructions executing in a single clock cycle</td>
+                    <td>Complex, variable instructions spanning multiple clock cycles</td>
+                </tr>
+                <tr>
+                    <td><strong>Instruction Size</strong></td>
+                    <td><strong>Fixed instruction encoding size</strong> (e.g., 32-bit constant)</td>
+                    <td><strong>Variable instruction encoding size</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>Internal Registers</strong></td>
+                    <td>Large count of general-purpose internal registers</td>
+                    <td>Limited internal register resources available</td>
+                </tr>
+                <tr>
+                    <td><strong>Addressing Modes</strong></td>
+                    <td>Very few, highly optimized simple modes</td>
+                    <td>Large variety of complex addressing modes</td>
+                </tr>
+                <tr>
+                    <td><strong>Memory Interaction</strong></td>
+                    <td>Strictly via <code>LOAD</code> / <code>STORE</code> explicit instructions only</td>
+                    <td>Direct memory-to-memory data processing support</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="topic-card" data-topic="io_organization">
+        <div class="card-header">
+            <h2>16. I/O Organization & DMA</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Data Transmission Methods</div>
+        <ul>
+            <li><strong>Programmed I/O:</strong> The processor loops in a busy-wait state continuously checking device status registers. Highly inefficient. CPU is completely locked up.</li>
+            <li><strong>Interrupt-Driven I/O:</strong> Device hardware issues an asynchronous interrupt signal when ready. The CPU can handle other computations in the meantime, avoiding idle waiting.</li>
+            <li><strong>DMA (Direct Memory Access):</strong> An independent specialized hardware module handles data block transmission streams directly to/from main memory, bypassing the CPU completely.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Fastest overall physical I/O transfer configuration mechanism &rarr; <strong>DMA</strong></li>
+            <li>When processing an interrupt, the CPU must always systematically save its current state environment flag parameters and PC counter address to the **Stack**.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="computer_arithmetic">
+        <div class="card-header">
+            <h2>17. Computer Arithmetic & Representation</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Floating Point IEEE 754 Standard Layouts</div>
+        <ul>
+            <li>Used globally to map precision real decimal numbers inside computer hardware environments.</li>
+            <li><strong>Core Split Fields:</strong> [ Sign Bit (S) | Biased Exponent (E) | Mantissa / Fraction (M) ]</li>
+            <li>Single Precision (32-bit total): 1 Sign bit + 8 Exponent bits + 23 Mantissa bits.</li>
+            <li>Double Precision (64-bit total): 1 Sign bit + 11 Exponent bits + 52 Mantissa bits.</li>
+        </ul>
+        <div class="section-title">Sign/Complement Representations</div>
+        <ul>
+            <li><strong>1's Complement:</strong> Inverts all raw binary bits (0 &rarr; 1, 1 &rarr; 0).</li>
+            <li><strong>2's Complement:</strong> Formed by adding 1 directly to the least significant bit (LSB) of the 1's complement representation. (2's Comp = 1's Comp + 1).</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Modern computer system hardware uses **2's complement representation** universally to process integer arithmetic subtraction and sign validation tasks.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="performance_metrics">
+        <div class="card-header">
+            <h2>18. System Performance Metrics & Formulas</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Total CPU Execution Time Formula</div>
+        <div class="formula-box">
+            CPU Time = Instruction Count (IC) &times; Cycles Per Instruction (CPI) &times; Clock Cycle Time (&tau;)<br><br>
+            Or:<br>
+            CPU Time = [ Instruction Count &times; CPI ] / Clock Rate (f)
+        </div>
+        <div class="section-title">CPI & MIPS Calculation Mappings</div>
+        <div class="formula-box">
+            Average CPI = Total Clock Cycles Spent / Total Executed Instructions Count<br><br>
+            MIPS (Millions of Instructions Per Second) = Instruction Count / (Execution Time &times; 10<sup>6</sup>)<br><br>
+            Alternatively:<br>
+            MIPS = Clock Frequency (f) / (CPI &times; 10<sup>6</sup>)
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="coa_traps" style="border: 1px dashed #38bdf8; background-color: #1a1e2d;">
+        <div class="card-header">
+            <h2 style="color: #f43f5e;">&#9888; Critical CIL MT COA MCQ Traps Checklist</h2>
+            <label class="checkbox-container" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8;">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <ul>
+            <li>CPU Core = ALU + Control Unit + Internal Register Matrices.</li>
+            <li>PC holds the evaluation address pointer for the <strong>next</strong> scheduled instruction; IR locks down the raw machine code of the <strong>current</strong> running instruction step.</li>
+            <li><strong>RISC</strong> enforces a fixed instruction layout footprint alongside an isolated Load/Store pipeline design pattern.</li>
+            <li><strong>CISC</strong> focuses on microcode-backed multi-cycle variable complex instruction lengths.</li>
+            <li>Hardwired CU operates via fast, fixed combinational hardware loops; Microprogrammed CU runs via highly modifiable, slower control memory storage lookups.</li>
+            <li>Internal Registers constitute the absolute top performance tier in the global storage speed index.</li>
+            <li>Cache optimizations rely explicitly on the Principle of **Locality of Reference** to maximize system speed metrics.</li>
+            <li>Direct mapping handles cache index matching using simple mathematical modulus logic, but is highly vulnerable to mapping block conflicts.</li>
+            <li>AMAT explicitly sums raw hit latency against calculated miss rate penalties: <code>AMAT = Hit Time + (Miss Rate × Miss Penalty)</code>.</li>
+            <li>Pipelining scales operation **Throughput** metrics; it does **NOT** improve individual instruction execution latency times.</li>
+            <li>Pipeline execution issues map down to three distinct hazard categories: **Structural** (hardware resource limits), **Data** (read/write dependencies), and **Control** (branching updates to the PC).</li>
+            <li>DMA operations offload block transfers directly onto memory data paths, freeing up the CPU.</li>
+            <li>Interrupt validation routines require the processor to instantly cache working environment flags and current PC values directly into system **Stack** frames.</li>
+            <li>Every real computing environment processes negative operations and binary subtractions via **2's Complement Arithmetic**.</li>
+            <li>IEEE 754 maps single-precision parameters into a distinct 32-bit field pattern: 1 sign bit, 8 biased exponent bits, and 23 fractional mantissa bits.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // Storage configuration unique identifier key for COA tracking
+    const STORAGE_KEY = 'cil_mt_coa_progress';
+
+    // Run processing on load to restore checkbox configurations
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        
+        document.querySelectorAll('.topic-card').forEach(card => {
+            const id = card.getAttribute('data-topic');
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            
+            if (id && savedProgress[id]) {
+                checkbox.checked = true;
+                card.classList.add('completed');
+            }
+        });
+    });
+
+    function toggleComplete(checkbox) {
+        const card = checkbox.closest('.topic-card');
+        const id = card.getAttribute('data-topic');
+        
+        // Fetch existing dictionary state mapping
+        const currentProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+        if (checkbox.checked) {
+            card.classList.add('completed');
+            if (id) currentProgress[id] = true;
+        } else {
+            card.classList.remove('completed');
+            if (id) delete currentProgress[id];
+        }
+
+        // Overwrite adjustments back to tracking dictionary
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentProgress));
+    }
+
+    function clearProgress() {
+        if (confirm("Are you sure you want to reset all COA revision portal checkboxes?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            document.querySelectorAll('.topic-card').forEach(card => {
+                card.classList.remove('completed');
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                if (checkbox) checkbox.checked = false;
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

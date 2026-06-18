@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gate/Interview Core Fundamentals - Quick Numericals</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --primary-color: #2563eb;
+            --success-color: #10b981;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 { margin-bottom: 10px; color: #1e293b; }
+
+        /* Progress Bar Sticky Container */
+        .progress-container {
+            position: sticky;
+            top: 0;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            z-index: 100;
+        }
+
+        .bar-outer {
+            background: var(--border-color);
+            border-radius: 20px;
+            height: 20px;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .bar-inner {
+            background: var(--success-color);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Filter Controls */
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Question Cards */
+        .question-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .question-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .tag-dbms { background: #fee2e2; color: #991b1b; }
+        .tag-os { background: #fef3c7; color: #92400e; }
+        .tag-cn { background: #dcfce7; color: #166534; }
+        .tag-dsa { background: #e0f2fe; color: #075985; }
+
+        .sub-topic {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .q-text {
+            font-size: 1.05rem;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+
+        /* Interaction Elements */
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .answer-btn {
+            background: none;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .answer-btn:hover {
+            background: #eff6ff;
+        }
+
+        .answer-panel {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border-left: 4px solid var(--success-color);
+            border-radius: 0 4px 4px 0;
+            font-size: 0.95rem;
+        }
+
+        /* Custom Checkbox styled row */
+        .completed-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .completed-label input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Core Fundamentals Revision</h1>
+        <p>1-1.5 Min Quick-Fire High-Yield Numericals</p>
+    </header>
+
+    <div class="progress-container">
+        <div style="display: flex; justify-content: space-between; font-weight: bold;">
+            <span>Overall Progress</span>
+            <span id="progress-text">0 / 40 (0%)</span>
+        </div>
+        <div class="bar-outer">
+            <div class="bar-inner" id="progress-bar"></div>
+        </div>
+    </div>
+
+    <div class="filters">
+        <button class="filter-btn active" onclick="filterSubject('all')">All Subjects</button>
+        <button class="filter-btn" onclick="filterSubject('dbms')">DBMS</button>
+        <button class="filter-btn" onclick="filterSubject('os')">Operating Systems</button>
+        <button class="filter-btn" onclick="filterSubject('cn')">Computer Networks</button>
+        <button class="filter-btn" onclick="filterSubject('dsa')">DSA</button>
+    </div>
+
+    <div id="questions-pool">
+        </div>
+</div>
+
+<script>
+    const questionsData = [
+        // ================= DBMS (1-10) =================
+        { id: 1, subject: 'dbms', topic: 'Transaction Schedules', q: "A schedule has 2 transactions: T1 reads and writes X, then commits. T2 then reads and writes X, then commits. How many total schedules are possible?", a: "2 schedules (T1 followed by T2, or T2 followed by T1. Since they are independent blocks, internal ordering within active transactions is fixed if they execute strictly serially or concurrently without splitting atomic operations)." },
+        { id: 2, subject: 'dbms', topic: 'Transaction Schedules', q: "Consider a schedule with actions: R1(A), W2(A), R2(B), W1(B), Commit1, Commit2. Is this schedule recovering from cascading aborts (ACA)?", a: "No. T2 reads A after T1 writes it (implicitly if looking for dependencies)? Wait, look closely: W2(A) happens but T1 does not read it. However, W1(B) happens after R2(B). No uncommitted read exists here. Thus, it is Avoids Cascading Abort (ACA)." },
+        { id: 3, subject: 'dbms', topic: 'Conflict Serializability', q: "Given schedule S: R1(X), R2(X), W1(X), W2(X). Identify the number of conflicting pairs.", a: "2 conflicting pairs: (R2(X), W1(X)) and (W1(X), W2(X)). Note: R1(X) and R2(X) do not conflict." },
+        { id: 4, subject: 'dbms', topic: 'Conflict Serializability', q: "A precedence graph has edges: T1 → T2, T2 → T3, T3 → T1. How many conflict-serializable schedules can be derived from this?", a: "0. The graph contains a cycle (T1 -> T2 -> T3 -> T1), meaning it is NOT conflict serializable." },
+        { id: 5, subject: 'dbms', topic: 'Conflict Serializability', q: "Find the equivalent serial schedule order for the acyclic precedence graph with edges: T3 → T1 and T2 → T1.", a: "Both (T2 → T3 → T1) and (T3 → T2 → T1) are valid serial orders." },
+        { id: 6, subject: 'dbms', topic: 'Locking (2PL)', q: "A transaction obtains locks in the sequence: Lock_S(A), Lock_X(B), Unlock(A), Lock_S(C). Does this follow Basic 2PL protocols?", a: "No. It violates 2PL because it acquires a lock (Lock_S(C)) AFTER releasing a lock (Unlock(A)). Growing phase cannot follow shrinking phase." },
+        { id: 7, subject: 'dbms', topic: 'Locking (2PL)', q: "If a schedule follows Strict 2PL, and transaction T1 writes item X, at what point can T1 release its exclusive lock on X?", a: "Only after the Commit or Abort (termination) of transaction T1." },
+        { id: 8, subject: 'dbms', topic: 'Locking (2PL)', q: "A system uses Rigorous 2PL. If a transaction holds 3 Shared locks and 2 Exclusive locks, when are these locks dropped?", a: "All 5 locks are released simultaneously at the exact end of the transaction (Post-Commit/Abort)." },
+        { id: 9, subject: 'dbms', topic: 'Deadlock Detection', q: "In a Wait-For Graph (WFG), T1 is waiting for T2, T2 for T3, and T3 for T1. Is the system in a deadlock?", a: "Yes. There is a directed cycle (T1 → T2 → T3 → T1) in the Wait-For-Graph." },
+        { id: 10, subject: 'dbms', topic: 'Deadlock Detection', q: "Using the Wait-Die scheme, older T1 (Timestamp 10) requests a resource held by younger T2 (Timestamp 20). Will T1 wait or die?", a: "T1 will WAIT. (In Wait-Die: Older waits for younger; younger dies when requesting older)." },
+
+        // ================= OPERATING SYSTEMS (11-20) =================
+        { id: 11, subject: 'os', topic: 'CPU Scheduling', q: "3 processes arrive at t=0 with Burst Times: P1=6ms, P2=8ms, P3=2ms. Find the average waiting time using Non-preemptive Shortest Job First (SJF).", a: "Execution sequence: P3 (0-2), P1 (2-8), P2 (8-16). Waiting times: P3=0, P1=2, P2=8. Average = (0 + 2 + 8) / 3 = 3.33 ms." },
+        { id: 12, subject: 'os', topic: 'CPU Scheduling', q: "A process arrives at t=2 with burst time 10ms. It finishes execution at t=15ms. Calculate its Turnaround Time (TAT).", a: "TAT = Completion Time - Arrival Time = 15 - 2 = 13 ms." },
+        { id: 13, subject: 'os', topic: 'CPU Scheduling', q: "In Round Robin with Time Quantum = 2ms, a single process has a burst time of 5ms. How many context switches occur due to quantum expiration before it completes?", a: "2 context switches. (Executes 0-2, switches, executes 2-4, switches, executes 4-5 and terminates naturally without a final quantum switch)." },
+        { id: 14, subject: 'os', topic: 'Page Replacement', q: "Using FIFO page replacement with 3 empty frames, find the number of page faults for reference string: 1, 2, 3, 1, 4.", a: "4 Page Faults. (1 -> [1], 2 -> [1,2], 3 -> [1,2,3], 1 -> Hit, 4 -> [4,2,3] replacing 1)." },
+        { id: 15, subject: 'os', topic: 'Page Replacement', q: "Using LRU page replacement with 3 empty frames, find the number of page faults for reference string: 7, 0, 1, 2, 0.", a: "4 Page Faults. (7 -> [7], 0 -> [7,0], 1 -> [7,0,1], 2 -> [2,0,1] replacing 7, 0 -> Hit)." },
+        { id: 16, subject: 'os', topic: 'Page Replacement', q: "An Optimal Page Replacement algorithm has 3 frames filled with [1, 2, 3]. Future string is 4, 1, 2. Which page is replaced when 4 arrives?", a: "Page 3. (1 and 2 are used immediately in the near future; 3 is used furthest in future/not at all)." },
+        { id: 17, subject: 'os', topic: 'Paging', q: "A system has a 32-bit logical address space and a page size of 4 KB (2^12 bytes). How many entries are in a single-level page table?", a: "2^(32 - 12) = 2^20 entries (1,048,576 entries)." },
+        { id: 18, subject: 'os', topic: 'Paging', q: "If Physical Address space is 64 MB and Page size is 4 KB, calculate the number of bits required to represent the Physical Frame Number.", a: "64 MB = 2^26 bytes. 4 KB = 2^12 bytes. Number of frames = 2^26 / 2^12 = 2^14. Hence, 14 bits are needed." },
+        { id: 19, subject: 'os', topic: 'Deadlock (Banker\'s)', q: "Process P1 holds 2 units of R1 and max demands 5. System has 1 available unit of R1. Can P1's immediate need be satisfied safely?", a: "Remaining Need = Max - Allocated = 5 - 2 = 3. Available = 1. Since Need (3) > Available (1), it cannot be satisfied immediately." },
+        { id: 20, subject: 'os', topic: 'Deadlock (Banker\'s)', q: "Total resources of R = 10. Process allocation: P1=3, P2=4. What is the current value of the Available vector?", a: "Available = Total - Sum(Allocated) = 10 - (3 + 4) = 3 units." },
+
+        // ================= COMPUTER NETWORKS (21-30) =================
+        { id: 21, subject: 'cn', topic: 'Subnetting', q: "Given IP 192.168.1.55/27, calculate the total number of usable host IP addresses available in this subnet.", a: "Host bits = 32 - 27 = 5. Total IPs = 2^5 = 32. Usable hosts = 2^5 - 2 = 30." },
+        { id: 22, subject: 'cn', topic: 'Subnetting', q: "What is the Subnet Mask corresponding to the CIDR notation /26?", a: "255.255.255.192 (The first two bits of the last octet are 11000000 = 128 + 64 = 192)." },
+        { id: 23, subject: 'cn', topic: 'Subnetting', q: "Find the Network ID for the host IP 10.20.30.45/24.", a: "10.20.30.0 (The /24 prefix masks out the first 3 octets completely)." },
+        { id: 24, subject: 'cn', topic: 'TCP Throughput', q: "A TCP connection has a Congestion Window (Cwnd) size of 64 KB and a Round Trip Time (RTT) of 20 ms. What is the maximum throughput?", a: "Throughput = Window Size / RTT = (64 * 1024 * 8 bits) / 0.02 sec = 26.21 Mbps." },
+        { id: 25, subject: 'cn', topic: 'TCP Throughput', q: "If a TCP window size is 1000 bytes and RTT is 10ms, what is the maximum channel throughput in bytes per second?", a: "Throughput = 1000 bytes / 0.01 sec = 100,000 bytes/sec." },
+        { id: 26, subject: 'cn', topic: 'CRC Error Detection', q: "If the divisor polynomial is G(x) = x^3 + x + 1, how many zero bits must be appended to the end of the original data frame before division?", a: "3 bits. (The degree of the polynomial is 3)." },
+        { id: 27, subject: 'cn', topic: 'CRC Error Detection', q: "A receiver performs CRC division and gets a non-zero remainder of 011. What does this indicate about the transmitted frame?", a: "It indicates that an error occurred during transmission (the frame was corrupted)." },
+        { id: 28, subject: 'cn', topic: 'Delay Calculation', q: "A link is 2000 km long. The speed of signals in the medium is 2 × 10^8 m/s. Compute the exact Propagation Delay (Tp).", a: "Tp = Distance / Speed = 2,000,000 m / (2 × 10^8 m/s) = 0.01 seconds = 10 ms." },
+        { id: 29, subject: 'cn', topic: 'Delay Calculation', q: "A 1000-byte packet is sent over a 1 Mbps channel. Calculate the Transmission Delay (Tt).", a: "Tt = Data Size / Bandwidth = (1000 * 8 bits) / 1,000,000 bps = 8,000 / 1,000,000 = 0.008 seconds = 8 ms." },
+        { id: 30, subject: 'cn', topic: 'Delay Calculation', q: "In Stop-and-Wait protocol, if Tt = 2ms and Tp = 9ms, what is the total time taken to completely send one frame and receive its ACK (ignoring ACK processing)?", a: "Total Cycle Time = Tt + 2*Tp = 2ms + 2(9ms) = 20 ms." },
+
+        // ================= DSA (31-40) =================
+        { id: 31, subject: 'dsa', topic: 'Time Complexity', q: "What is the worst-case time complexity of the following code? <br><code>for(int i=1; i<=n; i*=2) { count++; }</code>", a: "O(log n). The loop variable doubles each iteration." },
+        { id: 32, subject: 'dsa', topic: 'Time Complexity', q: "Calculate the time complexity of a recursive function defined by the relation: $T(n) = 2T(n/2) + O(n)$.", a: "O(n log n). This matches Master's Theorem Case 2 ($a=2, b=2, k=1$)." },
+        { id: 33, subject: 'dsa', topic: 'Trees', q: "A strictly binary tree has 15 leaf nodes. How many non-leaf (internal) nodes does it contain?", a: "14 nodes. (For a strict binary tree, Internal Nodes = Leaf Nodes - 1)." },
+        { id: 34, subject: 'dsa', topic: 'Trees', q: "The Preorder traversal of a BST is: 10, 5, 1, 7, 40, 50. What will be its valid Inorder traversal sequence?", a: "1, 5, 7, 10, 40, 50. (The Inorder traversal of any Binary Search Tree is always sorted in ascending order)." },
+        { id: 35, subject: 'dsa', topic: 'Trees', q: "What is the maximum number of nodes possible in a binary tree of height 4? (Assume height of root-only tree is 0).", a: "Max nodes = 2^(h+1) - 1 = 2^(4+1) - 1 = 32 - 1 = 31 nodes." },
+        { id: 36, subject: 'dsa', topic: 'Heap Basics', q: "An array represents a Max-Heap: [50, 30, 20, 15, 10, 8]. If we insert element 60, what will be the value at index 0 (root) of the array?", a: "60. Being the largest element, it will bubble up to the root position to maintain the Max-Heap property." },
+        { id: 37, subject: 'dsa', topic: 'Heap Basics', q: "Given a 0-indexed binary heap array, what is the index formula to find the left child of an element stored at index 'i'?", a: "Left Child Index = 2*i + 1." },
+        { id: 38, subject: 'dsa', topic: 'Stack/Queue Applications', q: "Evaluate the following postfix expression using a stack evaluation method: 5 3 2 * +", a: "11. (Steps: push 5, push 3, push 2. Encounter '*': pop 2 and 3 -> 3*2=6, push 6. Encounter '+': pop 6 and 5 -> 5+6=11)." },
+        { id: 39, subject: 'dsa', topic: 'Stack/Queue Applications', q: "How many stacks are required to implement a single fully functional Queue data structure?", a: "2 stacks are required." },
+        { id: 40, subject: 'dsa', topic: 'Stack/Queue Applications', q: "A queue is implemented via a circular array of size 6. Front = 2, Rear = 5. After performing one Enqueue operation, what is the new value of Rear?", a: "Rear = 0. Formula: (Rear + 1) % Size = (5 + 1) % 6 = 0." }
+    ];
+
+    // Function to construct and render question items
+    function renderQuestions() {
+        const container = document.getElementById('questions-pool');
+        container.innerHTML = '';
+
+        questionsData.forEach(q => {
+            const card = document.createElement('div');
+            card.className = `question-card`;
+            card.setAttribute('data-subject', q.subject);
+            card.id = `qcard-${q.id}`;
+
+            // Check checked state from local storage
+            const isChecked = localStorage.getItem(`q_${q.id}`) === 'true';
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <div>
+                        <span class="tag tag-${q.subject}">${q.subject}</span>
+                        <span class="sub-topic">| ${q.topic}</span>
+                    </div>
+                    <label class="completed-label">
+                        <input type="checkbox" id="chk-${q.id}" ${isChecked ? 'checked' : ''} onchange="toggleComplete(${q.id})">
+                        Done
+                    </label>
+                </div>
+                <div class="q-text"><strong>Q${q.id}.</strong> ${q.q}</div>
+                <div class="actions">
+                    <button class="answer-btn" onclick="toggleAnswer(${q.id})">Show/Hide Answer</button>
+                </div>
+                <div class="answer-panel" id="ans-${q.id}">${q.a}</div>
+            `;
+            container.appendChild(card);
+        });
+        updateProgressBar();
+    }
+
+    // Toggle Answer visibility
+    function toggleAnswer(id) {
+        const panel = document.getElementById(`ans-${id}`);
+        if(panel.style.display === 'block') {
+            panel.style.display = 'none';
+        } else {
+            panel.style.display = 'block';
+        }
+    }
+
+    // Update LocalStorage status and adjust metrics
+    function toggleComplete(id) {
+        const checkbox = document.getElementById(`chk-${id}`);
+        localStorage.setItem(`q_${id}`, checkbox.checked);
+        updateProgressBar();
+    }
+
+    // Calculate real-time percentage progress
+    function updateProgressBar() {
+        let doneCount = 0;
+        questionsData.forEach(q => {
+            if(localStorage.getItem(`q_${q.id}`) === 'true') {
+                doneCount++;
+            }
+        });
+
+        const total = questionsData.length;
+        const percentage = Math.round((doneCount / total) * 100);
+        
+        document.getElementById('progress-bar').style.width = `${percentage}%`;
+        document.getElementById('progress-text').innerText = `${doneCount} / ${total} (${percentage}%)`;
+    }
+
+    // Filters display targeting subjects
+    function filterSubject(subject) {
+        // Handle Active Button styling switch
+        const buttons = document.querySelectorAll('.filter-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Toggle card classes based on query selection
+        const cards = document.querySelectorAll('.question-card');
+        cards.forEach(card => {
+            if(subject === 'all' || card.getAttribute('data-subject') === subject) {
+                card.classList.remove('hidden');
+            } else {
+                card.classList.add('hidden');
+            }
+        });
+    }
+
+    // Boot up application content execution
+    window.onload = renderQuestions;
+</script>
+
+</body>
+</html>

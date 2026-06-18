@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE & IT — Cryptography & Security Master Engine</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #dc2626;
+            --brand-accent: #fef2f2;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* Split-Pane Control Interface */
+        #app-sidebar {
+            width: 330px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 330px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1180px;
+            width: calc(100% - 330px);
+        }
+
+        /* Sidebar Panels */
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #fca5a5; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #991b1b; letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #cbd5e1; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #991b1b; width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        /* Document Architecture Layouts */
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        .summary-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; background: var(--bg-workspace); padding: 1rem; border-radius: var(--radius-interactive); border: 1px solid var(--border-color); }
+        .summary-badge { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-bold); font-weight: 500; }
+        .summary-badge strong { color: var(--brand-primary); }
+
+        .grid-block { margin-bottom: 2rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: var(--brand-primary); text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 0.75rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); }
+        th, td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        .alert-box ul { margin-left: 1.25rem; }
+        .alert-box li { color: #7f1d1d; }
+
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>Crypto Engine</h2>
+            <p>Security & Encryption Systems</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">SecOps Mastery</div>
+            <div class="metric-value" id="metric-text">0/6 Modules Mastered</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Foundational Security</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-foundations')"><span>1. CIA Triad & Identity Control</span><input type="checkbox" class="nav-checkbox" id="nav-chk-foundations" onclick="event.stopPropagation(); syncCheckbox('foundations')"></div></li>
+            
+            <div class="nav-heading">Symmetric Cryptography</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-symmetric')"><span>2. DES & AES block Engines</span><input type="checkbox" class="nav-checkbox" id="nav-chk-symmetric" onclick="event.stopPropagation(); syncCheckbox('symmetric')"></div></li>
+            
+            <div class="nav-heading">Asymmetric Algorithms</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-asymmetric')"><span>3. RSA & Diffie-Hellman</span><input type="checkbox" class="nav-checkbox" id="nav-chk-asymmetric" onclick="event.stopPropagation(); syncCheckbox('asymmetric')"></div></li>
+            
+            <div class="nav-heading">Integrity & PKI Trust</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-integrity-pki')"><span>4. Signatures, Hashes & Certs</span><input type="checkbox" class="nav-checkbox" id="nav-chk-integrity-pki" onclick="event.stopPropagation(); syncCheckbox('integrity-pki')"></div></li>
+            
+            <div class="nav-heading">Perimeter & Network Defense</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-perimeter')"><span>5. Firewalls, IDS & IPS Architectures</span><input type="checkbox" class="nav-checkbox" id="nav-chk-perimeter" onclick="event.stopPropagation(); syncCheckbox('perimeter')"></div></li>
+            
+            <div class="nav-heading">Advanced Authentication</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-advanced-auth')"><span>6. Zero-Knowledge & Challenge-Response</span><input type="checkbox" class="nav-checkbox" id="nav-chk-advanced-auth" onclick="event.stopPropagation(); syncCheckbox('advanced-auth')"></div></li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>Computer Security & Cryptography Specification</h1>
+            <p>Mathematical core models, multi-round cipher transformations, public-key infrastructures, and reactive boundary defense platforms.</p>
+        </header>
+
+        <section class="content-card" id="sec-foundations">
+            <div class="card-header-row">
+                <h2>1. Core Security Principles & Identity Control</h2>
+                <button class="action-button" id="btn-foundations" onclick="toggleTopicState('foundations')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Confidentiality: <strong>Data Access Encryption</strong></div>
+                <div class="summary-badge">Integrity: <strong>Tamper-Proof Hashing Controls</strong></div>
+                <div class="summary-badge">Availability: <strong>Fault-Tolerant Redundancies</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The CIA Triad Architecture</div>
+                <p>The foundation of information security relies on balancing three distinct, complementary targets:</p>
+                <ul>
+                    <li><strong>Confidentiality:</strong> Ensures that private assets remain hidden from unauthorized actors during transport and storage (enforced via symmetric/asymmetric encryption matrices).</li>
+                    <li><strong>Integrity:</strong> Guarantees that data hasn't been altered or corrupted by malicious actors or system failures (enforced using cryptographic hash signatures).</li>
+                    <li><strong>Availability:</strong> Ensures authorized users have uninterrupted access to critical systems and data assets (protected by load balancing, automated backups, and DDoS mitigation paths).</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Identity Engineering Frameworks</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Control Layer</th><th>Core Target Question</th><th>Primary Enforcement Strategies</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Authentication</strong></td><td><em>"Who are you proving to be?"</em></td><td>Validates claims of identity using passwords, cryptographic key pairs, or biometrics.</td></tr>
+                            <tr><td><strong>Authorization</strong></td><td><em>"What explicit actions can you run?"</em></td><td>Applies permission controls via Access Control Lists (ACLs) or Role-Based Access Control (RBAC).</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-symmetric">
+            <div class="card-header-row">
+                <h2>2. Symmetric Block Cryptography</h2>
+                <button class="action-button" id="btn-symmetric" onclick="toggleTopicState('symmetric')">Mark Mastered</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Data Encryption Standard (DES) Architecture</div>
+                <p>DES is a historic symmetric block cipher that operates on 64-bit blocks using a 56-bit effective key size (with 8 parity bits dropped). It is built on a 16-round <strong>Feistel Network Structure</strong>:</p>
+                
+                
+                
+                <p>In each round, the data block is split into 32-bit left ($L_i$) and right ($R_i$) halves, processing state changes via the following transformation rule:</p>
+                $$L_{i+1} = R_i$$
+                $$R_{i+1} = L_i \oplus F(R_i, K_i)$$
+                <p><em>Note:</em> Due to its short 56-bit key length, DES is highly vulnerable to modern brute-force hardware sweeps and is considered obsolete.</p>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Advanced Encryption Standard (AES) Architecture</div>
+                <p>AES is a robust modern block cipher that operates on fixed 128-bit data blocks. It supports variable key lengths (128, 192, or 256 bits) and replaces Feistel designs with a highly efficient <strong>Substitution-Permutation Network (SPN)</strong> matrix:</p>
+                
+                
+                
+                <ol>
+                    <li><strong>SubBytes:</strong> Runs non-linear byte-by-byte substitutions using an established S-box lookup matrix to maximize confusion.</li>
+                    <li><strong>ShiftRows:</strong> Performs cyclic left shifts on the last three rows of the 4x4 state array to diffuse patterns across blocks.</li>
+                    <li><strong>MixColumns:</strong> Multiplies columns by an algebraic transformation matrix in a Galois Field ($GF(2^8)$) to add inter-byte dependencies.</li>
+                    <li><strong>AddRoundKey:</strong> Mixes the specific round subkey directly into the current state block using a standard bitwise XOR ($\oplus$) operation.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-asymmetric">
+            <div class="card-header-row">
+                <h2>3. Asymmetric Public-Key Cryptosystems</h2>
+                <button class="action-button" id="btn-asymmetric" onclick="toggleTopicState('asymmetric')">Mark Mastered</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The RSA Algorithm Mathematical Engine</div>
+                <p>RSA derives its strength from the immense computational difficulty of factoring the product of two ultra-large prime numbers:</p>
+                <ul>
+                    <li><strong>Key Pair Generation Steps:</strong>
+                        <ol>
+                            <li>Select two distinct, hidden large prime integers, $p$ and $q$.</li>
+                            <li>Compute the public modulus product: $n = p \times q$.</li>
+                            <li>Calculate Euler's totient function: $\phi(n) = (p - 1)(q - 1)$.</li>
+                            <li>Choose an encryption exponent $e$ such that: $1 < e < \phi(n)$ and $\gcd(e, \phi(n)) = 1$.</li>
+                            <li>Compute the private decryption exponent $d$ using the modular multiplicative inverse:
+                                $$d \equiv e^{-1} \pmod{\phi(n)} \implies (d \times e) \equiv 1 \pmod{\phi(n)}$$
+                            </li>
+                        </ol>
+                    </li>
+                    <li><strong>Cryptographic Execution Functions:</strong>
+                        $$\text{Encryption (Public Key } \{e, n\} \text{): } C = M^e \pmod n$$
+                        $$\text{Decryption (Private Key } \{d, n\} \text{): } M = C^d \pmod n$$
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Diffie-Hellman Key Exchange Protocol</div>
+                <p>Enables two independent parties to safely establish a shared secret key over an unencrypted, public communication channel without transmitting the key itself:</p>
+                
+                
+                
+                <ol>
+                    <li>Both parties openly agree on a large prime modulus $p$ and a primitive root generator base $g$.</li>
+                    <li>Alice chooses a secret private integer $a$, then computes and dispatches her public value to Bob:
+                        $$A = g^a \pmod p$$
+                    </li>
+                    <li>Bob chooses a secret private integer $b$, then computes and dispatches his public value to Alice:
+                        $$B = g^b \pmod p$$
+                    </li>
+                    <li>Both parties derive the identical shared symmetric secret key $K$ independently:
+                        $$\text{Alice: } K = B^a \pmod p = (g^b)^a \pmod p$$
+                        $$\text{Bob: } K = A^b \pmod p = (g^a)^b \pmod p \implies K = g^{ab} \pmod p$$
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-integrity-pki">
+            <div class="card-header-row">
+                <h2>4. Integrity, Signatures & Public Key Infrastructures</h2>
+                <button class="action-button" id="btn-integrity-pki" onclick="toggleTopicState('integrity-pki')">Mark Mastered</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Cryptographic Hash Functions Engine (MD5 & SHA)</div>
+                <p>Hash functions convert arbitrary-length input data into fixed-size byte strings. A secure cryptographic hash must guarantee three core mathematical behaviors:</p>
+                <ul>
+                    <li><strong>Pre-image Resistance:</strong> Given a hash output $H$, it is computationally impossible to reverse the operation to find the original input string $x$ such that $h(x) = H$.</li>
+                    <li><strong>Second Pre-image Resistance:</strong> Given a specific input $x_1$, it is computationally impossible to find a different input string $x_2$ that yields the exact same hash output: $h(x_1) = h(x_2)$.</li>
+                    <li><strong>Collision Resistance:</strong> It is computationally impossible to find *any* two arbitrary, distinct input strings $x_1$ and $x_2$ that produce matching hash outputs: $h(x_1) = h(x_2)$.</li>
+                </ul>
+                <p><em>Algorithm Variants:</em> <strong>MD5</strong> outputs 128-bit digests but is broken due to collision vulnerabilities. Modern setups rely on <strong>SHA-256</strong> (secure 256-bit digests) or <strong>SHA-3</strong> architectures.</p>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Digital Signatures & Digital Certificates</div>
+                <ul>
+                    <li><strong>Digital Signatures:</strong> Provide <strong>Authentication</strong>, <strong>Integrity</strong>, and <strong>Non-repudiation</strong>. The sender runs their message through a hash function, encrypts the resulting digest with their *private key*, and appends this signature payload to the message. The recipient decrypts the signature using the sender's *public key* and compares the hash values to verify authenticity.</li>
+                    <li><strong>Digital Certificates (X.509):</strong> Solve identity spoofing by binding a public key directly to an individual or organization. Trusted third-party **Certificate Authorities (CAs)** digitally sign these identity bundles to confirm their validity.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-perimeter">
+            <div class="card-header-row">
+                <h2>5. Network Boundary Controls & Threat Detection</h2>
+                <button class="action-button" id="btn-perimeter" onclick="toggleTopicState('perimeter')">Mark Mastered</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Firewall Taxonomy Classifications</div>
+                <p>Firewalls block unauthorized traffic by monitoring network boundaries at different layers of the OSI model:</p>
+                <ol>
+                    <li><strong>Packet Filters:</strong> Inspect individual packets independently at the Network layer, filtering traffic based on static source/destination IPs and port numbers.</li>
+                    <li><strong>Stateful Inspection Firewalls:</strong> Track active connection states across a dedicated state table. They verify that incoming packets belong to an active, established handshake sequence.</li>
+                    <li><strong>Application Firewalls (Proxies):</strong> Intercept and analyze traffic at the Application layer, inspecting actual payload content (e.g., parsing HTTP strings for malicious commands).</li>
+                </ol>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">IDS vs. IPS Structural Pipeline</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>System Engine Type</th><th>Primary Operational Role</th><th>Network Integration Deployment Mode</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Intrusion Detection (IDS)</strong></td><td>Monitors traffic logs to detect and alert teams to attacks. **Passive system**.</td><td>Deployed out-of-band using network TAPs or port mirroring hooks.</td></tr>
+                            <tr><td><strong>Intrusion Prevention (IPS)</strong></td><td>Detects threats and actively blocks malicious traffic in real time. **Active system**.</td><td>Deployed inline directly across live network pathways to block malicious packets instantly.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><em>Detection Methodologies:</em> <strong>Signature-Based</strong> (matches traffic against known attack patterns; cannot catch zero-day exploits) vs. <strong>Anomaly-Based</strong> (establishes a normal baseline and flags statistical deviations). </p>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-advanced-auth">
+            <div class="card-header-row">
+                <h2>6. Advanced Cryptographic Verification</h2>
+                <button class="action-button" id="btn-advanced-auth" onclick="toggleTopicState('advanced-auth')">Mark Mastered</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Challenge-Response Authentication Framework</div>
+                <p>Prevents replay attacks by ensuring raw password hashes are never transmitted across the network during authentication:</p>
+                <ol>
+                    <li>A client requests access to a secure service.</li>
+                    <li>The server generates and returns a randomized, single-use string called a **Nonce** (the challenge token).</li>
+                    <li>The client combines this nonce with their shared secret password, hashes the combined string, and sends it back to the server (the response token).</li>
+                    <li>The server runs the exact same calculation independently. If the hashes match, access is granted.</li>
+                </ol>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Zero-Knowledge Proofs (ZKP)</div>
+                <ul>
+                    <li>An advanced protocol that lets a prover confirm to a verifier that they possess a specific secret value without revealing any information about the secret itself.</li>
+                    <li>Relies on iterative cycles of mathematical queries, challenges, and proofs. This confirms ownership with high statistical certainty while keeping the underlying data completely hidden.</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Interactive Dashboard Tracking Logic
+        const Crypto_Registry = [
+            { id: "foundations" },
+            { id: "symmetric" },
+            { id: "asymmetric" },
+            { id: "integrity-pki" },
+            { id: "perimeter" },
+            { id: "advanced-auth" }
+        ];
+
+        function scrollToCard(targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initAppTracker() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_crypto_dashboard_progress')) || {};
+            
+            Crypto_Registry.forEach(module => {
+                const status = !!userProgress[module.id];
+                
+                // Sync Checkboxes
+                const chk = document.getElementById(`nav-chk-${module.id}`);
+                if (chk) chk.checked = status;
+
+                // Sync Card Action Buttons
+                const btn = document.getElementById(`btn-${module.id}`);
+                if (btn) {
+                    if (status) {
+                        btn.innerText = "✓ Mastered";
+                        btn.classList.add('completed');
+                    } else {
+                        btn.innerText = "Mark Mastered";
+                        btn.classList.remove('completed');
+                    }
+                }
+            });
+            evaluateMetrics();
+        }
+
+        function updateProgressState(id, statusValue) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_crypto_dashboard_progress')) || {};
+            userProgress[id] = statusValue;
+            localStorage.setItem('gate_crypto_dashboard_progress', JSON.stringify(userProgress));
+
+            const chk = document.getElementById(`nav-chk-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (chk) chk.checked = statusValue;
+            if (btn) {
+                if (statusValue) {
+                    btn.innerText = "✓ Mastered";
+                    btn.classList.add('completed');
+                } else {
+                    btn.innerText = "Mark Mastered";
+                    btn.classList.remove('completed');
+                }
+            }
+            evaluateMetrics();
+        }
+
+        function toggleTopicState(id) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_crypto_dashboard_progress')) || {};
+            updateProgressState(id, !userProgress[id]);
+        }
+
+        function syncCheckbox(id) {
+            const chk = document.getElementById(`nav-chk-${id}`);
+            if (chk) updateProgressState(id, chk.checked);
+        }
+
+        function evaluateMetrics() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_crypto_dashboard_progress')) || {};
+            let matchCounter = 0;
+
+            Crypto_Registry.forEach(module => {
+                if (userProgress[module.id] === true) matchCounter++;
+            });
+
+            const ratioFactor = Crypto_Registry.length > 0 ? Math.round((matchCounter / Crypto_Registry.length) * 100) : 0;
+            document.getElementById('metric-fill').style.width = ratioFactor + '%';
+            document.getElementById('metric-text').innerText = `${matchCounter}/${Crypto_Registry.length} Modules Mastered (${ratioFactor}%)`;
+        }
+
+        window.onload = initAppTracker;
+    </script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIL MT + PSU Revision Hub</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --border-color: #334155;
+            --hover-bg: #24344d;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            text-align: center;
+        }
+
+        header {
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            letter-spacing: -0.025em;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .grid-portal {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            padding: 10px 0;
+        }
+
+        .subject-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px 20px;
+            text-decoration: none;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .subject-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-color);
+            background-color: var(--hover-bg);
+            box-shadow: 0 10px 15px -3px rgba(56, 189, 248, 0.15);
+        }
+
+        .icon {
+            font-size: 2rem;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-color);
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .subject-card:hover .icon {
+            background: var(--accent-color);
+            color: var(--bg-color);
+        }
+
+        .subject-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.025em;
+            margin: 0;
+        }
+
+        .subject-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Master Revision Command Center</h1>
+        <p>Select a subject portal to manage progress tracks and review target core criteria.</p>
+    </header>
+
+    <div class="grid-portal">
+        <a href="quicknotes/CD.html" class="subject-card">
+            <div class="icon">CD</div>
+            <h2 class="subject-title">Compiler Design</h2>
+            <p class="subject-desc">Phases & Parsing</p>
+        </a>
+
+        <a href="quicknotes/COA.html" class="subject-card">
+            <div class="icon">CO</div>
+            <h2 class="subject-title">COA</h2>
+            <p class="subject-desc">Architecture & Pipolining</p>
+        </a>
+
+        <a href="quicknotes/DBMS.html" class="subject-card">
+            <div class="icon">DB</div>
+            <h2 class="subject-title">DBMS</h2>
+            <p class="subject-desc">SQL & Normalization</p>
+        </a>
+
+        <a href="quicknotes/DIGITALlogic.html" class="subject-card">
+            <div class="icon">DL</div>
+            <h2 class="subject-title">Digital Logic</h2>
+            <p class="subject-desc">Gates & Circuits</p>
+        </a>
+
+        <a href="quicknotes/DSA.html" class="subject-card">
+            <div class="icon">DS</div>
+            <h2 class="subject-title">DSA</h2>
+            <p class="subject-desc">Algorithms & Structures</p>
+        </a>
+
+        <a href="quicknotes/networking.html" class="subject-card">
+            <div class="icon">CN</div>
+            <h2 class="subject-title">Networking</h2>
+            <p class="subject-desc">OSI Model & Protocols</p>
+        </a>
+
+        <a href="quicknotes/OS.html" class="subject-card">
+            <div class="icon">OS</div>
+            <h2 class="subject-title">Operating Systems</h2>
+            <p class="subject-desc">Kernel & Memory</p>
+        </a>
+
+        <a href="quicknotes/TOC.html" class="subject-card">
+            <div class="icon">TC</div>
+            <h2 class="subject-title">TOC</h2>
+            <p class="subject-desc">Automata & Grammars</p>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

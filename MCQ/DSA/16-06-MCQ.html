@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Professional DSA Assessment</title>
+    <style>
+        :root { --primary: #2c3e50; --secondary: #3498db; --success: #27ae60; --error: #c0392b; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        .header { background: var(--primary); color: white; padding: 2rem; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+        .question-card { background: white; padding: 25px; margin-bottom: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); }
+        .options label { display: block; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .options label:hover { background: #f0f7ff; }
+        .feedback { margin-top: 15px; padding: 15px; border-radius: 8px; font-weight: 600; display: none; }
+        .correct { background: #e8f8f0; color: var(--success); border: 1px solid var(--success); display: block; }
+        .wrong { background: #fdeaea; color: var(--error); border: 1px solid var(--error); display: block; }
+        .actions { text-align: center; padding: 20px; }
+        button { padding: 12px 25px; font-size: 16px; border: none; border-radius: 6px; cursor: pointer; color: white; transition: 0.3s; }
+        .submit-btn { background: var(--secondary); }
+        .reset-btn { background: #7f8c8d; margin-left: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+        <div class="actions">
+        <button class="submit-btn" onclick="submitQuiz()">Calculate Final Score</button>
+        <button class="reset-btn" onclick="resetQuiz()">Clear Session</button>
+        <div id="results" style="margin-top: 20px; font-size: 1.5rem; color: var(--primary);"></div>
+    </div>
+    <div class="header">
+        <h1>Data Structures Assessment</h1>
+        <p>PSU Recruitment Examination Preparation Portal</p>
+    </div>
+    <div id="quiz-container"></div>
+
+</div>
+
+<script>
+    const questions = [
+        { q: "An array A[0...49] has a base address of 2000. Each element is 4 bytes. If A[i] is at address 2120, what is i?", a: "30", options: ["28", "30", "32", "25"], exp: "Base + (i * 4) = 2120 => 4i = 120 => i = 30." },
+        { q: "In row-major order, the address of A[i][j] in an M x N matrix is given by:", a: "Base + (i * N + j) * Size", options: ["Base + (i * N + j) * Size", "Base + (j * M + i) * Size", "Base + (i * M + j) * Size", "Base + (i+j) * Size"], exp: "We skip i rows, each having N columns." },
+        { q: "What is the primary disadvantage of using a static array for a queue?", a: "False overflow", options: ["O(n) access", "False overflow", "Slow insertion", "Memory leakage"], exp: "Static arrays cannot reuse front indices without circular logic." },
+        { q: "If a circular queue is full, the condition (rear + 1) % size == front is:", a: "True", options: ["False", "True", "Always undefined", "Only true for size=1"], exp: "This identifies the condition where the rear wraps around." },
+        { q: "Which structure is most efficient for frequent insertions at the middle?", a: "Linked List", options: ["Array", "Linked List", "Stack", "Hash Table"], exp: "Linked lists require only pointer updates." },
+        { q: "A pointer ptr points to a node in a singly linked list. Deleting this node takes:", a: "O(n)", options: ["O(1)", "O(n)", "O(log n)", "O(n^2)"], exp: "We must traverse from head to find the predecessor." },
+        { q: "Which operation in a doubly linked list is O(1) compared to a singly linked list?", a: "Delete node given pointer", options: ["Search", "Insert at head", "Delete node given pointer", "Traverse"], exp: "Has a 'prev' pointer." },
+        { q: "What is the space complexity of a circular linked list with n nodes?", a: "O(n)", options: ["O(1)", "O(n)", "O(n^2)", "O(log n)"], exp: "Each of the n nodes consumes memory." },
+        { q: "To reverse a singly linked list, we need to track:", a: "3 pointers", options: ["1 pointer", "2 pointers", "3 pointers", "4 pointers"], exp: "Prev, Current, and Next." },
+        { q: "A linked list where the last node points to the head is:", a: "Circular", options: ["Doubly", "Circular", "Linear", "Stack"], exp: "This forms a loop." },
+        { q: "A stack is empty. Sequence: Push(A), Push(B), Pop(), Push(C), Pop(), Pop(). Output order is:", a: "B, C, A", options: ["B, C, A", "A, B, C", "C, B, A", "B, A, C"], exp: "Stack is LIFO: B pops first, then C, then A." },
+        { q: "The postfix equivalent of A-B/(C*D^E) is:", a: "ABCDE^* / -", options: ["ABCDE^* / -", "AB-CDE^*/", "ABCDE^*/-", "ABCDE^/*-"], exp: "Follow operator precedence." },
+        { q: "Which data structure detects balanced parentheses?", a: "Stack", options: ["Queue", "Stack", "Graph", "Heap"], exp: "Last-in, first-out." },
+        { q: "In a two-stack queue implementation, dequeueing takes:", a: "Amortized O(1)", options: ["O(1)", "O(n)", "Amortized O(1)", "O(log n)"], exp: "Operations are O(1) on average." },
+        { q: "A Deque with insertFront, deleteRear acts as:", a: "Queue", options: ["Stack", "Queue", "Priority Queue", "Tree"], exp: "This preserves FIFO." },
+        { q: "Expression AB+C* evaluated with A=1, B=2, C=3 gives:", a: "9", options: ["6", "7", "9", "8"], exp: "(1+2)*3 = 9." },
+        { q: "Which of these is not an application of a queue?", a: "Recursion", options: ["CPU Scheduling", "Recursion", "Printer Spooling", "BFS"], exp: "Recursion uses a Stack." },
+        { q: "A stack overflow occurs when:", a: "Pointer > Max", options: ["Stack is empty", "Pointer > Max", "Pointer < 0", "Pushing NULL"], exp: "Capacity exceeded." },
+        { q: "Prefix of (A+B) is:", a: "+AB", options: ["AB+", "+AB", "AB+", "A+B"], exp: "Operator before operands." },
+        { q: "If Front == Rear in a linear queue, it means:", a: "Empty", options: ["Full", "Empty", "1 element", "Error"], exp: "Initialized state." },
+        { q: "In a binary tree, if a node has L left children and R right children, total nodes are:", a: "L+R+1", options: ["L+R", "L+R+1", "L+R-1", "2(L+R)"], exp: "L+R descendants + root." },
+        { q: "Max nodes in a binary tree of height h (starting h=0):", a: "2^(h+1) - 1", options: ["2^h - 1", "2^(h+1) - 1", "2^h", "2^(h+1)"], exp: "Geometric sum." },
+        { q: "Preorder of a BST is 50, 30, 20, 40, 70, 60, 80. What is the root?", a: "50", options: ["20", "80", "50", "30"], exp: "First element is root." },
+        { q: "Heapsort uses which traversal/structure?", a: "Both B and C", options: ["Inorder", "Max-Heap", "Min-Heap", "Both B and C"], exp: "Choice depends on sorting order." },
+        { q: "Complexity to build a heap from an array of n elements:", a: "O(n)", options: ["O(n)", "O(n log n)", "O(n^2)", "O(log n)"], exp: "Heapify is O(n)." },
+        { q: "In an adjacency matrix, the number of entries is:", a: "V^2", options: ["V", "E", "V^2", "V+E"], exp: "Matrix is always V x V." },
+        { q: "BFS uses which auxiliary space?", a: "O(V)", options: ["O(V)", "O(E)", "O(V+E)", "O(1)"], exp: "Queue holds vertices." },
+        { q: "In a directed graph, if indegree = outdegree for all vertices, it is:", a: "Eulerian", options: ["Eulerian", "Hamiltonian", "Tree", "Forest"], exp: "Eulerian circuit condition." },
+        { q: "Shortest path in unweighted graph is found via:", a: "BFS", options: ["DFS", "BFS", "Dijkstra", "Prim"], exp: "Layer-by-layer exploration." },
+        { q: "BST deletion of a node with two children requires replacing with:", a: "Inorder Successor", options: ["Inorder Successor", "Parent", "Root", "NULL"], exp: "Maintains order." },
+        { q: "Linear probing suffers most from:", a: "Primary Clustering", options: ["Deletion", "Primary Clustering", "Memory Usage", "Hashing speed"], exp: "Occupied slot runs." },
+        { q: "If h(k) = k mod 13 and table size is 13, k=26 goes to:", a: "0", options: ["0", "1", "26", "13"], exp: "26%13=0." },
+        { q: "Load factor alpha > 1 is possible in:", a: "Separate Chaining", options: ["Linear Probing", "Separate Chaining", "Open Addressing", "None"], exp: "Linked lists used." },
+        { q: "Worst case of Binary Search is:", a: "O(log n)", options: ["O(n)", "O(log n)", "O(n log n)", "O(1)"], exp: "Always log n." },
+        { q: "The height of a complete binary tree with n nodes is:", a: "log2 n", options: ["log2 n", "n", "sqrt(n)", "n/2"], exp: "Balanced structure." },
+        { q: "An AVL tree is a:", a: "Balanced BST", options: ["Balanced BST", "Heap", "Graph", "Queue"], exp: "Height-balanced." },
+        { q: "For a graph with V vertices, a spanning tree has:", a: "V-1 edges", options: ["V edges", "V-1 edges", "V+1 edges", "E edges"], exp: "Minimal connections." },
+        { q: "Which of these is not a graph algorithm?", a: "Heapsort", options: ["Prim's", "Kruskal's", "Dijkstra's", "Heapsort"], exp: "Sorting algorithm." },
+        { q: "Number of leaf nodes in a tree with n2 nodes of degree 2 and n0 leaves:", a: "n2 + 1", options: ["n2 + 1", "n2 - 1", "2n2", "n2"], exp: "Formula: n0 = n2 + 1." },
+        { q: "Trie search complexity depends on:", a: "Length of word", options: ["Number of words", "Length of word", "Table size", "Hash function"], exp: "Trie nodes length." }
+    ];
+
+    const container = document.getElementById('quiz-container');
+    questions.forEach((item, index) => {
+        container.innerHTML += `
+            <div class="question-card">
+                <p><strong>Q${index + 1}:</strong> ${item.q}</p>
+                <div class="options">
+                    ${item.options.map(opt => `<label><input type="radio" name="q${index}" value="${opt}" onclick="saveAnswer(${index}, '${opt}')"> ${opt}</label>`).join('')}
+                </div>
+                <div id="feedback${index}" class="feedback"></div>
+            </div>`;
+    });
+
+    function saveAnswer(index, val) {
+        localStorage.setItem('q' + index, val);
+        const feedback = document.getElementById('feedback' + index);
+        feedback.style.display = 'block';
+        feedback.innerText = (val === questions[index].a ? "✔ Correct: " : "✘ Incorrect: ") + questions[index].exp;
+        feedback.className = "feedback " + (val === questions[index].a ? "correct" : "wrong");
+    }
+
+    window.onload = () => {
+        questions.forEach((_, index) => {
+            const saved = localStorage.getItem('q' + index);
+            if (saved) {
+                const el = document.querySelector(`input[name="q${index}"][value="${saved}"]`);
+                if (el) { el.checked = true; saveAnswer(index, saved); }
+            }
+        });
+    };
+
+    function submitQuiz() {
+        let score = 0;
+        questions.forEach((item, index) => { if (localStorage.getItem('q' + index) === item.a) score++; });
+        document.getElementById('results').innerText = `Final Score: ${score} / ${questions.length}`;
+    }
+
+    function resetQuiz() { localStorage.clear(); location.reload(); }
+</script>
+</body>
+</html>

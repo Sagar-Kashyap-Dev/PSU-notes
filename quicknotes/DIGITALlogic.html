@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Logic Quick Revision Guide</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --border-color: #334155;
+            --success-color: #10b981;
+            --formula-bg: #090d16;
+            --table-border: #475569;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .reset-btn {
+            background-color: #f43f5e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .reset-btn:hover {
+            background-color: #e11d48;
+        }
+
+        .topic-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .topic-card.completed {
+            opacity: 0.4;
+            filter: grayscale(60%);
+            border-color: var(--success-color);
+        }
+
+        .topic-card.completed h2 {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--accent-color);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            user-select: none;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            transition: all 0.2s;
+        }
+
+        .checkbox-container:hover {
+            background: rgba(56, 189, 248, 0.2);
+        }
+
+        .checkbox-container input {
+            cursor: pointer;
+            accent-color: var(--success-color);
+            width: 16px;
+            height: 16px;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        ul {
+            margin: 0 0 15px 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .formula-box {
+            background-color: var(--formula-bg);
+            padding: 12px 16px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+            font-family: "Consolas", "Courier New", monospace;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 15px 0;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            border: 1px solid var(--table-border);
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Digital Logic Ultimate MCQ Revision Portal</h1>
+        <p>Complete CIL MT + PSU Reference Engine. Track your master criteria checkmarks below.</p>
+        <button class="reset-btn" onclick="clearProgress()">Reset All Progress</button>
+    </header>
+
+    <div class="topic-card" data-topic="number_systems">
+        <div class="card-header">
+            <h2>1. Number Systems & Deep Conversions</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Radix Rules</div>
+        <ul>
+            <li><strong>Binary (Base 2):</strong> Digits {0, 1}. Radix bits tracking weights match powers of 2.</li>
+            <li><strong>Octal (Base 8):</strong> Digits {0-7}. Requires grouping binary bits into clean packets of 3 starting from the binary point.</li>
+            <li><strong>Hexadecimal (Base 16):</strong> Digits {0-9, A-F}. Requires grouping binary bits into clean packets of 4 bits.</li>
+        </ul>
+        <div class="section-title">Positional Parsing Representation</div>
+        <div class="formula-box">
+            (1011)₂ = (1 × 2³) + (0 × 2²) + (1 × 2¹) + (1 × 2⁰) = 8 + 0 + 2 + 1 = (11)₁₀
+        </div>
+        <div class="section-title">Complements & Radix Arithmetic</div>
+        <ul>
+            <li><strong>1's Complement:</strong> Bitwise inversion (Logical NOT applied across all individual binary positions).</li>
+            <li><strong>2's Complement:</strong> Created directly by adding 1 to the Least Significant Bit (LSB) of the 1's complement form. <br><code>[2's Comp = 1's Comp + 1]</code></li>
+        </ul>
+        <div class="section-title">Common MCQ Traps</div>
+        <ul>
+            <li>Modern processors utilize 2's complement exclusively for signed arithmetic subtractions to avoid the hardware complication of a dual zero value (+0 and -0).</li>
+            <li><strong>Range Asymmetry:</strong> 2's complement exhibits asymmetric distribution limits. Because 0 is pooled directly with positive values, there is exactly one more negative number than positive numbers available in an n-bit allocation space.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="signed_representation">
+        <div class="card-header">
+            <h2>2. Signed Number Representations</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Representation Schemes</div>
+        <ul>
+            <li><strong>Signed Magnitude:</strong> MSB acts strictly as an isolated isolated sign flag (0 = positive, 1 = negative). The remaining (n-1) bits store raw absolute magnitude. Features a dual representation for zero (+0 and -0).</li>
+            <li><strong>1's Complement Scheme:</strong> Negative numbers are generated by cleanly inverting the absolute positive bit matrix. Also suffers from dual-zero redundancy bugs.</li>
+            <li><strong>2's Complement Scheme ⭐:</strong> The absolute hardware standard. Unifies zero to a single binary string, simplifying ALU addition/subtraction circuits.</li>
+        </ul>
+        <div class="section-title">Mathematical n-bit Boundary Limits</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Representation Type</th>
+                    <th>Valid Structural Range Equation (n-bits)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Signed Magnitude</strong></td>
+                    <td>-(2<sup>n-1</sup> - 1) to +(2<sup>n-1</sup> - 1)</td>
+                </tr>
+                <tr>
+                    <td><strong>1's Complement</strong></td>
+                    <td>-(2<sup>n-1</sup> - 1) to +(2<sup>n-1</sup> - 1)</td>
+                </tr>
+                <tr>
+                    <td><strong>2's Complement ⭐</strong></td>
+                    <td><strong>-2<sup>n-1</sup> to +(2<sup>n-1</sup> - 1)</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="section-title">High-Frequency Exam Check</div>
+        <ul>
+            <li>For an 8-bit sign calculation track, the valid 2's complement capacity spans seamlessly from <strong>-128 to +127</strong>.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="boolean_algebra">
+        <div class="card-header">
+            <h2>3. Boolean Algebra Theorems & Duality</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Identities</div>
+        <ul>
+            <li><strong>Idempotent Law:</strong> <code>A + A = A</code> &nbsp;|&nbsp; <code>A • A = A</code></li>
+            <li><strong>Absorption Theorem:</strong> <code>A + AB = A</code> &nbsp;|&nbsp; <code>A(A + B) = A</code></li>
+            <li><strong>Consensus Theorem (Highly Asked):</strong> <code>AB + A'C + BC = AB + A'C</code></li>
+        </ul>
+        <div class="section-title">The Duality Principle Ruleset</div>
+        <ul>
+            <li>Any valid algebraic statement remains true if you perform the following swap adjustments throughout the equation:
+                <br>• Swap operators: <code>+ (OR) &harr; • (AND)</code>
+                <br>• Swap identity units: <code>0 &harr; 1</code>
+                <br><strong style="color: #f43f5e;">Warning:</strong> Do NOT change or invert variable sign components (leave <code>A</code> and <code>A'</code> completely untouched).
+            </li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="logic_gates">
+        <div class="card-header">
+            <h2>4. Logic Gates & XOR Properties</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Primary Universal Equations</div>
+        <ul>
+            <li><strong>NAND Gate:</strong> <code>Y = (AB)'</code> &rarr; Output drops to 0 if and only if both inputs scale to 1.</li>
+            <li><strong>NOR Gate:</strong> <code>Y = (A + B)'</code> &rarr; Output reaches 1 if and only if all inputs rest at 0.</li>
+        </ul>
+        <div class="section-title">XOR & XNOR Operators (Critical Focus)</div>
+        <ul>
+            <li><strong>XOR (Odd Function):</strong> <code>Y = A &oplus; B = AB' + A'B</code>. Fires high (1) if the input combination features an **odd number of 1s**. For 2 inputs, it drives 1 when inputs differ.</li>
+            <li><strong>XNOR (Equivalence Gate):</strong> <code>Y = A &odot; B = AB + A'B'</code>. Fires high (1) when inputs match.</li>
+        </ul>
+        <div class="section-title">XOR Truth Table Reference</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Input A</th>
+                    <th>Input B</th>
+                    <th>Output A &oplus; B (XOR)</th>
+                    <th>Output A &odot; B (XNOR)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+                <tr><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+                <tr><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+                <tr><td>1</td><td>1</td><td>0</td><td>1</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="topic-card" data-topic="universal_gates">
+        <div class="card-header">
+            <h2>5. Universal Gate Implementation Counts</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Minimum Components Verification Matrix</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Target Logic Function</th>
+                    <th>Minimum NAND Gates Required</th>
+                    <th>Minimum NOR Gates Required</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>NOT (Inverter)</strong></td><td>1</td><td>1</td></tr>
+                <tr><td><strong>AND</strong></td><td>2</td><td>3</td></tr>
+                <tr><td><strong>OR</strong></td><td>3</td><td>2</td></tr>
+                <tr><td><strong>XOR</strong></td><td><strong>4</strong></td><td>5</td></tr>
+                <tr><td><strong>XNOR</strong></td><td>5</td><td><strong>4</strong></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="topic-card" data-topic="canonical_forms">
+        <div class="card-header">
+            <h2>6. Canonical Forms (SOP & POS)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">SOP (Sum of Products)</div>
+        <ul>
+            <li>Constructed using Boolean <strong>Minterms</strong>. Minterms map directly to input combinations that evaluate to a functional 1 output. Written using Sigma notation: <code>F = &Sigma; m(1, 3, 5)</code>.</li>
+        </ul>
+        <div class="section-title">POS (Product of Sums)</div>
+        <ul>
+            <li>Constructed using Boolean <strong>Maxterms</strong>. Maxterms map directly to input combinations that evaluate to a functional 0 output. Written using Pi notation: <code>F = &Pi; M(0, 2, 4)</code>.</li>
+        </ul>
+        <div class="section-title">Combinatorics Rules</div>
+        <ul>
+            <li>For an expression built with <code>n</code> separate boolean variables, the total possible unique minterm or maxterm combination instances is mathematically exactly <strong>2ⁿ</strong>.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="kmap_details">
+        <div class="card-header">
+            <h2>7. Karnaugh Maps (K-Map) Mechanics</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Grid Configuration Track</div>
+        <ul>
+            <li>2 Variables &rarr; 4 Cells &nbsp;|&nbsp; 3 Variables &rarr; 8 Cells &nbsp;|&nbsp; 4 Variables &rarr; 16 Cells.</li>
+            <li>Cells are strictly arranged in **Gray Code sequence order** (00, 01, 11, 10). This ensuring adjacent cells differ by exactly **1 bit position**.</li>
+        </ul>
+        <div class="section-title">Essential Grouping Requirements</div>
+        <ul>
+            <li>Groups must be sized exactly as powers of 2: **1, 2, 4, 8, or 16** cells.</li>
+            <li><strong>Wrap-Around Allowed:</strong> Edges are logically continuous; the leftmost column wraps around to touch the rightmost column, and the top row wraps around to touch the bottom row.</li>
+            <li><strong>Don't Care Conditions (X):</strong> Can be treated dynamically as 0 or 1. Use them only if they help expand an active group size (e.g., turning a pair into a quad), which minimizes the final term. Never make a standalone group consisting only of 'Don't Care' cells.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="combinational_circuits">
+        <div class="card-header">
+            <h2>8. Combinational Circuit Building Blocks</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Subtractor Architectures</div>
+        <ul>
+            <li><strong>Half Subtractor:</strong> Computes the difference of two bits. Equations: <br><code>Difference = A &oplus; B</code> &nbsp;|&nbsp; <code>Borrow = A'B</code>.</li>
+            <li><strong>Full Subtractor:</strong> Computes the difference of two bits while incorporating a preceding stage borrow-in parameter (Bᵢ). Equations: <br><code>Difference = A &oplus; B &oplus; Bᵢ</code> &nbsp;|&nbsp; <code>Borrow = A'B + (A &oplus; B)'Bᵢ</code>.</li>
+        </ul>
+        <div class="section-title">Magnitude Comparators</div>
+        <ul>
+            <li>Takes two binary inputs (A, B) and generates exactly one high flag output among three conditional lines: <code>A > B</code>, <code>A = B</code>, or <code>A &lt; B</code>.</li>
+            <li>For an <code>A = B</code> condition across bits, it utilizes systematic cascading **XNOR** comparison checks.</li>
+        </ul>
+        <div class="section-title">Parity Generators</div>
+        <ul>
+            <li>An error-detection hardware layout built by stacking cascading lines of **XOR** gates. Even parity forces the total bit stream 1-count to be even; odd parity forces it to be odd.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="adders_deep">
+        <div class="card-header">
+            <h2>9. Adder Paradigms & Performance</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Ripple Carry Adder (RCA)</div>
+        <ul>
+            <li>Constructed by cascading <code>n</code> Full Adders in series. It is inherently slow because the carry bit must physically ripple step-by-step from the least significant full adder stage down to the most significant stage. Worse-case delay scales linearly: <code>O(n)</code>.</li>
+        </ul>
+        <div class="section-title">Carry Lookahead Adder (CLA) ⭐</div>
+        <ul>
+            <li>Drastically accelerates addition speeds by computing carry bits ahead of time in parallel using dedicated combinatorial logic equations. It determines carries using Carry Generate (<code>Gᵢ = AᵢBᵢ</code>) and Carry Propagate (<code>Pᵢ = Aᵢ &oplus; Bᵢ</code>) terms. Worst-case gate delay is decoupled from bit count and remains constant: <code>O(1)</code>.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="sequential_basics">
+        <div class="card-header">
+            <h2>10. Sequential Circuits: Latches vs. Flip-Flops</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Distinctions</div>
+        <ul>
+            <li>Sequential logic relies on an active **feedback loop network** to establish tracking memory states. Output states depend on both current inputs and past execution values.</li>
+        </ul>
+        <table>
+            <thead>
+                <tr>
+                    <th>Core Design Parameter</th>
+                    <th>Latch Architecture</th>
+                    <th>Flip-Flop Architecture</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Trigger Modality</strong></td>
+                    <td><strong>Level Triggered</strong> (Outputs track inputs continuously while the clock signal stays high/low)</td>
+                    <td><strong>Edge Triggered</strong> (Outputs transition only during the precise rising or falling clock transition)</td>
+                </tr>
+                <tr>
+                    <td><strong>Hardware Complexity</strong></td>
+                    <td>Low (Built from basic cross-coupled gates)</td>
+                    <td>Higher (Typically engineered using master-slave latch configurations)</td>
+                </tr>
+                <tr>
+                    <td><strong>Race Vulnerability</strong></td>
+                    <td>Highly susceptible to state race conditions</td>
+                    <td>Highly robust against timing race conditions</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="topic-card" data-topic="flipflop_edge_cases">
+        <div class="card-header">
+            <h2>11. Flip-Flop Characteristic Operations</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Characteristic Equations Track</div>
+        <ul>
+            <li><strong>SR Flip-Flop Invalidation:</strong> When inputs are set to <code>S = 1, R = 1</code>, the outputs try to drive low simultaneously. This breaks the complementary requirement (<code>Q = Q'</code>), creating an **unpredictable/invalid state** upon clock release.</li>
+            <li><strong>JK Flip-Flop:</strong> Solves the SR invalidation problem. When <code>J = 1, K = 1</code>, the state cleanly **toggles** on every active clock edge: <br><code>Q_next = Q'</code>.</li>
+            <li><strong>D (Data) Flip-Flop:</strong> Acts as a reliable transparent data buffer state line. <br>Equation: <strong><code>Q_next = D</code></strong>.</li>
+            <li><strong>T (Toggle) Flip-Flop:</strong> Toggles state if input is high, holds state if low. <br>Equation: <strong><code>Q_next = T &oplus; Q</code></strong>.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="race_condition">
+        <div class="card-header">
+            <h2>12. Race Around Conditions & Solutions</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">The Problem Architecture</div>
+        <ul>
+            <li>Occurs within a **level-triggered JK Flip-Flop** when <code>J = 1, K = 1</code>, and the clock pulse width (<code>t_w</code>) is longer than the propagation delay of the internal logic gates (<code>t_pd</code>). The output toggles repeatedly and uncontrollably within a single clock cycle, leaving the final state unpredictable.</li>
+        </ul>
+        <div class="section-title">The Three Standard Solutions</div>
+        <ul>
+            <li>1. Enforce strict **Edge Triggering** (relying on differentiator circuits).</li>
+            <li>2. Enforce structural **Master-Slave JK Flip-Flop** design configurations.</li>
+            <li>3. Ensure the clock width is strictly bounded: <code>t_pd &lt; t_w &lt; T_clock</code>.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="counters_deep">
+        <div class="card-header">
+            <h2>13. Counter Designs (MOD Boundaries)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">MOD Limits</div>
+        <ul>
+            <li>An <code>n-bit</code> binary counter can scale to a maximum count sequence of <strong>2ⁿ</strong> states (MOD-2ⁿ capacity spanning from state 0 to 2ⁿ-1).</li>
+        </ul>
+        <div class="section-title">Specialized Shift Counters</div>
+        <ul>
+            <li><strong>Ring Counter:</strong> A basic shift register loop configuration where the output of the final stage feeds back into the first stage. Uses **One-Hot Encoding** (only one flip-flop is active at a time). An n-bit ring counter provides exactly <strong><code>n</code> distinct states</strong> (highly inefficient state density).</li>
+            <li><strong>Johnson Counter (Twisted Ring / Switch-Tail):</strong> The inverted output of the final stage feeds back into the first stage input. An n-bit Johnson counter provides exactly <strong><code>2n</code> distinct states</strong>.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="registers_detailed">
+        <div class="card-header">
+            <h2>14. Registers & Shift Configurations</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Operations</div>
+        <ul>
+            <li>Registers are built by linking multiple edge-triggered flip-flops in series to store multi-bit words.</li>
+            <li><strong>I/O Layout Strategies:</strong> SISO (Serial-In Serial-Out), SIPO (Serial-In Parallel-Out), PISO (Parallel-In Serial-Out), PIPO (Parallel-In Parallel-Out).</li>
+            <li><strong>Mathematical Scaling:</strong> Shifting bits exactly one position to the left effectively **multiplies the decimal value by 2**. Shifting bits exactly one position to the right effectively **divides the decimal value by 2** (integer division).</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="memory_ram">
+        <div class="card-header">
+            <h2>15. Memory Types (SRAM vs. DRAM)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Performance Metric</th>
+                    <th>SRAM (Static RAM)</th>
+                    <th>DRAM (Dynamic RAM)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Internal Storage Component</strong></td>
+                    <td>Cross-coupled latch flip-flop circuits (6 transistors per cell)</td>
+                    <td><strong>1 Transistor + 1 Capacitor</strong> structure</td>
+                </tr>
+                <tr>
+                    <td><strong>Speed Performance</strong></td>
+                    <td>Extremely fast access times (used for Cache layers)</td>
+                    <td>Slower access times (used for system Main Memory)</td>
+                </tr>
+                <tr>
+                    <td><strong>Refresh Requirement</strong></td>
+                    <td>No active refresh cycles required while powered</td>
+                    <td><strong>Requires continuous refresh cycles</strong> because capacitors leak charge over time</td>
+                </tr>
+                <tr>
+                    <td><strong>Density & Cost Index</strong></td>
+                    <td>Low density, high cost per megabyte</td>
+                    <td>High density, low cost per megabyte</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="topic-card" data-topic="rom_types">
+        <div class="card-header">
+            <h2>16. Non-Volatile ROM Architectures</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Classification Matrix</div>
+        <ul>
+            <li><strong>PROM (Programmable ROM):</strong> Manufactured as an unprogrammed blank matrix that can be written to exactly once via field programmers.</li>
+            <li><strong>EPROM (Erasable PROM):</strong> Can be erased and rewritten. Erasing requires exposing the chip to concentrated **Ultra-Violet (UV) light** through a quartz window window.</li>
+            <li><strong>EEPROM (Electrically Erasable PROM):</strong> Can be erased and rewritten in-circuit using localized electrical pulses. Features fine byte-level structural modification access.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="timing_delay">
+        <div class="card-header">
+            <h2>17. Timing Parameters & Propagation Delays</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Delay Metrics</div>
+        <ul>
+            <li><strong>Propagation Delay (t_pd):</strong> The time it takes for a change at the input terminals to cause a steady change at the output pins.</li>
+            <li><strong>Rise Time (t_r):</strong> The time required for a signal voltage transition to climb from 10% up to 90% of its maximum peak amplitude value.</li>
+            <li><strong>Fall Time (t_f):</strong> The time required for a signal voltage transition to drop from 90% down to 10% of its maximum amplitude value.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="hazards_logic">
+        <div class="card-header">
+            <h2>18. Logic Hazards & Glitch Triggers</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Hazard Classifications</div>
+        <ul>
+            <li><strong>Static 1 Hazard:</strong> An output that is supposed to remain at a steady 1 momentarily drops to 0 due to asymmetric gate delays during an input change.</li>
+            <li><strong>Static 0 Hazard:</strong> An output that is supposed to remain at a steady 0 momentarily spikes to 1.</li>
+            <li><strong>Dynamic Hazard:</strong> An output that is supposed to transition cleanly from 0 to 1 (or 1 to 0) fluctuates or bounces multiple times before settling.</li>
+        </ul>
+        <div class="section-title">Common MCQ Solution Trick</div>
+        <ul>
+            <li>Static hazards can be identified on a K-map by looking for adjacent groups that do not overlap. They can be eliminated by adding **redundant look-ahead prime implicant groups** to cover those adjacent boundaries.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="logic_families">
+        <div class="card-header">
+            <h2>19. Integrated Logic Families</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Feature Identification Metrics</div>
+        <ul>
+            <li><strong>TTL (Transistor-Transistor Logic):</strong> Built using bipolar junction transistors. Standard classic design baseline. Fan-out typically matches a factor of 10.</li>
+            <li><strong>CMOS (Complementary Metal-Oxide Semiconductor):</strong> Employs complementary pairs of PMOS and NMOS transistors. Features near-zero static power consumption and exceptionally high noise immunity.</li>
+            <li><strong>ECL (Emitter-Coupled Logic):</strong> Operates based on unsaturated differential amplifier transistor logic states. **The absolute fastest logic family** because it avoids transistor storage delay times, but consumes high power.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="cmos_vs_ttl">
+        <div class="card-header">
+            <h2>20. CMOS vs. TTL Comparative Properties</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Operating Metric</th>
+                    <th>CMOS Logic Family</th>
+                    <th>TTL Logic Family</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Static Power Dissipation</strong></td>
+                    <td>Extremely low (Microwatts per gate)</td>
+                    <td>Substantially higher (Milliwatts per gate)</td>
+                </tr>
+                <tr>
+                    <td><strong>Noise Margin Capacity</strong></td>
+                    <td>Excellent / Exceptionally High (approx 30% to 45% of Vcc)</td>
+                    <td>Significantly lower (approx 0.4V margin parameters)</td>
+                </tr>
+                <tr>
+                    <td><strong>Fan-Out Capacity</strong></td>
+                    <td>Extremely high (typically scales &gt; 50 loads)</td>
+                    <td>Strictly limited (standard rating baseline of 10)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="topic-card" data-topic="tristate_logic">
+        <div class="card-header">
+            <h2>21. Tri-State Logic Systems</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">The Three Legal Functional States</div>
+        <div class="formula-box" style="text-align: center;">
+            <strong>State 0 (Low)</strong> &nbsp;|&nbsp; <strong>State 1 (High)</strong> &nbsp;|&nbsp; <strong>High Impedance (State Z)</strong>
+        </div>
+        <ul>
+            <li><strong>High Impedance (State Z):</strong> The output pin behaves like an open circuit, completely disconnecting it from the signal line. This allows multiple circuit outputs to safely share a common communication line or system bus without causing short circuits.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="multiplexer_deep">
+        <div class="card-header">
+            <h2>22. Multiplexers (MUX Data Selectors)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Structural Configuration Scaling Equation</div>
+        <div class="formula-box">
+            Total Input Data Lines = 2ⁿ &nbsp;&harr;&nbsp; Requiring exactly 'n' independent Select Control Lines
+        </div>
+        <ul>
+            <li>Acts as a digital **Many-to-One** data switch selector.</li>
+            <li><strong>Universal Logic Capability Trap:</strong> A <code>2ⁿ-to-1 MUX</code> can implement any arbitrary boolean logic function of up to <code>n + 1</code> separate variables without needing any extra logic gates.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="demux_details">
+        <div class="card-header">
+            <h2>23. Demultiplexers (DEMUX Data Distributors)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Operational Logic</div>
+        <ul>
+            <li>The precise functional reverse of a MUX system. Operates as a **One-to-Many** data distributor circuit layout. Takes one single input line and routes it to one of 2ⁿ output lines based on the binary state of <code>n</code> select lines.</li>
+            <li>A DEMUX with an active enable pin can be used directly as a binary **Decoder**.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="encoders_decoders">
+        <div class="card-header">
+            <h2>24. Encoders & Priority Resolved Logic</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Functional Mapping</div>
+        <ul>
+            <li><strong>Decoder:</strong> Converts an n-bit coded input into a maximum of 2ⁿ unique output lines. </li>
+            <li><strong>Encoder:</strong> Reverses decoder operations. Converts a maximum of 2ⁿ active input lines back into an n-bit coded output word.</li>
+            <li><strong>Priority Encoder ⭐:</strong> Addresses the ambiguity trap that occurs if multiple input lines go high simultaneously. It evaluates inputs based on a predefined priority hierarchy and generates the binary code of only the highest-priority active input line.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="boolean_identities">
+        <div class="card-header">
+            <h2>25. High-Frequency Boolean Simplification Identities</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Essential Equation Simplifications</div>
+        <div class="formula-box">
+            Identity 1: A + A'B = A + B<br><br>
+            Identity 2: A(A' + B) = AB<br><br>
+            Identity 3 (Distributive Law Extensions): (A + B)(A + C) = A + BC
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="dl_traps" style="border: 1px dashed #38bdf8; background-color: #1a1e2d;">
+        <div class="card-header">
+            <h2 style="color: #f43f5e;">&#9888; Critical CIL MT Digital Logic MCQ Traps Checklist</h2>
+            <label class="checkbox-container" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8;">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <ul>
+            <li><strong>XOR is strictly Associative and Commutative</strong>: <code>(A &oplus; B) &oplus; C = A &oplus; (B &oplus; C)</code>.</li>
+            <li>NAND and NOR gates are universal; any logic circuit can be built entirely from either gate type.</li>
+            <li>2's complement subtraction eliminates the need for end-around carry hardware, which is required in 1's complement math.</li>
+            <li>K-map cells must be arranged in **Gray code order** to preserve structural adjacency via single-bit changes.</li>
+            <li>Latches operate on continuous **level triggering**; Flip-Flops depend on precise **edge triggering**.</li>
+            <li>DRAM uses capacitors that leak charge, requiring continuous refresh cycles. SRAM uses stable transistor latches and does not require refreshes.</li>
+            <li>Carry Lookahead Adders perform fast additions with constant delay <code>O(1)</code>, bypassing the slow ripple propagation of basic adders.</li>
+            <li>Race around conditions ruin state predictability in level-triggered JK flip-flops when <code>J = 1, K = 1</code> and the clock pulse is too wide.</li>
+            <li>Tri-state buffers allow safe multi-device communication line sharing by utilizing a high-impedance (State Z) mode to disconnect inactive outputs.</li>
+            <li>A MOD-N counter contains exactly <code>N</code> distinct states (0 to N-1) and resets back to 0 immediately upon hitting its count limit.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // Storage configuration unique identifier key for Digital Logic tracking
+    const STORAGE_KEY = 'cil_mt_digital_logic_progress';
+
+    // Run processing on load to restore checkbox configurations
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        
+        document.querySelectorAll('.topic-card').forEach(card => {
+            const id = card.getAttribute('data-topic');
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            
+            if (id && savedProgress[id]) {
+                checkbox.checked = true;
+                card.classList.add('completed');
+            }
+        });
+    });
+
+    function toggleComplete(checkbox) {
+        const card = checkbox.closest('.topic-card');
+        const id = card.getAttribute('data-topic');
+        
+        // Fetch existing dictionary state mapping
+        const currentProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+        if (checkbox.checked) {
+            card.classList.add('completed');
+            if (id) currentProgress[id] = true;
+        } else {
+            card.classList.remove('completed');
+            if (id) delete currentProgress[id];
+        }
+
+        // Overwrite adjustments back to tracking dictionary
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentProgress));
+    }
+
+    function clearProgress() {
+        if (confirm("Are you sure you want to reset all Digital Logic revision portal checkboxes?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            document.querySelectorAll('.topic-card').forEach(card => {
+                card.classList.remove('completed');
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                if (checkbox) checkbox.checked = false;
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

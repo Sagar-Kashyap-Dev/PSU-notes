@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Revision Portal - CIL MT Systems</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --border-color: #334155;
+            --success-color: #10b981;
+            --formula-bg: #090d16;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            position: relative;
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .reset-btn {
+            background-color: #f43f5e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .reset-btn:hover {
+            background-color: #e11d48;
+        }
+
+        .topic-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .topic-card.completed {
+            opacity: 0.35;
+            filter: grayscale(50%);
+            border-color: var(--success-color);
+        }
+
+        .topic-card.completed h2 {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.35rem;
+            color: var(--accent-color);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            user-select: none;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            transition: all 0.2s;
+        }
+
+        .checkbox-container:hover {
+            background: rgba(56, 189, 248, 0.2);
+        }
+
+        .checkbox-container input {
+            cursor: pointer;
+            accent-color: var(--success-color);
+            width: 16px;
+            height: 16px;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        ul {
+            margin: 0 0 15px 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .sub-list {
+            list-style-type: circle;
+            margin-top: 4px;
+        }
+
+        .formula-box {
+            background-color: var(--formula-bg);
+            padding: 12px 16px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+            font-family: "Consolas", "Courier New", monospace;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+        }
+
+        .formula-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .formula-inline-card {
+            background-color: var(--formula-bg);
+            padding: 10px;
+            border-radius: 6px;
+            border-top: 2px solid var(--border-color);
+            text-align: center;
+        }
+
+        .formula-inline-card span {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .formula-inline-card code {
+            font-family: "Consolas", "Courier New", monospace;
+            color: #f43f5e;
+            font-size: 1.05rem;
+            font-weight: bold;
+        }
+
+        .none-text {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>CIL MT Systems Last-Week DSA Revision</h1>
+        <p>Persistent Checklist: Tracking via LocalStorage</p>
+        <button class="reset-btn" onclick="clearProgress()">Reset All Progress</button>
+    </header>
+
+    <div class="topic-card" data-topic="1">
+        <div class="card-header">
+            <h2>1. Array</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Contiguous memory allocation.</li>
+            <li>Supports random access.</li>
+            <li>Fixed size.</li>
+            <li>Insertion/deletion in middle is costly.</li>
+            <li>Binary search works only on sorted arrays.</li>
+            <li>Cache friendly.</li>
+        </ul>
+        <div class="section-title">Formulas & Complexities</div>
+        <div class="formula-box">
+            Address calculation:<br>
+            LOC(A[i]) = Base + (i - LB) &times; w
+        </div>
+        <div class="formula-grid">
+            <div class="formula-inline-card"><span>Access</span><code>O(1)</code></div>
+            <div class="formula-inline-card"><span>Linear Search</span><code>O(n)</code></div>
+            <div class="formula-inline-card"><span>Binary Search</span><code>O(log n)</code></div>
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="2">
+        <div class="card-header">
+            <h2>2. Linked List</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Dynamic size.</li>
+            <li>Non-contiguous memory.</li>
+            <li>Random access not possible.</li>
+            <li>Extra memory needed for pointer(s).</li>
+            <li>Easy insertion/deletion.</li>
+        </ul>
+        <div class="section-title">Formulas & Complexities</div>
+        <div class="formula-grid">
+            <div class="formula-inline-card"><span>Search</span><code>O(n)</code></div>
+            <div class="formula-inline-card"><span>Insert at Start</span><code>O(1)</code></div>
+            <div class="formula-inline-card"><span>Delete at Start</span><code>O(1)</code></div>
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="3">
+        <div class="card-header">
+            <h2>3. Stack</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>LIFO (Last In First Out).</li>
+            <li>Insert/Delete from one end (TOP).</li>
+            <li>Used in recursion, expression evaluation, and parenthesis matching.</li>
+        </ul>
+        <div class="section-title">Formulas & Conditions</div>
+        <div class="formula-box">
+            Overflow Condition: TOP == MAX - 1<br>
+            Underflow Condition: TOP == -1
+        </div>
+        <div class="formula-grid">
+            <div class="formula-inline-card"><span>Push</span><code>O(1)</code></div>
+            <div class="formula-inline-card"><span>Pop</span><code>O(1)</code></div>
+            <div class="formula-inline-card"><span>Search</span><code>O(n)</code></div>
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="4">
+        <div class="card-header">
+            <h2>4. Queue</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>FIFO (First In First Out).</li>
+            <li>Insert at Rear, Delete at Front.</li>
+            <li>Used in operating system scheduling and BFS (Breadth-First Search).</li>
+        </ul>
+        <div class="section-title">Formulas & Conditions</div>
+        <div class="formula-box">
+            Circular Queue Full Condition:<br>
+            (REAR + 1) % N == FRONT
+        </div>
+        <div class="formula-grid">
+            <div class="formula-inline-card"><span>Enqueue</span><code>O(1)</code></div>
+            <div class="formula-inline-card"><span>Dequeue</span><code>O(1)</code></div>
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="5">
+        <div class="card-header">
+            <h2>5. Tree</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Hierarchical structure.</li>
+            <li>Root node has no parent.</li>
+            <li>Tree is connected and acyclic.</li>
+            <li>n nodes have n &minus; 1 edges.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <div class="formula-box">
+            Total Edges = n - 1<br>
+            Leaf nodes in full binary tree: L = I + 1 &nbsp;&nbsp;(where I = internal nodes)
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="6">
+        <div class="card-header">
+            <h2>6. Binary Tree</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Each node has at most 2 children.</li>
+            <li>Types: Full, Complete, Perfect, Balanced, Skewed.</li>
+        </ul>
+        <div class="section-title">Formulas Worth Memorizing</div>
+        <div class="formula-box">
+            Maximum nodes at level k = 2<sup>k</sup><br>
+            Maximum nodes for height h = 2<sup>h+1</sup> - 1<br>
+            Minimum nodes for height h = h + 1<br>
+            Leaf nodes in perfect tree = 2<sup>h</sup><br>
+            Internal nodes in perfect tree = 2<sup>h</sup> - 1<br>
+            Total nodes from leaf nodes: N = 2L - 1<br>
+            Null links in binary tree with n nodes = n + 1
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="7">
+        <div class="card-header">
+            <h2>7. Tree Traversal</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Preorder:</strong> Root &rarr; Left &rarr; Right</li>
+            <li><strong>Inorder:</strong> Left &rarr; Root &rarr; Right</li>
+            <li><strong>Postorder:</strong> Left &rarr; Right &rarr; Root</li>
+            <li><strong>Level Order:</strong> Breadth-First Search (BFS)</li>
+        </ul>
+        <div class="section-title">Complexity</div>
+        <div class="formula-inline-card" style="max-width: 250px; margin: 0 auto;">
+            <span>All Traversals</span><code>O(n)</code>
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="8">
+        <div class="card-header">
+            <h2>8. Binary Search Tree (BST)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Left subtree &lt; Root</li>
+            <li>Right subtree &gt; Root</li>
+            <li>Inorder traversal always gives <strong>sorted order</strong>.</li>
+            <li>Not necessarily balanced.</li>
+        </ul>
+        <div class="section-title">Time Complexities (Search / Insert / Delete)</div>
+        <div class="formula-grid">
+            <div class="formula-inline-card"><span>Balanced Best Case</span><code>O(log n)</code></div>
+            <div class="formula-inline-card"><span>Skewed Worst Case</span><code>O(n)</code></div>
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="9">
+        <div class="card-header">
+            <h2>9. AVL Tree</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Self-balancing BST.</li>
+            <li>Rotations to balance: LL, RR, LR, RL.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <div class="formula-box">
+            Balance Factor (BF) = Height(Left) - Height(Right)<br>
+            Valid AVL condition: -1 &le; BF &le; 1
+        </div>
+        <div class="formula-inline-card" style="max-width: 250px; margin: 0 auto;">
+            <span>All Operations (Best/Worst)</span><code>O(log n)</code>
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="10">
+        <div class="card-header">
+            <h2>10. Heap</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Complete Binary Tree structure.</li>
+            <li>Min Heap: Parent &le; Children | Max Heap: Parent &ge; Children.</li>
+            <li><strong>Not a BST.</strong></li>
+        </ul>
+        <div class="section-title">Formulas (Array representation index-0)</div>
+        <div class="formula-box">
+            Parent(i) = &lfloor; (i-1)/2 &rfloor;<br>
+            Left Child(i) = 2i + 1 &nbsp;|&nbsp; Right Child(i) = 2i + 2
+        </div>
+        <div class="formula-grid">
+            <div class="formula-inline-card"><span>Build Heap</span><code>O(n)</code></div>
+            <div class="formula-inline-card"><span>Insert / Delete</span><code>O(log n)</code></div>
+            <div class="formula-inline-card"><span>Heap Sort</span><code>O(n log n)</code></div>
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="11">
+        <div class="card-header">
+            <h2>11. Hash Table</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Uses a hash function to map keys to slots.</li>
+            <li>Average search is exceptionally fast. Collision is possible.</li>
+            <li>Collision handling: Chaining (Open), Linear/Quadratic Probing, Double Hashing (Closed).</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <div class="formula-box">
+            Load Factor (&alpha;) = n / m &nbsp;&nbsp;(where n = items, m = slots)
+        </div>
+        <div class="formula-grid">
+            <div class="formula-inline-card"><span>Average Search</span><code>O(1)</code></div>
+            <div class="formula-inline-card"><span>Worst Case Search</span><code>O(n)</code></div>
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="12">
+        <div class="card-header">
+            <h2>12. Graph</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Collection of vertices (V) and edges (E).</li>
+            <li>Directed or Undirected. A tree is a connected acyclic graph.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <div class="formula-box">
+            Undirected Handshaking: &sum; Degree = 2E<br>
+            Max edges (Undirected) = n(n-1) / 2<br>
+            Max edges (Directed) = n(n-1)
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="13">
+        <div class="card-header">
+            <h2>13. BFS</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Uses <strong>Queue</strong>.</li>
+            <li>Level-by-level traversal.</li>
+            <li>Finds shortest path in an unweighted graph.</li>
+        </ul>
+        <div class="formula-grid">
+            <div class="formula-inline-card"><span>Time Complexity</span><code>O(V + E)</code></div>
+            <div class="formula-inline-card"><span>Space Complexity</span><code>O(V)</code></div>
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="14">
+        <div class="card-header">
+            <h2>14. DFS</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Uses <strong>Stack</strong>.</li>
+            <li>Goes deep down alternative paths first.</li>
+            <li>Used in cycle detection and topological sorting.</li>
+        </ul>
+        <div class="formula-grid">
+            <div class="formula-inline-card"><span>Time Complexity</span><code>O(V + E)</code></div>
+            <div class="formula-inline-card"><span>Space Complexity</span><code>O(V)</code></div>
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="15">
+        <div class="card-header">
+            <h2>15. Sorting Algorithms</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Key Sorting Parameters</div>
+        <ul>
+            <li><strong>Bubble Sort:</strong> Stable, In-place. Best: <code>O(n)</code>, Worst: <code>O(n<sup>2</sup>)</code></li>
+            <li><strong>Selection Sort:</strong> Minimum swaps, Not stable. Always: <code>O(n<sup>2</sup>)</code></li>
+            <li><strong>Insertion Sort:</strong> Adaptive (Excellent for nearly sorted). Stable. Best: <code>O(n)</code>, Worst: <code>O(n<sup>2</sup>)</code></li>
+            <li><strong>Merge Sort:</strong> Divide & Conquer, Stable. Time: <code>O(n log n)</code>, Space: <code>O(n)</code></li>
+            <li><strong>Quick Sort:</strong> Divide & Conquer, In-place, Pivot-based. Avg: <code>O(n log n)</code>, Worst: <code>O(n<sup>2</sup>)</code></li>
+            <li><strong>Heap Sort:</strong> Uses Heap, Not stable, In-place. Always: <code>O(n log n)</code></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="16">
+        <div class="card-header">
+            <h2>16. Searching</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Quick Compares</div>
+        <ul>
+            <li><strong>Linear Search:</strong> Works on unsorted data. Complexity: <code>O(n)</code></li>
+            <li><strong>Binary Search:</strong> Strictly requires sorted data. Divide & Conquer. Complexity: <code>O(log n)</code></li>
+        </ul>
+        <div class="section-title">Formula</div>
+        <div class="formula-box">
+            Maximum comparisons in Binary Search = &lfloor; log<sub>2</sub> n &rfloor; + 1
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="17">
+        <div class="card-header">
+            <h2>17. Dynamic Programming</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Overlapping subproblems</strong> &amp; <strong>Optimal substructure</strong>.</li>
+            <li>Memoization = Top-Down approach.</li>
+            <li>Tabulation = Bottom-Up approach.</li>
+        </ul>
+        <div class="section-title">Typical State Equation</div>
+        <div class="formula-box">
+            DP[i] = optimal_choice(solution using previous sub-states)
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="18">
+        <div class="card-header">
+            <h2>18. Greedy Algorithm</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Chooses locally optimal solution at each step.</li>
+            <li>Does not guarantee a global optimum for all problems.</li>
+            <li>Core Applications: Kruskal's, Prim's, Huffman Coding, Dijkstra's.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="19">
+        <div class="card-header">
+            <h2>19. Minimum Spanning Tree (MST)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Connects all vertices with minimum possible total edge weight. No cycles.</li>
+            <li>Algorithms: <strong>Prim's</strong> (vertex-centric) &amp; <strong>Kruskal's</strong> (edge-centric).</li>
+        </ul>
+        <div class="section-title">Formula</div>
+        <div class="formula-box">
+            Total edges in any MST = n - 1
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="20">
+        <div class="card-header">
+            <h2>20. Shortest Path Algorithms</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Comparisons</div>
+        <ul>
+            <li><strong>Dijkstra's:</strong> Greedy. <strong>Does not allow negative edge weights.</strong> Complexity with min-heap: <code>O((V + E) log V)</code></li>
+            <li><strong>Bellman-Ford:</strong> Dynamic Programming. <strong>Allows negative weights</strong> and detects negative cycles. Complexity: <code>O(V &times; E)</code></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="traps" style="border: 1px dashed #ef4444; background-color: #1a1625;">
+        <div class="card-header">
+            <h2 style="color: #f43f5e;">&#9888; Critical CIL MT One-Line MCQ Traps</h2>
+            <label class="checkbox-container" style="background: rgba(244, 63, 94, 0.1); color: #f43f5e;">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <ul>
+            <li>BST &ne; Balanced Tree (unless stated as AVL/Red-Black).</li>
+            <li>Heap &ne; BST (Heap satisfies structural and heap properties, not order properties).</li>
+            <li>BFS &rarr; Queue | DFS &rarr; Stack.</li>
+            <li>Inorder(BST) Always &rarr; Sorted Ascending Order.</li>
+            <li>Complete Tree &ne; Full Tree.</li>
+            <li>Merge Sort &rarr; Stable | Quick Sort &rarr; Worst Case <code>O(n<sup>2</sup>)</code>.</li>
+            <li>Dijkstra &rarr; No Negative Edge | Bellman-Ford &rarr; Negative Edges Allowed.</li>
+            <li>Hashing Average Search Complexity &rarr; <code>O(1)</code>.</li>
+            <li>Binary Search &rarr; Sorted Data Array Required.</li>
+            <li>Tree with n nodes &rarr; Exactly n &minus; 1 edges.</li>
+            <li>Full Binary Tree &rarr; L = I + 1.</li>
+            <li>Heap is always structurally a Complete Binary Tree.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // Storage configuration identifier key
+    const STORAGE_KEY = 'cil_mt_dsa_progress';
+
+    // Run layout processing on page load
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        
+        document.querySelectorAll('.topic-card').forEach(card => {
+            const id = card.getAttribute('data-topic');
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            
+            if (savedProgress[id]) {
+                checkbox.checked = true;
+                card.classList.add('completed');
+            }
+        });
+    });
+
+    function toggleComplete(checkbox) {
+        const card = checkbox.closest('.topic-card');
+        const id = card.getAttribute('data-topic');
+        
+        // Fetch existing tracking dictionary
+        const currentProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+        if (checkbox.checked) {
+            card.classList.add('completed');
+            currentProgress[id] = true;
+        } else {
+            card.classList.remove('completed');
+            delete currentProgress[id];
+        }
+
+        // Overwrite updated values back to local storage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentProgress));
+    }
+
+    function clearProgress() {
+        if (confirm("Are you sure you want to reset all revision marks?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            document.querySelectorAll('.topic-card').forEach(card => {
+                card.classList.remove('completed');
+                card.querySelector('input[type="checkbox"]').checked = false;
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

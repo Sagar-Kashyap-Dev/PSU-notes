@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Progress Tracker</title>
+<style>
+  :root {
+    --bg: #f8f9fa; --surface: #ffffff; --surface2: #f1f3f5;
+    --border: #dee2e6; --text: #212529; --muted: #6c757d;
+    --green: #2f9e44; --green-bg: #ebfbee; --green-text: #1e7e34;
+    --yellow: #e67700; --yellow-bg: #fff9db; --blue: #1971c2;
+    --blue-bg: #e7f5ff; --red: #c92a2a; --red-bg: #fff5f5;
+    --radius: 8px; --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.5; }
+  
+  #app { display: flex; height: 100vh; overflow: hidden; }
+  
+  /* Sidebar */
+  #sidebar { width: 280px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+  #sidebar-header { padding: 16px; border-bottom: 1px solid var(--border); }
+  #sidebar-header h1 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  #sidebar-header p { font-size: 12px; color: var(--muted); }
+  #search-wrap { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+  #search { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; background: var(--bg); color: var(--text); outline: none; }
+  #search:focus { border-color: var(--blue); }
+  #subject-nav { overflow-y: auto; flex: 1; padding: 8px 0; }
+  
+  .nav-subject { display: flex; align-items: center; gap: 8px; padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.15s; border-radius: 0; }
+  .nav-subject:hover { background: var(--bg); }
+  .nav-subject.active { background: var(--blue-bg); color: var(--blue); }
+  .nav-subject .nav-badge { margin-left: auto; font-size: 11px; padding: 2px 6px; border-radius: 10px; background: var(--surface2); color: var(--muted); }
+  .nav-subject.active .nav-badge { background: var(--blue-bg); color: var(--blue); }
+  
+  /* Main */
+  #main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+  
+  /* Dashboard */
+  #dashboard { padding: 20px 24px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  #dashboard h2 { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+  #overall-bar-wrap { margin: 10px 0 6px; background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; }
+  #overall-bar { height: 100%; background: var(--blue); border-radius: 4px; transition: width 0.3s; width: 0%; }
+  #overall-stats { font-size: 13px; color: var(--muted); }
+  .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+  .stat-card { background: var(--surface2); border-radius: var(--radius); padding: 10px 12px; text-align: center; }
+  .stat-card .val { font-size: 22px; font-weight: 600; color: var(--text); }
+  .stat-card .lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  
+  /* Subjects Grid */
+  #subjects-grid { padding: 20px 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .subject-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
+  .subject-card:hover { border-color: #adb5bd; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .subject-card.active { border-color: var(--blue); }
+  .subject-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .subject-card-name { font-weight: 600; font-size: 14px; }
+  .subject-card-status { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+  .status-complete { background: var(--green-bg); color: var(--green-text); }
+  .status-partial { background: var(--yellow-bg); color: var(--yellow); }
+  .status-none { background: var(--surface2); color: var(--muted); }
+  .subject-card-count { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .card-bar-wrap { background: var(--surface2); border-radius: 3px; height: 4px; margin-top: 6px; overflow: hidden; }
+  .card-bar { height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .card-pct { font-size: 12px; color: var(--muted); text-align: right; margin-top: 4px; }
+  
+  /* Content Panel */
+  #content { padding: 0 24px 24px; }
+  #content-header { padding: 16px 0 12px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg); z-index: 10; }
+  #content-title { font-size: 18px; font-weight: 600; }
+  .btn-group { display: flex; gap: 8px; }
+  .btn { padding: 6px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; cursor: pointer; background: var(--surface); color: var(--text); transition: background 0.15s; }
+  .btn:hover { background: var(--surface2); }
+  .btn-danger { border-color: #ffc9c9; color: var(--red); }
+  .btn-danger:hover { background: var(--red-bg); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  
+  /* Tree */
+  .tree-subject { margin-bottom: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .tree-subject-header { padding: 12px 16px; display: flex; align-items: center; gap: 8px; cursor: pointer; border-bottom: 1px solid var(--border); user-select: none; }
+  .tree-subject-header:hover { background: var(--bg); }
+  .chevron { transition: transform 0.2s; font-size: 12px; color: var(--muted); }
+  .chevron.open { transform: rotate(90deg); }
+  .tree-subject-name { font-weight: 600; font-size: 14px; flex: 1; }
+  .tree-subject-meta { font-size: 12px; color: var(--muted); }
+  .tree-body { padding: 8px 0; }
+  .tree-body.hidden { display: none; }
+  
+  .tree-node { display: flex; align-items: center; gap: 6px; padding: 4px 16px 4px; cursor: default; font-size: 13px; }
+  .tree-node.leaf { cursor: pointer; }
+  .tree-node.leaf:hover { background: var(--bg); }
+  .tree-node.indent-1 { padding-left: 32px; }
+  .tree-node.indent-2 { padding-left: 48px; }
+  .tree-node.indent-3 { padding-left: 64px; }
+  .tree-node.branch { color: var(--muted); font-weight: 500; margin-top: 4px; }
+  
+  .leaf-icon { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+  .leaf-label { flex: 1; }
+  .tree-node.done .leaf-label { text-decoration: line-through; color: var(--green); }
+  .leaf-cb { width: 15px; height: 15px; cursor: pointer; accent-color: var(--green); flex-shrink: 0; }
+  
+  .branch-icon { font-size: 11px; flex-shrink: 0; color: #adb5bd; }
+  .branch-toggle { cursor: pointer; }
+  .branch-toggle:hover { color: var(--text); }
+  
+  /* Search highlights */
+  .highlight { background: #fff3bf; border-radius: 2px; }
+  .hidden-node { display: none !important; }
+  
+  /* Modal */
+  #modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+  #modal-backdrop.show { display: flex; }
+  #modal { background: var(--surface); border-radius: var(--radius-lg); padding: 24px; min-width: 320px; max-width: 400px; }
+  #modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  #modal p { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+  #modal .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+  .btn-confirm { background: var(--red); color: #fff; border-color: var(--red); }
+  .btn-confirm:hover { background: #a61e1e; }
+  
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  
+  /* View toggle */
+  #view-btns { display: flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  #view-btns button { border: none; padding: 6px 12px; font-size: 13px; cursor: pointer; background: var(--surface); color: var(--muted); transition: background 0.15s; }
+  #view-btns button.active { background: var(--blue-bg); color: var(--blue); font-weight: 500; }
+
+  @media (max-width: 700px) {
+    #sidebar { display: none; }
+    .stat-cards { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <h1>📚 Study Tracker</h1>
+      <p id="sidebar-overall">Loading...</p>
+    </div>
+    <div id="search-wrap">
+      <input id="search" type="text" placeholder="Search topics..." autocomplete="off">
+    </div>
+    <div id="subject-nav"></div>
+  </div>
+  
+  <div id="main">
+    <div id="dashboard">
+      <h2>Overall Progress</h2>
+      <div id="overall-bar-wrap"><div id="overall-bar"></div></div>
+      <div id="overall-stats"></div>
+      <div class="stat-cards">
+        <div class="stat-card"><div class="val" id="sc-total">0</div><div class="lbl">Total Topics</div></div>
+        <div class="stat-card"><div class="val" id="sc-done">0</div><div class="lbl">Completed</div></div>
+        <div class="stat-card"><div class="val" id="sc-rem">0</div><div class="lbl">Remaining</div></div>
+        <div class="stat-card"><div class="val" id="sc-pct">0%</div><div class="lbl">Percentage</div></div>
+      </div>
+    </div>
+
+    <div id="content">
+      <div id="content-header">
+        <div id="content-title">All Subjects</div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div id="view-btns">
+            <button class="active" id="btn-cards" onclick="setView('cards')">Cards</button>
+            <button id="btn-tree" onclick="setView('tree')">Tree</button>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-danger" onclick="confirmReset('all')">Reset All</button>
+          </div>
+        </div>
+      </div>
+      <div id="view-cards"><div id="subjects-grid"></div></div>
+      <div id="view-tree" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-backdrop">
+  <div id="modal">
+    <h3 id="modal-title">Confirm Reset</h3>
+    <p id="modal-msg"></p>
+    <div class="modal-btns">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-confirm" id="modal-ok">Reset</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUBJECTS = [
+  { id: "Programming", name: "Programming", nodes: [
+    { id: "Prog_Basics", label: "Basics", children: [
+      { id: "Prog_Variables", label: "Variables" }, { id: "Prog_DataTypes", label: "Data Types" },
+      { id: "Prog_Operators", label: "Operators" }, { id: "Prog_TypeConversion", label: "Type Conversion" },
+      { id: "Prog_Expressions", label: "Expressions" }
+    ]},
+    { id: "Prog_Control", label: "Control Statements", children: [
+      { id: "Prog_IfElse", label: "if-else" }, { id: "Prog_Switch", label: "switch" },
+      { id: "Prog_Loops", label: "loops" }, { id: "Prog_Goto", label: "goto" }
+    ]},
+    { id: "Prog_Functions", label: "Functions", children: [
+      { id: "Prog_CallValue", label: "Call by Value" }, { id: "Prog_CallRef", label: "Call by Reference" },
+      { id: "Prog_Recursion", label: "Recursion" }, { id: "Prog_FuncPtr", label: "Function Pointer" }
+    ]},
+    { id: "Prog_Arrays", label: "Arrays" },
+    { id: "Prog_Strings", label: "Strings" },
+    { id: "Prog_Pointers", label: "Pointers", children: [
+      { id: "Prog_PtrArith", label: "Pointer Arithmetic" }, { id: "Prog_DoublePtr", label: "Double Pointer" },
+      { id: "Prog_VoidPtr", label: "Void Pointer" }
+    ]},
+    { id: "Prog_Structures", label: "Structures" },
+    { id: "Prog_Unions", label: "Unions" },
+    { id: "Prog_Enums", label: "Enums" },
+    { id: "Prog_StorageClasses", label: "Storage Classes" },
+    { id: "Prog_DMA", label: "Dynamic Memory Allocation", children: [
+      { id: "Prog_Malloc", label: "malloc" }, { id: "Prog_Calloc", label: "calloc" },
+      { id: "Prog_Realloc", label: "realloc" }, { id: "Prog_Free", label: "free" }
+    ]},
+    { id: "Prog_FileHandling", label: "File Handling" },
+    { id: "Prog_Preprocessor", label: "Preprocessor Directives" }
+  ]},
+  { id: "DSA", name: "DSA", nodes: [
+    { id: "DSA_Arrays", label: "Arrays", children: [
+      { id: "DSA_Arr_MemLayout", label: "Memory Layout" }, { id: "DSA_Arr_Ops", label: "Operations" },
+      { id: "DSA_Arr_Complexity", label: "Complexity" }, { id: "DSA_Arr_PrefixSum", label: "Prefix Sum" },
+      { id: "DSA_Arr_SlidingWindow", label: "Sliding Window" }, { id: "DSA_Arr_BinarySearch", label: "Binary Search" }
+    ]},
+    { id: "DSA_LL", label: "Linked List", children: [
+      { id: "DSA_LL_Singly", label: "Singly" }, { id: "DSA_LL_Doubly", label: "Doubly" },
+      { id: "DSA_LL_Circular", label: "Circular" }, { id: "DSA_LL_Ops", label: "Operations" },
+      { id: "DSA_LL_Complexity", label: "Complexity" }
+    ]},
+    { id: "DSA_Stack", label: "Stack", children: [
+      { id: "DSA_Stack_Impl", label: "Implementation" }, { id: "DSA_Stack_Ops", label: "Operations" },
+      { id: "DSA_Stack_Apps", label: "Applications" }, { id: "DSA_Stack_Complexity", label: "Complexity" }
+    ]},
+    { id: "DSA_Queue", label: "Queue", children: [
+      { id: "DSA_Q_Linear", label: "Linear Queue" }, { id: "DSA_Q_Circular", label: "Circular Queue" },
+      { id: "DSA_Q_Priority", label: "Priority Queue" }, { id: "DSA_Q_Deque", label: "Deque" },
+      { id: "DSA_Q_Complexity", label: "Complexity" }
+    ]},
+    { id: "DSA_Trees", label: "Trees", children: [
+      { id: "DSA_T_Binary", label: "Binary Tree" }, { id: "DSA_T_BST", label: "BST" },
+      { id: "DSA_T_AVL", label: "AVL Tree" }, { id: "DSA_T_Heap", label: "Heap" },
+      { id: "DSA_T_BTree", label: "B Tree" }, { id: "DSA_T_BPlus", label: "B+ Tree" },
+      { id: "DSA_T_Traversals", label: "Traversals" }, { id: "DSA_T_Ops", label: "Operations" },
+      { id: "DSA_T_Complexity", label: "Complexity" }
+    ]},
+    { id: "DSA_Hashing", label: "Hashing", children: [
+      { id: "DSA_H_Functions", label: "Hash Functions" }, { id: "DSA_H_Collision", label: "Collision Handling" },
+      { id: "DSA_H_Chaining", label: "Chaining" }, { id: "DSA_H_OpenAddr", label: "Open Addressing" },
+      { id: "DSA_H_Complexity", label: "Complexity" }
+    ]},
+    { id: "DSA_Graph", label: "Graph", children: [
+      { id: "DSA_G_Repr", label: "Representation" }, { id: "DSA_G_BFS", label: "BFS" },
+      { id: "DSA_G_DFS", label: "DFS" }, { id: "DSA_G_CC", label: "Connected Components" },
+      { id: "DSA_G_Topo", label: "Topological Sort" }, { id: "DSA_G_Complexity", label: "Complexity" }
+    ]}
+  ]},
+  { id: "Algorithms", name: "Algorithms", nodes: [
+    { id: "Algo_Complexity", label: "Complexity Analysis", children: [
+      { id: "Algo_BigO", label: "Big O" }, { id: "Algo_Theta", label: "Theta" },
+      { id: "Algo_Omega", label: "Omega" }, { id: "Algo_Recurrence", label: "Recurrence Relations" }
+    ]},
+    { id: "Algo_Searching", label: "Searching", children: [
+      { id: "Algo_LinearSearch", label: "Linear Search" }, { id: "Algo_BinarySearch", label: "Binary Search" }
+    ]},
+    { id: "Algo_Sorting", label: "Sorting", children: [
+      { id: "Algo_Bubble", label: "Bubble" }, { id: "Algo_Selection", label: "Selection" },
+      { id: "Algo_Insertion", label: "Insertion" }, { id: "Algo_Merge", label: "Merge" },
+      { id: "Algo_Quick", label: "Quick" }, { id: "Algo_Heap", label: "Heap" },
+      { id: "Algo_Radix", label: "Radix" }
+    ]},
+    { id: "Algo_DnC", label: "Divide and Conquer" },
+    { id: "Algo_Greedy", label: "Greedy Algorithms", children: [
+      { id: "Algo_Huffman", label: "Huffman Coding" }, { id: "Algo_JobScheduling", label: "Job Scheduling" },
+      { id: "Algo_MST", label: "MST" }
+    ]},
+    { id: "Algo_DP", label: "Dynamic Programming", children: [
+      { id: "Algo_Knapsack", label: "Knapsack" }, { id: "Algo_LCS", label: "LCS" },
+      { id: "Algo_MatrixChain", label: "Matrix Chain" }
+    ]},
+    { id: "Algo_Backtracking", label: "Backtracking", children: [
+      { id: "Algo_NQueen", label: "N Queen" }, { id: "Algo_SubsetSum", label: "Subset Sum" }
+    ]},
+    { id: "Algo_GraphAlgos", label: "Graph Algorithms", children: [
+      { id: "Algo_Dijkstra", label: "Dijkstra" }, { id: "Algo_FloydWarshall", label: "Floyd Warshall" },
+      { id: "Algo_Prim", label: "Prim" }, { id: "Algo_Kruskal", label: "Kruskal" },
+      { id: "Algo_BellmanFord", label: "Bellman Ford" }
+    ]},
+    { id: "Algo_NP", label: "NP Completeness" }
+  ]},
+  { id: "OS", name: "OS", nodes: [
+    { id: "OS_Intro", label: "Introduction" },
+    { id: "OS_Process", label: "Process Management", children: [
+      { id: "OS_P_Process", label: "Process" }, { id: "OS_P_PCB", label: "PCB" },
+      { id: "OS_P_States", label: "Process States" }, { id: "OS_P_ContextSwitch", label: "Context Switching" }
+    ]},
+    { id: "OS_Threads", label: "Threads", children: [
+      { id: "OS_T_User", label: "User Threads" }, { id: "OS_T_Kernel", label: "Kernel Threads" }
+    ]},
+    { id: "OS_CPU", label: "CPU Scheduling", children: [
+      { id: "OS_CPU_FCFS", label: "FCFS" }, { id: "OS_CPU_SJF", label: "SJF" },
+      { id: "OS_CPU_SRTF", label: "SRTF" }, { id: "OS_CPU_Priority", label: "Priority" },
+      { id: "OS_CPU_RR", label: "Round Robin" }, { id: "OS_CPU_Numericals", label: "Scheduling Numericals" },
+      { id: "OS_CPU_Metrics", label: "Performance Metrics" }
+    ]},
+    { id: "OS_Sync", label: "Synchronization", children: [
+      { id: "OS_S_CritSec", label: "Critical Section" }, { id: "OS_S_Semaphore", label: "Semaphore" },
+      { id: "OS_S_Mutex", label: "Mutex" }, { id: "OS_S_Monitor", label: "Monitor" },
+      { id: "OS_S_ProdCons", label: "Producer Consumer" }
+    ]},
+    { id: "OS_Deadlock", label: "Deadlocks", children: [
+      { id: "OS_D_Conditions", label: "Conditions" }, { id: "OS_D_Prevention", label: "Prevention" },
+      { id: "OS_D_Avoidance", label: "Avoidance" }, { id: "OS_D_Detection", label: "Detection" },
+      { id: "OS_D_Bankers", label: "Bankers Algorithm" }
+    ]},
+    { id: "OS_Memory", label: "Memory Management", children: [
+      { id: "OS_M_Paging", label: "Paging" }, { id: "OS_M_Segmentation", label: "Segmentation" },
+      { id: "OS_M_VirtualMem", label: "Virtual Memory" }, { id: "OS_M_AddrTrans", label: "Address Translation" }
+    ]},
+    { id: "OS_PageRepl", label: "Page Replacement", children: [
+      { id: "OS_PR_FIFO", label: "FIFO" }, { id: "OS_PR_LRU", label: "LRU" },
+      { id: "OS_PR_Optimal", label: "Optimal" }, { id: "OS_PR_LFU", label: "LFU" }
+    ]},
+    { id: "OS_Thrashing", label: "Thrashing" },
+    { id: "OS_FileSystem", label: "File System" },
+    { id: "OS_DiskSched", label: "Disk Scheduling", children: [
+      { id: "OS_DS_FCFS", label: "FCFS" }, { id: "OS_DS_SSTF", label: "SSTF" },
+      { id: "OS_DS_SCAN", label: "SCAN" }, { id: "OS_DS_CSCAN", label: "C-SCAN" },
+      { id: "OS_DS_LOOK", label: "LOOK" }
+    ]},
+    { id: "OS_Protection", label: "Protection & Security" }
+  ]},
+  { id: "CN", name: "CN", nodes: [
+    { id: "CN_NetBasics", label: "Network Basics" },
+    { id: "CN_OSI", label: "OSI Model", children: [
+      { id: "CN_OSI_Physical", label: "Physical" }, { id: "CN_OSI_DataLink", label: "Data Link" },
+      { id: "CN_OSI_Network", label: "Network" }, { id: "CN_OSI_Transport", label: "Transport" },
+      { id: "CN_OSI_Session", label: "Session" }, { id: "CN_OSI_Presentation", label: "Presentation" },
+      { id: "CN_OSI_Application", label: "Application" }
+    ]},
+    { id: "CN_TCPIP", label: "TCP/IP Model" },
+    { id: "CN_PhysicalLayer", label: "Physical Layer" },
+    { id: "CN_DataLink", label: "Data Link Layer", children: [
+      { id: "CN_DL_Framing", label: "Framing" }, { id: "CN_DL_ErrorDet", label: "Error Detection" },
+      { id: "CN_DL_CRC", label: "CRC" }, { id: "CN_DL_Hamming", label: "Hamming Code" }
+    ]},
+    { id: "CN_MAC", label: "MAC Protocols", children: [
+      { id: "CN_MAC_ALOHA", label: "ALOHA" }, { id: "CN_MAC_CSMA", label: "CSMA" },
+      { id: "CN_MAC_CSMACD", label: "CSMA/CD" }
+    ]},
+    { id: "CN_Network", label: "Network Layer", children: [
+      { id: "CN_N_IPv4", label: "IPv4" }, { id: "CN_N_IPv6", label: "IPv6" },
+      { id: "CN_N_Subnetting", label: "Subnetting" }, { id: "CN_N_Routing", label: "Routing" },
+      { id: "CN_N_ICMP", label: "ICMP" }
+    ]},
+    { id: "CN_Routing", label: "Routing Algorithms", children: [
+      { id: "CN_R_DistVec", label: "Distance Vector" }, { id: "CN_R_LinkState", label: "Link State" }
+    ]},
+    { id: "CN_Transport", label: "Transport Layer", children: [
+      { id: "CN_T_TCP", label: "TCP" }, { id: "CN_T_UDP", label: "UDP" },
+      { id: "CN_T_FlowCtrl", label: "Flow Control" }, { id: "CN_T_Congestion", label: "Congestion Control" }
+    ]},
+    { id: "CN_App", label: "Application Layer", children: [
+      { id: "CN_A_HTTP", label: "HTTP" }, { id: "CN_A_HTTPS", label: "HTTPS" },
+      { id: "CN_A_FTP", label: "FTP" }, { id: "CN_A_SMTP", label: "SMTP" },
+      { id: "CN_A_POP3", label: "POP3" }, { id: "CN_A_IMAP", label: "IMAP" },
+      { id: "CN_A_DNS", label: "DNS" }, { id: "CN_A_DHCP", label: "DHCP" }
+    ]},
+    { id: "CN_Devices", label: "Network Devices" }
+  ]},
+  { id: "DigitalLogic", name: "Digital Logic", nodes: [
+    { id: "DL_NumberSystem", label: "Number System" },
+    { id: "DL_BinaryArith", label: "Binary Arithmetic" },
+    { id: "DL_Complements", label: "Complements" },
+    { id: "DL_LogicGates", label: "Logic Gates" },
+    { id: "DL_BoolAlgebra", label: "Boolean Algebra" },
+    { id: "DL_KMap", label: "K Map" },
+    { id: "DL_SOPPOS", label: "SOP & POS" },
+    { id: "DL_Combinational", label: "Combinational Circuits", children: [
+      { id: "DL_C_MUX", label: "MUX" }, { id: "DL_C_DEMUX", label: "DEMUX" },
+      { id: "DL_C_Encoder", label: "Encoder" }, { id: "DL_C_Decoder", label: "Decoder" },
+      { id: "DL_C_Adder", label: "Adder" }, { id: "DL_C_Comparator", label: "Comparator" }
+    ]},
+    { id: "DL_Sequential", label: "Sequential Circuits", children: [
+      { id: "DL_S_SR", label: "SR Flip Flop" }, { id: "DL_S_JK", label: "JK Flip Flop" },
+      { id: "DL_S_D", label: "D Flip Flop" }, { id: "DL_S_T", label: "T Flip Flop" },
+      { id: "DL_S_Registers", label: "Registers" }, { id: "DL_S_Counters", label: "Counters" }
+    ]},
+    { id: "DL_FSM", label: "FSM" }
+  ]},
+  { id: "COA", name: "COA", nodes: [
+    { id: "COA_NumRepr", label: "Number Representation" },
+    { id: "COA_ArithOps", label: "Arithmetic Operations" },
+    { id: "COA_CPUOrg", label: "CPU Organization" },
+    { id: "COA_InstrCycle", label: "Instruction Cycle" },
+    { id: "COA_AddrModes", label: "Addressing Modes" },
+    { id: "COA_MemHierarchy", label: "Memory Hierarchy" },
+    { id: "COA_Cache", label: "Cache Memory", children: [
+      { id: "COA_C_Direct", label: "Direct Mapping" }, { id: "COA_C_Assoc", label: "Associative" },
+      { id: "COA_C_SetAssoc", label: "Set Associative" }
+    ]},
+    { id: "COA_MainMem", label: "Main Memory" },
+    { id: "COA_SecMem", label: "Secondary Memory" },
+    { id: "COA_IO", label: "I/O Organization", children: [
+      { id: "COA_IO_Interrupt", label: "Interrupt" }, { id: "COA_IO_DMA", label: "DMA" }
+    ]},
+    { id: "COA_Pipeline", label: "Pipelining", children: [
+      { id: "COA_P_Hazards", label: "Hazards" }, { id: "COA_P_Speedup", label: "Speedup" }
+    ]},
+    { id: "COA_RISCCISC", label: "RISC vs CISC" },
+    { id: "COA_Flynn", label: "Flynn Classification" }
+  ]},
+  { id: "TOC", name: "TOC", nodes: [
+    { id: "TOC_FA", label: "Finite Automata", children: [
+      { id: "TOC_FA_DFA", label: "DFA" }, { id: "TOC_FA_NFA", label: "NFA" },
+      { id: "TOC_FA_eNFA", label: "ε-NFA" }, { id: "TOC_FA_DFAMin", label: "DFA Minimization" }
+    ]},
+    { id: "TOC_RegEx", label: "Regular Expressions" },
+    { id: "TOC_RegLang", label: "Regular Languages" },
+    { id: "TOC_PumpingLemma", label: "Pumping Lemma" },
+    { id: "TOC_CFG", label: "CFG", children: [
+      { id: "TOC_CFG_Grammar", label: "Grammar" }, { id: "TOC_CFG_Derivation", label: "Derivation" },
+      { id: "TOC_CFG_ParseTree", label: "Parse Tree" }, { id: "TOC_CFG_Ambiguity", label: "Ambiguity" }
+    ]},
+    { id: "TOC_NormalForms", label: "Normal Forms", children: [
+      { id: "TOC_NF_CNF", label: "CNF" }, { id: "TOC_NF_GNF", label: "GNF" }
+    ]},
+    { id: "TOC_PDA", label: "PDA" },
+    { id: "TOC_TM", label: "Turing Machine" },
+    { id: "TOC_Chomsky", label: "Chomsky Hierarchy" },
+    { id: "TOC_Decidability", label: "Decidability" }
+  ]},
+  { id: "DBMS", name: "DBMS", nodes: [
+    { id: "DBMS_Intro", label: "Introduction" },
+    { id: "DBMS_Arch", label: "Architecture" },
+    { id: "DBMS_DataModels", label: "Data Models" },
+    { id: "DBMS_ER", label: "ER Model" },
+    { id: "DBMS_Relational", label: "Relational Model" },
+    { id: "DBMS_Keys", label: "Keys" },
+    { id: "DBMS_RelAlgebra", label: "Relational Algebra" },
+    { id: "DBMS_RelCalc", label: "Relational Calculus" },
+    { id: "DBMS_FuncDep", label: "Functional Dependency" },
+    { id: "DBMS_Normalization", label: "Normalization", children: [
+      { id: "DBMS_N_1NF", label: "1NF" }, { id: "DBMS_N_2NF", label: "2NF" },
+      { id: "DBMS_N_3NF", label: "3NF" }, { id: "DBMS_N_BCNF", label: "BCNF" },
+      { id: "DBMS_N_4NF", label: "4NF" }, { id: "DBMS_N_5NF", label: "5NF" }
+    ]},
+    { id: "DBMS_SQL", label: "SQL", children: [
+      { id: "DBMS_SQL_DDL", label: "DDL" }, { id: "DBMS_SQL_DML", label: "DML" },
+      { id: "DBMS_SQL_DCL", label: "DCL" }, { id: "DBMS_SQL_TCL", label: "TCL" },
+      { id: "DBMS_SQL_Joins", label: "Joins" }, { id: "DBMS_SQL_Views", label: "Views" },
+      { id: "DBMS_SQL_Triggers", label: "Triggers" }
+    ]},
+    { id: "DBMS_Transactions", label: "Transactions" },
+    { id: "DBMS_Concurrency", label: "Concurrency Control" },
+    { id: "DBMS_Recovery", label: "Recovery" },
+    { id: "DBMS_Indexing", label: "Indexing" }
+  ]},
+  { id: "CompilerDesign", name: "Compiler Design", nodes: [
+    { id: "CD_Phases", label: "Compiler Phases" },
+    { id: "CD_Lexical", label: "Lexical Analysis" },
+    { id: "CD_FA", label: "Finite Automata" },
+    { id: "CD_Parsing", label: "Parsing", children: [
+      { id: "CD_P_LL1", label: "LL(1)" }, { id: "CD_P_RecDescent", label: "Recursive Descent" },
+      { id: "CD_P_ShiftReduce", label: "Shift Reduce" }, { id: "CD_P_SLR", label: "SLR" },
+      { id: "CD_P_CLR", label: "CLR" }, { id: "CD_P_LALR", label: "LALR" }
+    ]},
+    { id: "CD_FIRST", label: "FIRST" },
+    { id: "CD_FOLLOW", label: "FOLLOW" },
+    { id: "CD_SDT", label: "Syntax Directed Translation" },
+    { id: "CD_IntermCode", label: "Intermediate Code Generation" },
+    { id: "CD_Optimization", label: "Code Optimization" },
+    { id: "CD_SymbolTable", label: "Symbol Table" },
+    { id: "CD_ErrorHandling", label: "Error Handling" }
+  ]},
+  { id: "SoftwareEng", name: "Software Engineering", nodes: [
+    { id: "SE_SDLC", label: "SDLC" },
+    { id: "SE_Requirements", label: "Requirement Engineering" },
+    { id: "SE_Design", label: "Design Concepts" },
+    { id: "SE_Cohesion", label: "Cohesion" },
+    { id: "SE_Coupling", label: "Coupling" },
+    { id: "SE_Models", label: "Process Models", children: [
+      { id: "SE_M_Waterfall", label: "Waterfall" }, { id: "SE_M_Spiral", label: "Spiral" },
+      { id: "SE_M_Incremental", label: "Incremental" }, { id: "SE_M_Agile", label: "Agile" }
+    ]},
+    { id: "SE_Testing", label: "Testing" },
+    { id: "SE_Verification", label: "Verification" },
+    { id: "SE_Validation", label: "Validation" },
+    { id: "SE_Metrics", label: "Software Metrics" },
+    { id: "SE_Quality", label: "Quality Models" },
+    { id: "SE_UML", label: "UML" }
+  ]},
+  { id: "Security", name: "Security & Cryptography", nodes: [
+    { id: "Sec_Principles", label: "Security Principles" },
+    { id: "Sec_Auth", label: "Authentication" },
+    { id: "Sec_Authz", label: "Authorization" },
+    { id: "Sec_Symmetric", label: "Symmetric Encryption", children: [
+      { id: "Sec_S_DES", label: "DES" }, { id: "Sec_S_AES", label: "AES" }
+    ]},
+    { id: "Sec_Asymmetric", label: "Asymmetric Encryption", children: [
+      { id: "Sec_A_RSA", label: "RSA" }, { id: "Sec_A_DH", label: "Diffie Hellman" }
+    ]},
+    { id: "Sec_DigSig", label: "Digital Signature" },
+    { id: "Sec_Hash", label: "Hash Functions" },
+    { id: "Sec_Certs", label: "Certificates" },
+    { id: "Sec_Firewalls", label: "Firewalls" },
+    { id: "Sec_IDS", label: "IDS" },
+    { id: "Sec_IPS", label: "IPS" }
+  ]},
+  { id: "WebTech", name: "Web Technologies", nodes: [
+    { id: "Web_HTML", label: "HTML" }, { id: "Web_CSS", label: "CSS" },
+    { id: "Web_JS", label: "JavaScript" }, { id: "Web_DOM", label: "DOM" },
+    { id: "Web_Events", label: "Events" }, { id: "Web_XML", label: "XML" },
+    { id: "Web_JSON", label: "JSON" }, { id: "Web_Cookies", label: "Cookies" },
+    { id: "Web_Sessions", label: "Sessions" }, { id: "Web_Auth", label: "Authentication" },
+    { id: "Web_Authz", label: "Authorization" }, { id: "Web_HTTP", label: "HTTP Methods" },
+    { id: "Web_REST", label: "REST API" }, { id: "Web_SOAP", label: "SOAP" }
+  ]},
+  { id: "InfoSystems", name: "Information Systems", nodes: [
+    { id: "IS_TPS", label: "TPS" }, { id: "IS_MIS", label: "MIS" },
+    { id: "IS_DSS", label: "DSS" }, { id: "IS_ESS", label: "ESS" },
+    { id: "IS_ERP", label: "ERP" }, { id: "IS_CRM", label: "CRM" },
+    { id: "IS_SCM", label: "SCM" }, { id: "IS_KM", label: "Knowledge Management" },
+    { id: "IS_DecisionSupport", label: "Decision Support Systems" }
+  ]}
+];
+
+// State
+let progress = {};
+let treeState = {};
+let currentView = 'cards';
+let activeSubject = null;
+let modalCallback = null;
+
+const COLORS = ["#1971c2","#2f9e44","#e67700","#c92a2a","#6741d9","#0c8599","#d9480f","#2b8a3e","#a61e4d","#1864ab","#5c940d","#e03131","#862e9c"];
+
+function getColor(idx) { return COLORS[idx % COLORS.length]; }
+
+function collectLeaves(node) {
+  if (!node.children || node.children.length === 0) return [node.id];
+  return node.children.flatMap(collectLeaves);
+}
+
+function getSubjectLeaves(subj) {
+  return subj.nodes.flatMap(collectLeaves);
+}
+
+function countSubject(subj) {
+  const leaves = getSubjectLeaves(subj);
+  const done = leaves.filter(id => progress[id]).length;
+  return { total: leaves.length, done };
+}
+
+function getTotals() {
+  let total = 0, done = 0;
+  SUBJECTS.forEach(s => { const c = countSubject(s); total += c.total; done += c.done; });
+  return { total, done };
+}
+
+function saveProgress() {
+  localStorage.setItem('studyProgress', JSON.stringify(progress));
+}
+
+function loadProgress() {
+  try { progress = JSON.parse(localStorage.getItem('studyProgress') || '{}'); } catch { progress = {}; }
+}
+
+function saveTreeState() {
+  localStorage.setItem('studyTreeState', JSON.stringify(treeState));
+}
+
+function loadTreeState() {
+  try { treeState = JSON.parse(localStorage.getItem('studyTreeState') || '{}'); } catch { treeState = {}; }
+}
+
+function toggleTopic(id, checked) {
+  progress[id] = checked;
+  saveProgress();
+  updateProgress();
+}
+
+function updateProgress() {
+  const { total, done } = getTotals();
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('overall-bar').style.width = pct + '%';
+  document.getElementById('overall-stats').textContent = done + ' / ' + total + ' topics completed';
+  document.getElementById('sc-total').textContent = total;
+  document.getElementById('sc-done').textContent = done;
+  document.getElementById('sc-rem').textContent = total - done;
+  document.getElementById('sc-pct').textContent = pct + '%';
+  document.getElementById('sidebar-overall').textContent = pct + '% overall';
+  renderNav();
+  if (currentView === 'cards') renderCards();
+  else updateTreeVisuals();
+}
+
+function resetProgress(scope) {
+  if (scope === 'all') {
+    progress = {};
+  } else {
+    const s = SUBJECTS.find(s => s.id === scope);
+    if (s) getSubjectLeaves(s).forEach(id => delete progress[id]);
+  }
+  saveProgress();
+  updateProgress();
+  if (currentView === 'tree') renderTree();
+}
+
+function confirmReset(scope) {
+  const isAll = scope === 'all';
+  document.getElementById('modal-title').textContent = isAll ? 'Reset All Progress' : 'Reset Subject Progress';
+  document.getElementById('modal-msg').textContent = isAll
+    ? 'This will clear all completed topics across every subject. This cannot be undone.'
+    : 'This will clear all completed topics in ' + (SUBJECTS.find(s => s.id === scope)?.name || scope) + '. This cannot be undone.';
+  document.getElementById('modal-ok').onclick = () => { resetProgress(scope); closeModal(); };
+  document.getElementById('modal-backdrop').classList.add('show');
+}
+
+function closeModal() { document.getElementById('modal-backdrop').classList.remove('show'); }
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('view-cards').style.display = v === 'cards' ? '' : 'none';
+  document.getElementById('view-tree').style.display = v === 'tree' ? '' : 'none';
+  document.getElementById('btn-cards').classList.toggle('active', v === 'cards');
+  document.getElementById('btn-tree').classList.toggle('active', v === 'tree');
+  if (v === 'tree') {
+    renderTree();
+  } else {
+    renderCards();
+    document.getElementById('content-title').textContent = activeSubject ? SUBJECTS.find(s=>s.id===activeSubject)?.name : 'All Subjects';
+  }
+}
+
+function navTo(subjId) {
+  activeSubject = subjId;
+  document.querySelectorAll('.nav-subject').forEach(el => el.classList.toggle('active', el.dataset.id === subjId));
+  document.getElementById('content-title').textContent = subjId ? SUBJECTS.find(s=>s.id===subjId)?.name : 'All Subjects';
+  if (currentView === 'cards') renderCards();
+  else { renderTree(); }
+}
+
+function renderNav() {
+  const list = SUBJECTS.map((s, i) => {
+    const { total, done } = countSubject(s);
+    return `<div class="nav-subject${s.id === activeSubject ? ' active' : ''}" data-id="${s.id}" onclick="navTo('${s.id}')">
+      <span style="color:${getColor(i)}">●</span>
+      <span>${s.name}</span>
+      <span class="nav-badge">${done}/${total}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('subject-nav').innerHTML =
+    `<div class="nav-subject${!activeSubject ? ' active' : ''}" data-id="" onclick="navTo(null)">
+      <span>📊</span><span>All Subjects</span>
+    </div>` + list;
+}
+
+function renderCards() {
+  const list = activeSubject ? SUBJECTS.filter(s => s.id === activeSubject) : SUBJECTS;
+  const grid = document.getElementById('subjects-grid');
+  grid.innerHTML = list.map((s, si) => {
+    const idx = SUBJECTS.indexOf(s);
+    const { total, done } = countSubject(s);
+    const pct = total ? Math.round(done / total * 100) : 0;
+    let statusCls, statusTxt;
+    if (pct === 100) { statusCls = 'status-complete'; statusTxt = '✅ Completed'; }
+    else if (pct === 0) { statusCls = 'status-none'; statusTxt = '⚪ Not Started'; }
+    else { statusCls = 'status-partial'; statusTxt = '🟡 ' + pct + '% Completed'; }
+    const color = getColor(idx);
+    const barW = pct;
+    return `<div class="subject-card${s.id === activeSubject ? ' active' : ''}" onclick="navToAndTree('${s.id}')">
+      <div class="subject-card-header">
+        <div class="subject-card-name" style="color:${color}">${s.name}</div>
+        <span class="subject-card-status ${statusCls}">${statusTxt}</span>
+      </div>
+      <div class="subject-card-count">${done} / ${total} Topics</div>
+      <div class="card-bar-wrap"><div class="card-bar" style="width:${barW}%;background:${color}"></div></div>
+      <div class="card-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+function navToAndTree(id) {
+  navTo(id);
+  setView('tree');
+  document.getElementById('btn-cards').classList.remove('active');
+  document.getElementById('btn-tree').classList.add('active');
+}
+
+function renderTree() {
+  const list = activeSubject ? SUBJECTS.filter(s => s.id === activeSubject) : SUBJECTS;
+  const container = document.getElementById('view-tree');
+  container.innerHTML = list.map((s, si) => {
+    const idx = SUBJECTS.indexOf(s);
+    const { total, done } = countSubject(s);
+    const pct = total ? Math.round(done / total * 100) : 0;
+    const isOpen = treeState['subj_' + s.id] !== false;
+    const color = getColor(idx);
+    let meta = pct === 100 ? '✅ All done' : (pct === 0 ? '⚪ Not started' : `🟡 ${done}/${total}`);
+    return `<div class="tree-subject" id="ts_${s.id}">
+      <div class="tree-subject-header" onclick="toggleSubject('${s.id}')">
+        <span class="chevron ${isOpen ? 'open' : ''}" id="chev_${s.id}">▶</span>
+        <span class="tree-subject-name" style="color:${color}">${s.name}</span>
+        <span class="tree-subject-meta">${meta}</span>
+        <button class="btn btn-sm btn-danger" style="margin-left:8px" onclick="event.stopPropagation();confirmReset('${s.id}')">Reset</button>
+      </div>
+      <div class="tree-body ${isOpen ? '' : 'hidden'}" id="tb_${s.id}">
+        ${renderNodes(s.nodes, 1, s.id)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderNodes(nodes, depth, subjId) {
+  return nodes.map(node => {
+    if (!node.children || node.children.length === 0) {
+      const done = !!progress[node.id];
+      return `<div class="tree-node leaf indent-${depth-1}${done ? ' done' : ''}" id="tn_${node.id}" onclick="cbClick('${node.id}')">
+        <span class="leaf-icon">📄</span>
+        <span class="leaf-label">${node.label}</span>
+        <input type="checkbox" class="leaf-cb" id="cb_${node.id}" ${done ? 'checked' : ''} onclick="event.stopPropagation();toggleCB('${node.id}',this)">
+      </div>`;
+    } else {
+      const isOpen = treeState['branch_' + subjId + '_' + node.id] !== false;
+      return `<div class="tree-node branch indent-${depth-1}" id="br_${node.id}">
+        <span class="branch-icon branch-toggle" onclick="toggleBranch('${subjId}','${node.id}')" id="bchev_${node.id}">${isOpen ? '▼' : '▶'}</span>
+        <span class="branch-toggle" onclick="toggleBranch('${subjId}','${node.id}')">${node.label}</span>
+      </div>
+      <div id="bchildren_${node.id}" ${isOpen ? '' : 'style="display:none"'}>
+        ${renderNodes(node.children, depth + 1, subjId)}
+      </div>`;
+    }
+  }).join('');
+}
+
+function cbClick(id) {
+  const cb = document.getElementById('cb_' + id);
+  if (cb) { cb.checked = !cb.checked; toggleCB(id, cb); }
+}
+
+function toggleCB(id, cb) {
+  const checked = cb.checked;
+  progress[id] = checked;
+  saveProgress();
+  const node = document.getElementById('tn_' + id);
+  if (node) node.classList.toggle('done', checked);
+  updateProgress();
+}
+
+function toggleSubject(sid) {
+  const body = document.getElementById('tb_' + sid);
+  const chev = document.getElementById('chev_' + sid);
+  const isOpen = !body.classList.contains('hidden');
+  body.classList.toggle('hidden', isOpen);
+  chev.classList.toggle('open', !isOpen);
+  treeState['subj_' + sid] = !isOpen;
+  saveTreeState();
+}
+
+function toggleBranch(sid, nid) {
+  const ch = document.getElementById('bchildren_' + nid);
+  const chev = document.getElementById('bchev_' + nid);
+  const isOpen = ch.style.display !== 'none';
+  ch.style.display = isOpen ? 'none' : '';
+  chev.textContent = isOpen ? '▶' : '▼';
+  treeState['branch_' + sid + '_' + nid] = !isOpen;
+  saveTreeState();
+}
+
+function updateTreeVisuals() {
+  SUBJECTS.forEach(s => {
+    const { total, done } = countSubject(s);
+    const pct = total ? Math.round(done / total * 100) : 0;
+    const meta = document.querySelector(`#ts_${s.id} .tree-subject-meta`);
+    if (meta) {
+      let txt = pct === 100 ? '✅ All done' : (pct === 0 ? '⚪ Not started' : `🟡 ${done}/${total}`);
+      meta.textContent = txt;
+    }
+  });
+}
+
+// Search
+let searchTimer = null;
+document.getElementById('search').addEventListener('input', function() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => doSearch(this.value.trim()), 150);
+});
+
+function doSearch(q) {
+  if (!q) {
+    clearSearch();
+    return;
+  }
+  if (currentView !== 'tree') { setView('tree'); }
+  const lower = q.toLowerCase();
+  // Show all subjects, expand matching
+  SUBJECTS.forEach(s => {
+    const body = document.getElementById('tb_' + s.id);
+    const chev = document.getElementById('chev_' + s.id);
+    if (body) { body.classList.remove('hidden'); if (chev) chev.classList.add('open'); }
+    // Expand all branches
+    s.nodes.forEach(n => {
+      if (n.children) {
+        const ch = document.getElementById('bchildren_' + n.id);
+        const bchev = document.getElementById('bchev_' + n.id);
+        if (ch) { ch.style.display = ''; if (bchev) bchev.textContent = '▼'; }
+      }
+    });
+    // Hide/show leaf nodes
+    const leaves = getSubjectLeaves(s);
+    leaves.forEach(id => {
+      const el = document.getElementById('tn_' + id);
+      if (!el) return;
+      const label = el.querySelector('.leaf-label');
+      const matches = label && label.textContent.toLowerCase().includes(lower);
+      el.style.display = matches ? '' : 'none';
+    });
+  });
+}
+
+function clearSearch() {
+  document.querySelectorAll('.tree-node.leaf').forEach(el => el.style.display = '');
+  SUBJECTS.forEach(s => {
+    const isOpen = treeState['subj_' + s.id] !== false;
+    const body = document.getElementById('tb_' + s.id);
+    const chev = document.getElementById('chev_' + s.id);
+    if (body) { body.classList.toggle('hidden', !isOpen); if (chev) chev.classList.toggle('open', isOpen); }
+  });
+}
+
+// Init
+loadProgress();
+loadTreeState();
+renderNav();
+renderCards();
+updateProgress();
+</script>
+</body>
+</html>

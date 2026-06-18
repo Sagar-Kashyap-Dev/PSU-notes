@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compiler Design Quick Revision Guide</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --border-color: #334155;
+            --success-color: #10b981;
+            --formula-bg: #090d16;
+            --table-border: #475569;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .reset-btn {
+            background-color: #f43f5e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .reset-btn:hover {
+            background-color: #e11d48;
+        }
+
+        .topic-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .topic-card.completed {
+            opacity: 0.4;
+            filter: grayscale(60%);
+            border-color: var(--success-color);
+        }
+
+        .topic-card.completed h2 {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--accent-color);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            user-select: none;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            transition: all 0.2s;
+        }
+
+        .checkbox-container:hover {
+            background: rgba(56, 189, 248, 0.2);
+        }
+
+        .checkbox-container input {
+            cursor: pointer;
+            accent-color: var(--success-color);
+            width: 16px;
+            height: 16px;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        ul {
+            margin: 0 0 15px 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .formula-box {
+            background-color: var(--formula-bg);
+            padding: 12px 16px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+            font-family: "Consolas", "Courier New", monospace;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 15px 0;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            border: 1px solid var(--table-border);
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Compiler Design Ultimate MCQ Revision Portal</h1>
+        <p>Complete CIL MT + PSU Reference Engine. Track your master criteria checkmarks below.</p>
+        <button class="reset-btn" onclick="clearProgress()">Reset All Progress</button>
+    </header>
+
+    <div class="topic-card" data-topic="compiler_basics">
+        <div class="card-header">
+            <h2>1. Compiler Basics vs. Interpreter</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Operations</div>
+        <ul>
+            <li><strong>Compiler:</strong> Translates a High-Level Language (HLL) source code layout in its entirety down to target Machine Language / Assembly. Execution runs through two global operational blocks: the <strong>Analysis Phase</strong> (front-end) and the <strong>Synthesis Phase</strong> (back-end).</li>
+        </ul>
+        <table>
+            <thead>
+                <tr>
+                    <th>Operating Parameter</th>
+                    <th>Compiler Engine</th>
+                    <th>Interpreter Engine</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Translation Unit</strong></td>
+                    <td>Processes and translates the entire program file at once.</td>
+                    <td>Translates and executes code step-by-step, line-by-line.</td>
+                </tr>
+                <tr>
+                    <td><strong>Execution Speed</strong></td>
+                    <td>Much faster runtime execution (compiled machine binary runs directly).</td>
+                    <td>Slower execution due to simultaneous on-the-fly parsing overhead.</td>
+                </tr>
+                <tr>
+                    <td><strong>Error Diagnostics</strong></td>
+                    <td>Reports all detected syntax/semantic errors together after compilation completes.</td>
+                    <td>Halts execution immediately upon hitting an error on that specific active line.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="topic-card" data-topic="compiler_phases">
+        <div class="card-header">
+            <h2>2. The 6 Phases of a Compiler</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Sequential Execution Flow</div>
+        <ul>
+            <li>1. <strong>Lexical Analysis (Scanner):</strong> Scans raw source character streams and maps them to clean <strong>Tokens</strong>.</li>
+            <li>2. <strong>Syntax Analysis (Parser):</strong> Verifies grammar rules and constructs a structured <strong>Parse/Syntax Tree</strong>.</li>
+            <li>3. <strong>Semantic Analysis:</strong> Validates semantic consistency and checks rule meanings (e.g., matching data types).</li>
+            <li>4. <strong>Intermediate Code Generation (ICG):</strong> Generates a machine-independent stream (e.g., Three-Address Code).</li>
+            <li>5. <strong>Code Optimization:</strong> Enhances code efficiency by reducing execution time, memory usage, or instruction size.</li>
+            <li>6. <strong>Code Generation:</strong> Maps intermediate code down into live machine code instructions utilizing target register allocations.</li>
+        </ul>
+        <div class="section-title">Global Supporting Subsystems</div>
+        <ul>
+            <li><strong>Symbol Table:</strong> Central repository tracking variable metadata, data types, scope access metrics, and layout memory offsets.</li>
+            <li><strong>Error Handler:</strong> Coordinates warning traps and structural recovery across every single phase boundary.</li>
+        </ul>
+        <div class="section-title">High-Frequency MCQ Trap Matrix</div>
+        <div class="formula-box" style="text-align: center; font-weight: bold;">
+            Lexical Analysis = Token Breakdown &nbsp;|&nbsp; Syntax Analysis = Structural Grammar &nbsp;|&nbsp; Semantic Analysis = Meaning Validation
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="lexical_analysis">
+        <div class="card-header">
+            <h2>3. Lexical Analysis Deep Dive (Scanner)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Operations</div>
+        <ul>
+            <li>Transforms input character source streams into discrete, atomic lexical tokens.</li>
+            <li>Strips out unnecessary source formatting like **white spaces, inline tabs, and developer comments**.</li>
+            <li><strong>Token Classifications:</strong> Keywords (<code>int</code>, <code>while</code>), Identifiers (variable names), Operators (<code>+</code>, <code>&amp;&amp;</code>), Constants (<code>45</code>, <code>"hello"</code>).</li>
+        </ul>
+        <div class="section-title">Theoretical Foundations & Tooling</div>
+        <ul>
+            <li>Tokens are specified formally using <strong>Regular Expressions</strong>.</li>
+            <li>The underlying mathematical engine that implements a lexer scanner is a <strong>Deterministic Finite Automaton (DFA)</strong>.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="syntax_analysis">
+        <div class="card-header">
+            <h2>4. Syntax Analysis Foundation (Parser)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Operations</div>
+        <ul>
+            <li>Evaluates token streams against language grammar rules to ensure correct structural syntax.</li>
+            <li>Outputs a highly structured hierarchical **Parse Tree** or **Abstract Syntax Tree (AST)**.</li>
+        </ul>
+        <div class="section-title">Parser Architectures</div>
+        <ul>
+            <li><strong>Top-Down Parsers:</strong> Builds the hierarchy starting from the root start symbol down to the terminal tokens (e.g., LL(1)).</li>
+            <li><strong>Bottom-Up Parsers:</strong> Collects terminal tokens and group-reduces them back up to the root start symbol (e.g., LR family).</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="cfg_grammar_comp">
+        <div class="card-header">
+            <h2>5. Context-Free Grammars (CFG) in Compilers</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">The 4-Tuple Specification</div>
+        <div class="formula-box" style="text-align: center;">
+            G = (V, T, P, S)
+        </div>
+        <ul>
+            <li><code>V</code>: A finite set of non-terminal placeholder variables.</li>
+            <li><code>T</code>: A finite set of terminal characters (the actual text tokens of the language).</li>
+            <li><code>P</code>: Production rules showing how variables expand into sequences of other variables and terminals.</li>
+            <li><code>S</code>: The single designated start symbol where <code>S &in; V</code>.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="parse_vs_syntax">
+        <div class="card-header">
+            <h2>6. Parse Trees vs. Abstract Syntax Trees (AST)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Structural Metric</th>
+                    <th>Full Parse Tree</th>
+                    <th>Abstract Syntax Tree (AST)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Detail Profile</strong></td>
+                    <td>Highly detailed; explicitly displays every single grammar production step.</td>
+                    <td>Highly compact; retains only the essential structural components needed for execution.</td>
+                </tr>
+                <tr>
+                    <td><strong>Node Composition</strong></td>
+                    <td>Internal nodes match non-terminal variables; leaves match raw terminal tokens.</td>
+                    <td>Internal nodes match operators (e.g., <code>+</code>); child nodes match operands.</td>
+                </tr>
+                <tr>
+                    <td><strong>Redundancy Factor</strong></td>
+                    <td>Contains single-child chains and punctuation nodes (like parentheses).</td>
+                    <td>Eliminates formatting noise to optimize downstream compilation speed.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="topic-card" data-topic="top_down_parsing">
+        <div class="card-header">
+            <h2>7. Top-Down Parsing Mechanics & LL(1)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Implementation Strategies</div>
+        <ul>
+            <li><strong>Recursive Descent:</strong> A top-down parser built using a collection of mutually recursive procedures, often requiring backtracking.</li>
+            <li><strong>Predictive LL(1) Parsing:</strong> A non-recursive, table-driven parser that avoids backtracking entirely.</li>
+        </ul>
+        <div class="section-title">LL(1) Syntax Notation breakdown</div>
+        <ul>
+            <li>First <strong>L</strong> &rarr; Scans the input string left-to-right.</li>
+            <li>Second <strong>L</strong> &rarr; Generates a Leftmost derivation tree sequence.</li>
+            <li>The <strong>(1)</strong> parameter &rarr; Uses exactly **one token lookahead** to pick the right production rule.</li>
+        </ul>
+        <div class="section-title">Critical MCQ Trap</div>
+        <ul>
+            <li><strong style="color: #f43f5e;">Left Recursion Vulnerability:</strong> A top-down parser **cannot** parse a grammar that contains left-recursive rules. Doing so triggers infinite recursive loops, crashing the parser stack.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="bottom_up_parsing">
+        <div class="card-header">
+            <h2>8. Bottom-Up Parsing & LR Engines</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Implementation Strategies</div>
+        <ul>
+            <li>Operates using **Shift-Reduce** state machines. It scans input tokens, shifting them onto a stack until the top elements match a grammar rule, at which point it reduces them back to a non-terminal variable.</li>
+            <li><strong>LR Family Breakdown:</strong> <strong>L</strong> stands for left-to-right scanning; <strong>R</strong> stands for building a Rightmost derivation in reverse order.</li>
+            <li><strong>LR Parsing Varieties (Ordered by increasing grammar capacity and table size):</strong>
+                <br>&bull; LR(0) &rarr; Zero token lookahead parameters.
+                <br>&bull; SLR(1) &rarr; Simple LR; uses structural FOLLOW sets to resolve shift-reduce conflicts.
+                <br>&bull; LALR(1) &rarr; Lookahead LR; merges states with identical core items to save memory.
+                <br>&bull; CLR(1) &rarr; Canonical LR; uses explicit lookahead tracking across states. **The absolute most powerful LR engine**.
+            </li>
+        </ul>
+        <div class="section-title">Critical MCQ Comparison Trap</div>
+        <ul>
+            <li>Bottom-up LR parsers are **strictly more powerful** than top-down LL parsers and can handle a significantly wider variety of grammars, including left-recursive structures.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="first_follow">
+        <div class="card-header">
+            <h2>9. FIRST & FOLLOW Calculation Sets</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Definitions</div>
+        <ul>
+            <li><strong>FIRST(&alpha;):</strong> The set of all terminal symbols that can appear as the first character in a string derived from <code>&alpha;</code>. Can include the empty string <code>&epsilon;</code>.</li>
+            <li><strong>FOLLOW(A):</strong> The set of all terminal symbols that can appear immediately to the right of variable <code>A</code> during any derivation sequence. **Can never include <code>&epsilon;</code>**.</li>
+        </ul>
+        <div class="section-title">Critical MCQ Traps</div>
+        <ul>
+            <li>The global end-marker symbol <strong><code>$</code></strong> must always be added to the <strong>FOLLOW set of the initial Start Symbol (S)</strong>.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="grammar_modifications">
+        <div class="card-header">
+            <h2>10 & 11. Left Recursion Elimination & Left Factoring</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Left Recursion Elimination</div>
+        <ul>
+            <li>Left recursion occurs when a production matches the form: <code>A &rarr; A&alpha; | &beta;</code>. This causes top-down parsers to loop infinitely.</li>
+            <li>To fix this, we convert the grammar into a right-recursive format by introducing a new variable:
+                <br>• <strong><code>A &rarr; &beta;A'</code></strong>
+                <br>• <strong><code>A' &rarr; &alpha;A' | &epsilon;</code></strong>
+            </li>
+        </ul>
+        <div class="section-title">Left Factoring</div>
+        <ul>
+            <li>Used to resolve ambiguity when multiple production options share a common prefix: <code>A &rarr; aB | aC</code>. Without factoring, a parser doesn't know which choice to pick based on a single lookahead token.</li>
+            <li>We factor out the common prefix to defer the parsing decision: <code>A &rarr; aA'</code> and <code>A' &rarr; B | C</code>.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="sdt_and_icg">
+        <div class="card-header">
+            <h2>12 & 13. Syntax Directed Translation & ICG Forms</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Syntax-Directed Translation (SDT)</div>
+        <ul>
+            <li>Enriches a context-free grammar by attaching semantic action rules directly to production steps. This allows the compiler to evaluate expressions and verify types while building the parse tree.</li>
+        </ul>
+        <div class="section-title">Intermediate Code Generation (ICG) Formats</div>
+        <ul>
+            <li><strong>Three-Address Code (TAC):</strong> An intermediate representation where every instruction has a maximum of **three operand addresses** (one target output, two source inputs).
+                <br>• <em>Example:</em> <code>t1 = a + b</code> followed by <code>t2 = t1 * c</code>.
+            </li>
+            <li><strong>Quadruples:</strong> A structural array containing four explicit fields: <code>(operator, argument_1, argument_2, result)</code>. Highly preferred for code optimization because variables can be tracked explicitly by target location.</li>
+            <li><strong>Triples:</strong> Eliminates the explicit result field entirely by using array position indices to reference prior intermediate values: <code>(operator, argument_1, argument_2)</code>. Avoids extra variable names but is harder to rearrange during optimization optimizations.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="code_optimization">
+        <div class="card-header">
+            <h2>14. Code Optimization Strategies</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Optimization Scopes</div>
+        <ul>
+            <li><strong>Local Optimization:</strong> Applied strictly within isolated **Basic Blocks** (linear sequences of code with a single entry point and a single exit point).</li>
+            <li><strong>Global Optimization:</strong> Analyzes loops and data flow across multiple interconnected basic blocks.</li>
+        </ul>
+        <div class="section-title">Common Optimization Techniques</div>
+        <ul>
+            <li><strong>Dead Code Elimination:</strong> Removes operations or entire code blocks that can never be reached or whose outputs are never used.</li>
+            <li><strong>Constant Folding:</strong> Evaluates arithmetic operations containing constant numbers at compile-time instead of generating runtime code (e.g., replacing <code>x = 3 + 5</code> directly with <code>x = 8</code>).</li>
+            <li><strong>Loop Optimization (Strength Reduction):</strong> Replaces high-overhead operations with lower-cost alternatives (e.g., swapping a multiplication operation inside a loop with an equivalent addition step).</li>
+            <li><strong>Common Subexpression Elimination:</strong> Detects duplicate expressions and stores the result in a temporary variable instead of computing it twice (e.g., reusing the result of <code>a + b</code>).</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="codegen_symboltable">
+        <div class="card-header">
+            <h2>15 & 16. Code Generation & Symbol Table Architecture</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Code Generation Phase</div>
+        <ul>
+            <li>The final back-end phase. Translates optimized intermediate code into target machine binary or assembly instructions. This phase depends heavily on the specific hardware's **register architectures and instruction sets**.</li>
+        </ul>
+        <div class="section-title">Symbol Table Details</div>
+        <ul>
+            <li>A master database that records variable and function properties, including **data types, scope metrics, and memory layout offsets**. It must support fast insertions and lookups.</li>
+            <li><strong>Implementation Standard:</strong> Built using a **Hash Table**, which provides highly efficient average-case time complexities of <code>O(1)</code> for operations.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="errors_and_regex">
+        <div class="card-header">
+            <h2>17 & 18. Error Recovery Modes & Regular Expressions</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Error Recovery Methods</div>
+        <ul>
+            <li><strong>Panic Mode Recovery ⭐:</strong> The most common error recovery strategy. When an error is hit, the parser drops incoming tokens one-by-one until it encounters a designated **synchronizing token** (such as a semicolon <code>;</code> or closing brace <code>}</code>), allowing it to safely resume parsing.</li>
+            <li><strong>Phrase-Level Recovery:</strong> Localized error repair. Modifies the token stream by inserting a missing character (like a semicolon) or swapping a token to let compilation continue.</li>
+        </ul>
+        <div class="section-title">Regular Expression Mapping</div>
+        <ul>
+            <li>Regular expressions define token patterns during lexical analysis. For example, a standard variable identifier pattern can be written as: <br><code>letter(letter | digit)*</code>.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="automata_links">
+        <div class="card-header">
+            <h2>19 & 20. Automata Connections & The Chomsky Hierarchy</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Compiler Phase</th>
+                    <th>Chomsky Grammar Level</th>
+                    <th>Linked TOC Automata Model</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Lexical Analysis (Scanner)</strong></td>
+                    <td>Type-3 Regular Grammar</td>
+                    <td><strong>Finite Automata (DFA / NFA)</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>Syntax Analysis (Parser)</strong></td>
+                    <td>Type-2 Context-Free Grammar (CFG)</td>
+                    <td><strong>Pushdown Automata (PDA)</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="topic-card" data-topic="advanced_concepts">
+        <div class="card-header">
+            <h2>21 to 26. Core Operational Mechanics</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Ambiguity Issues</div>
+        <ul>
+            <li>A grammar is ambiguous if a single input string can produce **two or more distinct parse trees**. Ambiguous grammars break compiler predictability because they create multiple valid interpretation paths for the same line of code.</li>
+        </ul>
+        <div class="section-title">Operator-Precedence Parsing</div>
+        <ul>
+            <li>A robust bottom-up parsing variant designed specifically for mathematical expressions. It works by establishing strict mathematical operator precedence hierarchies.</li>
+        </ul>
+        <div class="section-title">Directed Acyclic Graphs (DAG) ⭐</div>
+        <ul>
+            <li>A specialized data structure used during optimization phases. It identifies duplicate operations within basic blocks, serving as a core tool for **Common Subexpression Elimination**.</li>
+        </ul>
+        <div class="section-title">Backpatching Techniques</div>
+        <ul>
+            <li>An optimization technique used to generate code for control-flow statements (like loops or <code>if-else</code> conditions) in a single pass. It leaves target jump addresses blank and fills them in later once those destination labels are generated.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="parser_power">
+        <div class="card-header">
+            <h2>29. Parser Power Order Relations</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Mathematical Capability Ranking</div>
+        <div class="formula-box" style="text-align: center; font-size: 1.1rem; font-weight: bold;">
+            CLR(1) &gt; LALR(1) &gt; SLR(1) &gt; LL(1)
+        </div>
+        <ul>
+            <li><strong>CLR(1):</strong> Offers the highest grammar parsing capacity but creates large parsing tables that consume significant memory.</li>
+            <li><strong>LALR(1):</strong> Merges equivalent states inside CLR tables to keep memory usage low while retaining near-identical parsing power. This makes it the standard choice for automated parser generators (like YACC or Bison).</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="cd_traps" style="border: 1px dashed #38bdf8; background-color: #1a1e2d;">
+        <div class="card-header">
+            <h2 style="color: #f43f5e;">&#9888; Critical CIL MT Compiler Design MCQ Traps Checklist</h2>
+            <label class="checkbox-container" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8;">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <ul>
+            <li><strong>Lexical Analyzers</strong> use **DFAs** to process text streams; **Syntax Parsers** rely on **Context-Free Grammars** running on underlying PDA models.</li>
+            <li>Top-down LL parsers **cannot handle left-recursive rules** without falling into infinite loops. You must eliminate left recursion before parsing.</li>
+            <li>Bottom-up LR parsers are **strictly more powerful** than top-down LL parsers and can handle left-recursive grammars out of the box.</li>
+            <li><strong>FIRST sets</strong> collect valid starting terminal characters; <strong>FOLLOW sets</strong> collect terminal characters that can appear immediately to the right of a variable.</li>
+            <li>The global end-marker character <strong><code>$</code></strong> is always added to the FOLLOW set of the initial start symbol.</li>
+            <li>Symbol tables are implemented using **Hash Tables** to ensure fast <code>O(1)</code> average-case operations.</li>
+            <li><strong>Three-Address Code (TAC)</strong> serves as a clean, machine-independent Intermediate Representation (IR) format.</li>
+            <li><strong>Directed Acyclic Graphs (DAGs)</strong> are optimization structures used to eliminate duplicate subexpressions.</li>
+            <li>Ambiguity means a grammar can produce **two or more distinct parse trees** for a single string.</li>
+            <li><strong>Panic Mode Error Recovery</strong> handles errors by skipping tokens until it finds a reliable synchronizing token (like a semicolon).</li>
+            <li>Left Factoring rearranges a grammar to resolve choices that share a common prefix, making it easier for lookahead parsers to pick the right path.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // Storage configuration unique identifier key for Compiler Design tracking
+    const STORAGE_KEY = 'cil_mt_compiler_design_progress';
+
+    // Run processing on load to restore checkbox configurations
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        
+        document.querySelectorAll('.topic-card').forEach(card => {
+            const id = card.getAttribute('data-topic');
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            
+            if (id && savedProgress[id]) {
+                checkbox.checked = true;
+                card.classList.add('completed');
+            }
+        });
+    });
+
+    // Toggle logic updates completion metrics dynamically
+    function toggleComplete(checkbox) {
+        const card = checkbox.closest('.topic-card');
+        const id = card.getAttribute('data-topic');
+        
+        // Fetch existing dictionary state mapping
+        const currentProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+        if (checkbox.checked) {
+            card.classList.add('completed');
+            if (id) currentProgress[id] = true;
+        } else {
+            card.classList.remove('completed');
+            if (id) delete currentProgress[id];
+        }
+
+        // Overwrite adjustments back to tracking dictionary
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentProgress));
+    }
+
+    // Completely flushes out isolated checkbox state values
+    function clearProgress() {
+        if (confirm("Are you sure you want to reset all Compiler Design revision portal checkboxes?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            document.querySelectorAll('.topic-card').forEach(card => {
+                card.classList.remove('completed');
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                if (checkbox) checkbox.checked = false;
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

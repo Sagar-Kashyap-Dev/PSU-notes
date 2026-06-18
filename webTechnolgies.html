@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE & IT — Web Technologies Master Engine</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #dd6b20;
+            --brand-accent: #fffaf0;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* Split-Pane Control Interface */
+        #app-sidebar {
+            width: 330px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 330px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1180px;
+            width: calc(100% - 330px);
+        }
+
+        /* Sidebar Panels */
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #feebc8; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #c05621; letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #cbd5e1; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #c05621; width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        /* Document Architecture Layouts */
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        .summary-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; background: var(--bg-workspace); padding: 1rem; border-radius: var(--radius-interactive); border: 1px solid var(--border-color); }
+        .summary-badge { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-bold); font-weight: 500; }
+        .summary-badge strong { color: var(--brand-primary); }
+
+        .grid-block { margin-bottom: 2rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: var(--brand-primary); text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 0.75rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); }
+        th, td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        .alert-box ul { margin-left: 1.25rem; }
+        .alert-box li { color: #7f1d1d; }
+
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>Web Eng Engine</h2>
+            <p>Distributed Architectures</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Stack Mastery</div>
+            <div class="metric-value" id="metric-text">0/5 Modules Mastered</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Client Presentation Core</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-client-core')"><span>1. Document Schemas & CSS</span><input type="checkbox" class="nav-checkbox" id="nav-chk-client-core" onclick="event.stopPropagation(); syncCheckbox('client-core')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-javascript-dom')"><span>2. JS Engine, DOM & Events</span><input type="checkbox" class="nav-checkbox" id="nav-chk-javascript-dom" onclick="event.stopPropagation(); syncCheckbox('javascript-dom')"></div></li>
+            
+            <div class="nav-heading">Data & Wire Protocols</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-data-exchange')"><span>3. XML, JSON & HTTP Methods</span><input type="checkbox" class="nav-checkbox" id="nav-chk-data-exchange" onclick="event.stopPropagation(); syncCheckbox('data-exchange')"></div></li>
+            
+            <div class="nav-heading">State, Security & Identity</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-state-security')"><span>4. Session Management & Auth</span><input type="checkbox" class="nav-checkbox" id="nav-chk-state-security" onclick="event.stopPropagation(); syncCheckbox('state-security')"></div></li>
+            
+            <div class="nav-heading">Distributed Services</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-distributed-services')"><span>5. REST APIs vs. SOAP Fabrics</span><input type="checkbox" class="nav-checkbox" id="nav-chk-distributed-services" onclick="event.stopPropagation(); syncCheckbox('distributed-services')"></div></li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>Web Technologies & Distributed Architectures</h1>
+            <p>Document tree structures, asynchronous runtime models, protocol transaction mechanics, and state boundaries.</p>
+        </header>
+
+        <section class="content-card" id="sec-client-core">
+            <div class="card-header-row">
+                <h2>1. Semantic Structural Layouts & Box Engines</h2>
+                <button class="action-button" id="btn-client-core" onclick="toggleTopicState('client-core')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Forms: <strong>GET/POST Operational Submissions</strong></div>
+                <div class="summary-badge">Tables: <strong>Tabular Row/Column Cell Formats</strong></div>
+                <div class="summary-badge">CSS Engine: <strong>Specificity Computation Matrices</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">HTML5 Semantic Architectures</div>
+                <ul>
+                    <li><strong>Interactive Web Forms:</strong> Act as state collection points. A form encapsulates user inputs and dispatches payloads using standardized encoding patterns: `application/x-www-form-urlencoded` or `multipart/form-data` (required for binary file transmissions).</li>
+                    <li><strong>Tabular Grid Layouts:</strong> Constructed via hierarchical containers (`<table>`, `<thead>`, `<tbody>`, `<tr>`, `<th>`, `<td>`). Complex multi-dimensional mappings use `colspan` and `rowspan` parameters to modify layout spans across the view matrix.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">CSS Cascading specificity Calculations</div>
+                <p>Browsers determine element styling properties by ranking overlapping style definitions using a strict structural precedence formula:</p>
+                $$\text{Specificity Weight} = (\text{Inline Styles},\, \text{IDs},\, \text{Classes/Attributes/Pseudo-classes},\, \text{Elements/Pseudo-elements})$$
+                <p>When computing styles, an explicit ID selector $(0,1,0,0)$ completely overrides any number of combined class selectors, such as ten classes matching a single target $(0,0,10,0)$.</p>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-javascript-dom">
+            <div class="card-header-row">
+                <h2>2. JavaScript Engine Runtime, DOM Tree & Events</h2>
+                <button class="action-button" id="btn-javascript-dom" onclick="toggleTopicState('javascript-dom')">Mark Mastered</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Document Object Model (DOM) Hierarchy</div>
+                <p>The browser parses HTML source code into a live, interactive tree structure called the <strong>Document Object Model (DOM)</strong>. Each node in the tree represents an element, attribute, or text segment. JavaScript interacts with this object tree to dynamically alter page content, modify styles, and handle user interactions.</p>
+                
+                
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Asynchronous JavaScript Event Loop Architecture</div>
+                <p>The engine manages single-threaded execution using a structured concurrency model:</p>
+                <ul>
+                    <li><strong>Call Stack:</strong> Tracks active function execution contexts sequentially using standard LIFO behaviors.</li>
+                    <li><strong>Web APIs Framework:</strong> Handles background threads for long-running operations like timers (`setTimeout`) and asynchronous network calls (`fetch`).</li>
+                    <li><strong>Callback/Task Queue:</strong> Stores deferred macro-tasks until the main execution stack clears.</li>
+                    <li><strong>Microtask Queue:</strong> Prioritizes immediate operations (such as resolving `Promise` handlers) before processing items from the standard Task Queue.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Event Propagation Mechanics</div>
+                
+                <p>When an interaction occurs, the event moves through a three-phase execution cycle across the target tree:</p>
+                <ol>
+                    <li><strong>Capturing Phase:</strong> The event propagates down from the top root window to the nested target node.</li>
+                    <li><strong>Target Phase:</strong> Event listeners attached directly to the initiating element trigger execution.</li>
+                    <li><strong>Bubbling Phase:</strong> The event travels back up the tree from the target node to the root. This upward flow can be halted at any point by calling `event.stopPropagation()`.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-data-exchange">
+            <div class="card-header-row">
+                <h2>3. Network Serialization (XML/JSON) & HTTP Methods</h2>
+                <button class="action-button" id="btn-data-exchange" onclick="toggleTopicState('data-exchange')">Mark Mastered</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Data Serialization Engine Formats</div>
+                <ul>
+                    <li><strong>XML (Extensible Markup Language):</strong> A strict text serialization standard. It supports advanced user-defined schemas, enforces type safety via **DTDs** or **XML Schemas (XSD)**, and requires formal parsers to traverse its verbose tag structures.</li>
+                    <li><strong>JSON (JavaScript Object Notation):</strong> A lightweight, human-readable data serialization format based on key-value pairs. It natively supports primitive data types (Strings, Numbers, Booleans, Arrays, and Null), making it the preferred format for modern high-performance web APIs.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">HTTP Request Methods & Idempotency Spectrum</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>HTTP Verb Method</th><th>Safe Property Status</th><th>Idempotent Property Status</th><th>Primary Architectural Role</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>GET</strong></td><td>✓ Yes</td><td>✓ Yes</td><td>Retrieves resources without changing server state. Content parameters are appended directly inside URL query parameters.</td></tr>
+                            <tr><td><strong>POST</strong></td><td>✕ No</td><td>✕ No</td><td>Submits data payloads to create new resources or trigger actions. Multiple submissions can lead to duplicate entries.</td></tr>
+                            <tr><td><strong>PUT</strong></td><td>✕ No</td><td>✓ Yes</td><td>Replaces an entire target resource with the uploaded payload, or creates it if it doesn't exist. Repeated identical requests produce the same state.</td></tr>
+                            <tr><td><strong>DELETE</strong></td><td>✕ No</td><td>✓ Yes</td><td>Removes a specified resource. Subsequent requests return a 404 or 204 status, but the underlying server state remains unchanged after the first delete.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-state-security">
+            <div class="card-header-row">
+                <h2>4. Stateless Protocols, State Mechanics & Security</h2>
+                <button class="action-button" id="btn-state-security" onclick="toggleTopicState('state-security')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">HTTP: <strong>Stateless Protocol Layer</strong></div>
+                <div class="summary-badge">Cookies: <strong>Client-Side Storage Strings</strong></div>
+                <div class="summary-badge">Sessions: <strong>Server-Side In-Memory State Mapping</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">State Enforcement (Cookies vs. Sessions)</div>
+                <ul>
+                    <li>Because HTTP is stateless, servers use persistent data stores to track users across requests.</li>
+                    <li><strong>HTTP Cookies:</strong> Small text payloads sent from the server and saved in the client's browser. They are automatically appended to the `Cookie` header of every subsequent request to that domain. Essential security flags include `HttpOnly` (blocks access via JavaScript to mitigate Cross-Site Scripting) and `Secure` (restricts transmission to encrypted HTTPS connections).</li>
+                    <li><strong>Server-Side Sessions:</strong> Storage maps maintained on the server. The client receives a randomized tracking token called a `Session ID` via a cookie. When a new request arrives, the server checks this ID against its memory or database to load the user's active session state.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Identity Engineering (Authentication vs. Authorization)</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Security Dimension Phase</th><th>Core System Responsibility Target</th><th>Standard Implementation Strategies</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Authentication</strong></td><td>Verifies identity credentials to answer: <em>"Who are you?"</em></td><td>Password hashing (e.g., `bcrypt`), Multi-Factor Auth (MFA), and federated single sign-on (SSO) systems.</td></tr>
+                            <tr><td><strong>Authorization</strong></td><td>Validates identity permissions to answer: <em>"What can you do?"</em></td><td>Role-Based Access Control (RBAC) and Attribute-Based Access Control (ABAC) permission checks.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-distributed-services">
+            <div class="card-header-row">
+                <h2>5. Web Services Architecture: SOAP vs. REST</h2>
+                <button class="action-button" id="btn-distributed-services" onclick="toggleTopicState('distributed-services')">Mark Mastered</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">RESTful API Design Constraints</div>
+                <p>Architectures must adhere to six core architectural principles to be considered truly RESTful:</p>
+                <ol>
+                    <li><strong>Statelessness:</strong> Every request must contain all the contextual information needed for processing; the server cannot store any persistent session state about the client.</li>
+                    <li><strong>Client-Server Separation:</strong> Decouples client interface concerns from server data storage paths, letting each side scale independently.</li>
+                    <li><strong>Cacheability:</strong> Server responses must explicitly label data as cacheable or non-cacheable to improve network efficiency.</li>
+                    <li><strong>Uniform Interface:</strong> Simplifies interaction models by standardizing resource URI formats and leveraging native HTTP verbs.</li>
+                    <li><strong>Layered System:</strong> The client cannot tell whether it is connected directly to the end server or to an intermediary layer like a proxy or load balancer.</li>
+                    <li><strong>Code on Demand (Optional):</strong> Allows the server to temporarily extend client functionality by sending executable scripts.</li>
+                </ol>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Architectural Paradigm Comparison Matrix</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Architectural Property</th><th>SOAP Web Services</th><th>RESTful Architectures</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Protocol vs. Style</strong></td><td>A strict, highly structured enterprise **Protocol specification**.</td><td>An **Architectural Style** that leverages standard internet protocols.</td></tr>
+                            <tr><td><strong>Serialization Format</strong></td><td>Restricted exclusively to **XML** payloads.</td><td>Supports multiple formats, including **JSON**, XML, YAML, or plain text.</td></tr>
+                            <tr><td><strong>Contract Definition</strong></td><td>Enforces strict data contracts using a **WSDL (Web Services Description Language)** file.</td><td>Uses flexible, optional documentation schemas like **OpenAPI / Swagger**.</td></tr>
+                            <tr><td><strong>Security Handling</strong></td><td>Uses built-in enterprise standards like **WS-Security** for end-to-end message encryption.</td><td>Relies on underlying transport layer security (**HTTPS**) and token protocols (**JWT/OAuth2**).</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Interactive Dashboard Tracking Logic
+        const Web_Registry = [
+            { id: "client-core" },
+            { id: "javascript-dom" },
+            { id: "data-exchange" },
+            { id: "state-security" },
+            { id: "distributed-services" }
+        ];
+
+        function scrollToCard(targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initAppTracker() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_web_dashboard_progress')) || {};
+            
+            Web_Registry.forEach(module => {
+                const status = !!userProgress[module.id];
+                
+                // Sync Checkboxes
+                const chk = document.getElementById(`nav-chk-${module.id}`);
+                if (chk) chk.checked = status;
+
+                // Sync Card Action Buttons
+                const btn = document.getElementById(`btn-${module.id}`);
+                if (btn) {
+                    if (status) {
+                        btn.innerText = "✓ Mastered";
+                        btn.classList.add('completed');
+                    } else {
+                        btn.innerText = "Mark Mastered";
+                        btn.classList.remove('completed');
+                    }
+                }
+            });
+            evaluateMetrics();
+        }
+
+        function updateProgressState(id, statusValue) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_web_dashboard_progress')) || {};
+            userProgress[id] = statusValue;
+            localStorage.setItem('gate_web_dashboard_progress', JSON.stringify(userProgress));
+
+            const chk = document.getElementById(`nav-chk-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (chk) chk.checked = statusValue;
+            if (btn) {
+                if (statusValue) {
+                    btn.innerText = "✓ Mastered";
+                    btn.classList.add('completed');
+                } else {
+                    btn.innerText = "Mark Mastered";
+                    btn.classList.remove('completed');
+                }
+            }
+            evaluateMetrics();
+        }
+
+        function toggleTopicState(id) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_web_dashboard_progress')) || {};
+            updateProgressState(id, !userProgress[id]);
+        }
+
+        function syncCheckbox(id) {
+            const chk = document.getElementById(`nav-chk-${id}`);
+            if (chk) updateProgressState(id, chk.checked);
+        }
+
+        function evaluateMetrics() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_web_dashboard_progress')) || {};
+            let matchCounter = 0;
+
+            Web_Registry.forEach(module => {
+                if (userProgress[module.id] === true) matchCounter++;
+            });
+
+            const ratioFactor = Web_Registry.length > 0 ? Math.round((matchCounter / Web_Registry.length) * 100) : 0;
+            document.getElementById('metric-fill').style.width = ratioFactor + '%';
+            document.getElementById('metric-text').innerText = `${matchCounter}/${Web_Registry.length} Modules Mastered (${ratioFactor}%)`;
+        }
+
+        window.onload = initAppTracker;
+    </script>
+</body>
+</html>

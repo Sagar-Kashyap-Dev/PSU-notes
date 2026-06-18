@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE — Algorithms (DAA) High-Density Dashboard</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #6366f1;
+            --brand-accent: #e0e7ff;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* Split-Pane Control Interface */
+        #app-sidebar {
+            width: 330px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 330px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1180px;
+            width: calc(100% - 330px);
+        }
+
+        /* Sidebar Panels */
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #c7d2fe; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #4f46e5; letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #cbd5e1; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #4f46e5; width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        /* Document Architecture Layouts */
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        /* Fact Summary Layouts */
+        .summary-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; background: var(--bg-workspace); padding: 1rem; border-radius: var(--radius-interactive); border: 1px solid var(--border-color); }
+        .summary-badge { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-bold); font-weight: 500; }
+        .summary-badge strong { color: #4f46e5; }
+
+        .grid-block { margin-bottom: 2rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 0.75rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); }
+        th, td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        .alert-box ul { margin-left: 1.25rem; }
+        .alert-box li { color: #7f1d1d; }
+
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>DAA Core Engine</h2>
+            <p>Design & Analysis of Algorithms</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Engine Validation</div>
+            <div class="metric-value" id="metric-text">0/8 Modules Mastered</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Analysis Foundations</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-complexity')"><span>1. Asymptotic Bounds</span><input type="checkbox" class="nav-checkbox" id="nav-chk-complexity" onclick="event.stopPropagation(); syncCheckbox('complexity')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-recurrence')"><span>2. Recurrence Relations</span><input type="checkbox" class="nav-checkbox" id="nav-chk-recurrence" onclick="event.stopPropagation(); syncCheckbox('recurrence')"></div></li>
+            
+            <div class="nav-heading">Searching & Sorting</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-search')"><span>3. Searching Foundations</span><input type="checkbox" class="nav-checkbox" id="nav-chk-search" onclick="event.stopPropagation(); syncCheckbox('search')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-sorting')"><span>4. Sorting Frameworks</span><input type="checkbox" class="nav-checkbox" id="nav-chk-sorting" onclick="event.stopPropagation(); syncCheckbox('sorting')"></div></li>
+            
+            <div class="nav-heading">Design Paradigms</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-paradigms')"><span>5. Divide, Conquer & Greedy</span><input type="checkbox" class="nav-checkbox" id="nav-chk-paradigms" onclick="event.stopPropagation(); syncCheckbox('paradigms')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-dp-backtrack')"><span>6. DP & Backtracking</span><input type="checkbox" class="nav-checkbox" id="nav-chk-dp-backtrack" onclick="event.stopPropagation(); syncCheckbox('dp-backtrack')"></div></li>
+            
+            <div class="nav-heading">Advanced & Intractable</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-graphs')"><span>7. Advanced Graph Systems</span><input type="checkbox" class="nav-checkbox" id="nav-chk-graphs" onclick="event.stopPropagation(); syncCheckbox('graphs')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-np')"><span>8. NP-Completeness Matrix</span><input type="checkbox" class="nav-checkbox" id="nav-chk-np" onclick="event.stopPropagation(); syncCheckbox('np')"></div></li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>DAA Syllabus Specification</h1>
+            <p>Mathematical definitions, bound equations, exact runtime criteria, and algorithmic edge cases for GATE CSE.</p>
+        </header>
+
+        <section class="content-card" id="sec-complexity">
+            <div class="card-header-row">
+                <h2>1. Complexity Analysis & Asymptotic Bounds</h2>
+                <button class="action-button" id="btn-complexity" onclick="toggleTopicState('complexity')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Big O: <strong>Asymptotic Upper Bound</strong></div>
+                <div class="summary-badge">Omega (Ω): <strong>Asymptotic Lower Bound</strong></div>
+                <div class="summary-badge">Theta (Θ): <strong>Strict Tight Bound</strong></div>
+                <div class="summary-badge">Little o: <strong>Non-Tight Upper Bound</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Formal Asymptotic Definitions</div>
+                <ul>
+                    <li><strong>Big O ($O$):</strong> $f(n) = O(g(n))$ if there exist positive constants $c$ and $n_0$ such that $0 \le f(n) \le c \cdot g(n)$ for all $n \ge n_0$. Represents the structural worst-case envelope.</li>
+                    <li><strong>Omega ($\Omega$):</strong> $f(n) = \Omega(g(n))$ if there exist positive constants $c$ and $n_0$ such that $0 \le c \cdot g(n) \le f(n)$ for all $n \ge n_0$. Defines the asymptotic minimum threshold.</li>
+                    <li><strong>Theta ($\Theta$):</strong> $f(n) = \Theta(g(n))$ if there exist positive constants $c_1$, $c_2$, and $n_0$ such that $0 \le c_1 \cdot g(n) \le f(n) \le c_2 \cdot g(n)$ for all $n \ge n_0$. Holds if and only if $f(n) = O(g(n))$ and $f(n) = \Omega(g(n))$.</li>
+                    <li><strong>Little o ($o$):</strong> $f(n) = o(g(n))$ if for **any** positive constant $c > 0$, there exists an $n_0 > 0$ such that $0 \le f(n) < c \cdot g(n)$ for all $n \ge n_0$. Alternatively:
+                        $$\lim_{n \to \infty} \frac{f(n)}{g(n)} = 0$$
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Asymptotic Dominance Growth Hierarchy</div>
+                <p>Arranged from lowest to highest growth rate (most to least efficient runtime profile):</p>
+                $$\mathcal{O}(1) < \mathcal{O}(\log \log n) < \mathcal{O}(\log n) < \mathcal{O}(\sqrt{n}) < \mathcal{O}(n) < \mathcal{O}(n \log n) < \mathcal{O}(n^2) < \mathcal{O}(n^3) < \mathcal{O}(2^n) < \mathcal{O}(n!)$$
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Analytical Traps:</strong>
+                    <ul>
+                        <li><strong>Conditional Bound Violations:</strong> Asymptotic comparisons are only valid as $n \to \infty$. Do not make performance assumptions based on small values of $n$. For instance, $1000n$ grows significantly faster than $0.01n^2$ for small values, but asymptotically $0.01n^2$ dominates.</li>
+                        <li><strong>Little o vs. Big O Distinction:</strong> Big O includes the possibility of the functions growing at the exact same rate ($f(n) = \Theta(g(n))$), whereas Little o strictly excludes tight matches, requiring $f(n)$ to grow strictly slower than $g(n)$.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-recurrence">
+            <div class="card-header-row">
+                <h2>2. Recurrence Relations</h2>
+                <button class="action-button" id="btn-recurrence" onclick="toggleTopicState('recurrence')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Substitution: <strong>Inductive Verification</strong></div>
+                <div class="summary-badge">Iteration: <strong>Expansion Tree Summation</strong></div>
+                <div class="summary-badge">Master Theorem: <strong>Divide & Conquer Solver</strong></div>
+                <div class="summary-badge">Extended Case: <strong>Logarithmic Density Handling</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Resolution Methodologies</div>
+                <ul>
+                    <li><strong>Substitution Method:</strong> Formulate a guess for the runtime bound, then use mathematical induction to prove the guess holds across the boundary conditions.</li>
+                    <li><strong>Iteration Method (Recursion Tree):</strong> Expand the recurrence relation into a tree structure. Calculate the total work done at an arbitrary level $i$, find the maximum depth of the tree, and sum the work across all levels to find the overall complexity.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Standard Master Theorem Blueprint</div>
+                <p>Applies directly to divide-and-conquer recurrences of the form: $T(n) = aT(n/b) + f(n)$, where $a \ge 1$ and $b > 1$.</p>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Asymptotic Condition Baseline</th><th>Algorithmic Interpretation Summary</th><th>Resulting Bound Evaluation $\Theta(n)$</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>$f(n) = O(n^{\log_b a - \epsilon})$ for some $\epsilon > 0$</td><td>The root-level work is dominated by the subproblems.</td><td>$T(n) = \Theta(n^{\log_b a})$</td></tr>
+                            <tr><td>$f(n) = \Theta(n^{\log_b a})$</td><td>The work is evenly distributed across all levels of the tree.</td><td>$T(n) = \Theta(n^{\log_b a} \log n)$</td></tr>
+                            <tr><td>$f(n) = \Omega(n^{\log_b a + \epsilon})$ for some $\epsilon > 0$, and satisfies regularity</td><td>The root-level work dominates the overall runtime.</td><td>$T(n) = \Theta(f(n))$</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Extended Master Theorem (Logarithmic Cases)</div>
+                <p>When $f(n) = \Theta(n^{\log_b a} \log^k n)$ for $k \ge 0$:</p>
+                $$T(n) = \Theta(n^{\log_b a} \log^{k+1} n)$$
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Analytical Traps:</strong>
+                    <ul>
+                        <li><strong>Master Theorem Non-Applicability:</strong> The Master Theorem cannot be used if $a$ is not a constant (e.g., $T(n) = n T(n/2)$), if the subproblem reduction is sub-linear (e.g., $T(n) = T(n-1) + 1$), or if the ratio $\frac{f(n)}{n^{\log_b a}}$ is not polynomial (e.g., $T(n) = 2T(n/2) + n \log n$, where Case 3 doesn't apply because the difference isn't polynomial; this requires the extended logarithmic case instead).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-search">
+            <div class="card-header-row">
+                <h2>3. Searching Techniques (Linear, Binary)</h2>
+                <button class="action-button" id="btn-search" onclick="toggleTopicState('search')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Linear Search Worst: <strong>O(n)</strong></div>
+                <div class="summary-badge">Linear Search Space: <strong>O(1)</strong></div>
+                <div class="summary-badge">Binary Search Worst: <strong>O(log n)</strong></div>
+                <div class="summary-badge">Binary Condition: <strong>Strictly Sorted Elements</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Searching Mechanics Matrix</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Search Model</th><th>Precondition Constraints</th><th>Best Case Complexity</th><th>Worst Case Complexity</th><th>Space Overhead</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Linear Search</strong></td><td>None (Works on unsorted collections)</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(n)$</td><td>$\mathcal{O}(1)$</td></tr>
+                            <tr><td><strong>Binary Search</strong></td><td>The array must be **strictly sorted**</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(\log n)$</td><td>$\mathcal{O}(1)$ (Iterative layout)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Binary Search Subproblem Recurrence</div>
+                $$T(n) = T(n/2) + \mathcal{O}(1) \implies \Theta(\log n) \text{ via Master Theorem Case 2}$$
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Analytical Traps:</strong>
+                    <ul>
+                        <li><strong>Linked List Binary Search Trap:</strong> Performing a binary search on a sorted **Singly Linked List** does not run in $\mathcal{O}(\log n)$ time. Finding the middle element requires traversing the links sequentially, which takes $\mathcal{O}(n)$ time at each step, resulting in an overall complexity of $\mathcal{O}(n)$. Fast binary search requires $O(1)$ random access to elements, such as in an array.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-sorting">
+            <div class="card-header-row">
+                <h2>4. Sorting Frameworks & Behavioral Properties</h2>
+                <button class="action-button" id="btn-sorting" onclick="toggleTopicState('sorting')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Stable: <strong>Preserves Duplicate Order</strong></div>
+                <div class="summary-badge">In-place: <strong>O(1) Aux Space</strong></div>
+                <div class="summary-badge">Adaptive: <strong>Optimizes on Pre-Sorted Input</strong></div>
+                <div class="summary-badge">Radix: <strong>Non-Comparison O(d*(n+k))</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Sorting Complexity & Property Matrix</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Algorithm</th><th>Best Time</th><th>Worst Time</th><th>Auxiliary Space</th><th>Stable?</th><th>In-Place?</th><th>Adaptive?</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Bubble Sort</strong></td><td>$\mathcal{O}(n)$ (with flag)</td><td>$\mathcal{O}(n^2)$</td><td>$\mathcal{O}(1)$</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+                            <tr><td><strong>Selection Sort</strong></td><td>$\mathcal{O}(n^2)$</td><td>$\mathcal{O}(n^2)$</td><td>$\mathcal{O}(1)$</td><td>No</td><td>Yes</td><td>No</td></tr>
+                            <tr><td><strong>Insertion Sort</strong></td><td>$\mathcal{O}(n)$</td><td>$\mathcal{O}(n^2)$</td><td>$\mathcal{O}(1)$</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+                            <tr><td><strong>Merge Sort</strong></td><td>$\mathcal{O}(n \log n)$</td><td>$\mathcal{O}(n \log n)$</td><td>$\mathcal{O}(n)$</td><td>Yes</td><td>No</td><td>No</td></tr>
+                            <tr><td><strong>Quick Sort</strong></td><td>$\mathcal{O}(n \log n)$</td><td>$\mathcal{O}(n^2)$</td><td>$\mathcal{O}(\log n)$ (Stack)</td><td>No</td><td>Yes</td><td>No</td></tr>
+                            <tr><td><strong>Heap Sort</strong></td><td>$\mathcal{O}(n \log n)$</td><td>$\mathcal{O}(n \log n)$</td><td>$\mathcal{O}(1)$</td><td>No</td><td>Yes</td><td>No</td></tr>
+                            <tr><td><strong>Radix Sort</strong></td><td>$\mathcal{O}(d(n+k))$</td><td>$\mathcal{O}(d(n+k))$</td><td>$\mathcal{O}(n+k)$</td><td>Yes</td><td>No</td><td>No</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Core Property Definitions</div>
+                <ul>
+                    <li><strong>Stable:</strong> Preserves the relative input order of elements with equal keys.</li>
+                    <li><strong>In-place:</strong> Does not require additional memory that scales with the size of the input; auxiliary space is bounded at $\mathcal{O}(1)$.</li>
+                    <li><strong>Adaptive:</strong> Runs faster when given input that is already partially or fully sorted.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Analytical Traps:</strong>
+                    <ul>
+                        <li><strong>Quick Sort Degeneration:</strong> Quick Sort drops to its worst-case performance of $\mathcal{O}(n^2)$ if the input array is already sorted or reverse-sorted and the algorithm always picks the first or last element as the pivot. This causes highly unbalanced partitions of size $0$ and $n-1$.</li>
+                        <li><strong>Comparison Sort Theoretical Boundary:</strong> Any sorting algorithm that relies solely on comparing elements must take at least $\Omega(n \log n)$ time in the worst case. Non-comparison algorithms like Radix Sort bypass this limit because they use element properties (like digit distributions) instead of comparisons.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-paradigms">
+            <div class="card-header-row">
+                <h2>5. Divide & Conquer vs. Greedy Strategy</h2>
+                <button class="action-button" id="btn-paradigms" onclick="toggleTopicState('paradigms')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">D&C Strategy: <strong>Independent Subproblems</strong></div>
+                <div class="summary-badge">Greedy Choice: <strong>Local Optimal Choice</strong></div>
+                <div class="summary-badge">Job Sequencing: <strong>Sorted Deadlines Max Profit</strong></div>
+                <div class="summary-badge">Huffman Space: <strong>Prefix-Free Variable Encoding</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Divide & Conquer Architecture</div>
+                <p>Breaks a problem down into independent subproblems, recursively solves them, and combines their results. Examples include Merge Sort, Quick Sort, and Binary Search.</p>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Greedy Paradigm & Core Applications</div>
+                <p>Makes the locally optimal choice at each step, hoping it leads to a globally optimal solution. It relies on the **Greedy Choice Property** and **Optimal Substructure**.</p>
+                <ul>
+                    <li><strong>Job Sequencing with Deadlines:</strong> Sort all available jobs in descending order of profit. Attempt to schedule each job into its latest possible free time slot before its deadline. Runs in $\mathcal{O}(n^2)$ or $\mathcal{O}(n \log n)$ with disjoint-set optimizations.</li>
+                    <li><strong>Huffman Coding Framework:</strong> A variable-length compression technique. Iteratively merges the two leaf nodes with the lowest frequencies into a parent node whose frequency is the sum of its children's frequencies. Constructs a prefix-free binary tree in $\mathcal{O}(n \log n)$ time.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Analytical Traps:</strong>
+                    <ul>
+                        <li><strong>Fractional vs. 0/1 Knapsack:</strong> The greedy approach works perfectly for the **Fractional Knapsack** problem (by selecting items based on their profit-to-weight ratio). However, it **fails to guarantee an optimal solution for the 0/1 Knapsack problem**, which requires a Dynamic Programming approach because choices cannot be reversed or split.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-dp-backtrack">
+            <div class="card-header-row">
+                <h2>6. Dynamic Programming & Backtracking</h2>
+                <button class="action-button" id="btn-dp-backtrack" onclick="toggleTopicState('dp-backtrack')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">DP Condition: <strong>Overlapping Subproblems</strong></div>
+                <div class="summary-badge">0/1 Knapsack Time: <strong>O(n * W) Pseudo-polynomial</strong></div>
+                <div class="summary-badge">LCS Matrix Bound: <strong>O(m * n) Time/Space</strong></div>
+                <div class="summary-badge">Backtracking: <strong>State-Space Tree Pruning</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Dynamic Programming Architecture</div>
+                <p>Solves problems by combining solutions to overlapping subproblems, storing results in a lookup table (memoization or tabulation) to avoid redundant calculations.</p>
+                <ul>
+                    <li><strong>0/1 Knapsack Problem:</strong> The state equation evaluates whether to include or exclude an item based on remaining capacity:
+                        $$V[i, w] = \max(V[i-1, w], v_i + V[i-1, w - w_i])$$
+                        Runs in $\mathcal{O}(n \cdot W)$ time and space, where $W$ is the maximum weight capacity.
+                    </li>
+                    <li><strong>Longest Common Subsequence (LCS):</strong> Compares string characters to build a matching sequence:
+                        $$L[i, j] = \begin{cases} L[i-1, j-1] + 1 & \text{if } X[i] == Y[j] \\ \max(L[i-1, j], L[i, j-1]) & \text{if } X[i] \neq Y[j] \end{cases}$$
+                    </li>
+                    <li><strong>Matrix Chain Multiplication (MCM):</strong> Determines the most efficient way to multiply a chain of matrices by finding the optimal split point $k$:
+                        $$M[i, j] = \min_{i \le k < j} \{ M[i, k] + M[k+1, j] + p_{i-1}p_k p_j \}$$
+                        Runs in $\mathcal{O}(n^3)$ time and requires $\mathcal{O}(n^2)$ auxiliary space.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Backtracking Strategy (N-Queen)</div>
+                <p>Explores a state-space tree systematically using Depth-First Search. If a path violates the problem constraints, the algorithm **prunes the branch** and backtracks to the previous decision point.</p>
+                <ul>
+                    <li><strong>N-Queens Problem:</strong> Places $N$ queens on an $N \times N$ chessboard so that no two queens threaten each other. Checks row, column, and diagonal constraints at each step.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Analytical Traps:</strong>
+                    <ul>
+                        <li><strong>Pseudo-Polynomial Time Reality:</strong> The $\mathcal{O}(n \cdot W)$ runtime of the 0/1 Knapsack problem is **pseudo-polynomial**, not truly polynomial. If the capacity $W$ scales exponentially with the input size ($W = 2^n$), the runtime becomes exponential ($\mathcal{O}(n \cdot 2^n)$).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-graphs">
+            <div class="card-header-row">
+                <h2>7. Graph Systems & Traversals</h2>
+                <button class="action-button" id="btn-graphs" onclick="toggleTopicState('graphs')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">BFS / DFS: <strong>O(V + E) Complexity</strong></div>
+                <div class="summary-badge">Prim's: <strong>Vertex Growth MST</strong></div>
+                <div class="summary-badge">Kruskal's: <strong>Sorted Edge Disjoint MST</strong></div>
+                <div class="summary-badge">Dijkstra: <strong>Single Source Shortest Path</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Graph Traversals</div>
+                <ul>
+                    <li><strong>BFS:</strong> Uses a queue to explore neighbors level by level. Ideal for finding the shortest path in unweighted networks. Complexity: $\mathcal{O}(V + E)$.</li>
+                    <li><strong>DFS:</strong> Uses a stack or recursion to explore as deep as possible along each branch. Used to identify connected components, perform topological sorting, and detect cycles. Complexity: $\mathcal{O}(V + E)$.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Minimum Spanning Tree (MST) Engines</div>
+                <ul>
+                    <li><strong>Prim's Algorithm:</strong> Starts from an arbitrary root vertex and grows the tree by adding the cheapest edge that connects a vertex in the tree to a vertex outside the tree. Runs in $\mathcal{O}(E \log V)$ using a binary heap pointer.</li>
+                    <li><strong>Kruskal's Algorithm:</strong> Sorts all edges in the graph by weight and greedily adds the cheapest edge, provided it doesn't create a cycle. Uses a **Disjoint-Set Data Structure (Union-Find)** to detect cycles efficiently. Runs in $\mathcal{O}(E \log E)$ or $\mathcal{O}(E \log V)$ time.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Dijkstra's Shortest Path Algorithm</div>
+                <p>Computes the shortest path from a single source vertex to all other vertices in a weighted graph. Maintained using a min-priority queue. Runs in $\mathcal{O}(E \log V)$ time.</p>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Analytical Traps:</strong>
+                    <ul>
+                        <li><strong>Dijkstra's Negative Weight Failure:</strong> Dijkstra's algorithm **cannot handle graphs with negative edge weights**. It locks in the shortest distance to a vertex as soon as it is extracted from the priority queue; a subsequent negative edge could offer a shorter path that the algorithm will miss. Graphs with negative weights require the Bellman-Ford algorithm instead.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-np">
+            <div class="card-header-row">
+                <h2>8. NP-Completeness Matrix</h2>
+                <button class="action-button" id="btn-np" onclick="toggleTopicState('np')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">P: <strong>Polynomial Time Deterministic</strong></div>
+                <div class="summary-badge">NP: <strong>Polynomial Time Verifiable</strong></div>
+                <div class="summary-badge">NP-Hard: <strong>At least as hard as any NP problem</strong></div>
+                <div class="summary-badge">NP-Complete: <strong>Both NP and NP-Hard</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Complexity Class Definitions</div>
+                <ul>
+                    <li><strong>P:</strong> The class of decision problems that can be solved on a deterministic Turing machine in polynomial time ($\mathcal{O}(n^k)$).</li>
+                    <li><strong>NP:</strong> The class of decision problems whose solutions can be **verified** in polynomial time on a deterministic machine, or solved in polynomial time on a non-deterministic machine.</li>
+                    <li><strong>NP-Hard:</strong> A class of problems (not necessarily decision problems) to which any problem in NP can be reduced in polynomial time. Solving an NP-Hard problem in polynomial time would mean all NP problems could also be solved in polynomial time.</li>
+                    <li><strong>NP-Complete:</strong> The subset of problems in NP that are also NP-Hard. These are the absolute hardest decision problems within the NP class. Examples include 3-SAT, the Traveling Salesperson decision problem, Vertex Cover, and Independent Set.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Polynomial-Time Reduction Framework</div>
+                <p>To prove a new problem $Y$ is NP-Complete:</p>
+                <ol>
+                    <li>Prove that $Y \in \text{NP}$ by showing a proposed solution can be verified in polynomial time.</li>
+                    <li>Select a known NP-Complete problem $X$ and reduce it to $Y$ in polynomial time ($X \le_P Y$). This proves that $Y$ is at least as hard as $X$, making it NP-Hard.</li>
+                </ol>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Analytical Traps:</strong>
+                    <ul>
+                        <li><strong>Reduction Direction Error:</strong> A common mistake is reversing the reduction direction. To prove problem $Y$ is NP-Hard, you must reduce a **known NP-Complete problem $X$ to your target problem $Y$** ($X \le_P Y$). Reducing $Y$ to $X$ ($Y \le_P X$) only proves that $Y$ is no harder than $X$, which does not establish NP-Hardness.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Interactive Dashboard Logic
+        const DAA_Registry = [
+            { id: "complexity" },
+            { id: "recurrence" },
+            { id: "search" },
+            { id: "sorting" },
+            { id: "paradigms" },
+            { id: "dp-backtrack" },
+            { id: "graphs" },
+            { id: "np" }
+        ];
+
+        function scrollToCard(targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initAppTracker() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_daa_dashboard_progress')) || {};
+            
+            DAA_Registry.forEach(module => {
+                const status = !!userProgress[module.id];
+                
+                // Sync Checkboxes
+                const chk = document.getElementById(`nav-chk-${module.id}`);
+                if (chk) chk.checked = status;
+
+                // Sync Card Action Buttons
+                const btn = document.getElementById(`btn-${module.id}`);
+                if (btn) {
+                    if (status) {
+                        btn.innerText = "✓ Mastered";
+                        btn.classList.add('completed');
+                    } else {
+                        btn.innerText = "Mark Mastered";
+                        btn.classList.remove('completed');
+                    }
+                }
+            });
+            evaluateMetrics();
+        }
+
+        function updateProgressState(id, statusValue) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_daa_dashboard_progress')) || {};
+            userProgress[id] = statusValue;
+            localStorage.setItem('gate_daa_dashboard_progress', JSON.stringify(userProgress));
+
+            const chk = document.getElementById(`nav-chk-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (chk) chk.checked = statusValue;
+            if (btn) {
+                if (statusValue) {
+                    btn.innerText = "✓ Mastered";
+                    btn.classList.add('completed');
+                } else {
+                    btn.innerText = "Mark Mastered";
+                    btn.classList.remove('completed');
+                }
+            }
+            evaluateMetrics();
+        }
+
+        function toggleTopicState(id) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_daa_dashboard_progress')) || {};
+            updateProgressState(id, !userProgress[id]);
+        }
+
+        function syncCheckbox(id) {
+            const chk = document.getElementById(`nav-chk-${id}`);
+            if (chk) updateProgressState(id, chk.checked);
+        }
+
+        function evaluateMetrics() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_daa_dashboard_progress')) || {};
+            let matchCounter = 0;
+
+            DAA_Registry.forEach(module => {
+                if (userProgress[module.id] === true) matchCounter++;
+            });
+
+            const ratioFactor = DAA_Registry.length > 0 ? Math.round((matchCounter / DAA_Registry.length) * 100) : 0;
+            document.getElementById('metric-fill').style.width = ratioFactor + '%';
+            document.getElementById('metric-text').innerText = `${matchCounter}/${DAA_Registry.length} Modules Mastered (${ratioFactor}%)`;
+        }
+
+        window.onload = initAppTracker;
+    </script>
+</body>
+</html>

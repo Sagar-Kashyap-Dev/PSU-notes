@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE — Digital Logic Master Engine</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #e11d48;
+            --brand-accent: #ffe4e6;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* Split-Pane Control Interface */
+        #app-sidebar {
+            width: 330px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 330px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1180px;
+            width: calc(100% - 330px);
+        }
+
+        /* Sidebar Panels */
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #fecdd3; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #9f1239; letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #cbd5e1; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #9f1239; width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        /* Document Structural Elements */
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        .summary-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; background: var(--bg-workspace); padding: 1rem; border-radius: var(--radius-interactive); border: 1px solid var(--border-color); }
+        .summary-badge { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-bold); font-weight: 500; }
+        .summary-badge strong { color: #e11d48; }
+
+        .grid-block { margin-bottom: 2rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: #e11d48; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 0.75rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); }
+        th, td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        .alert-box ul { margin-left: 1.25rem; }
+        .alert-box li { color: #7f1d1d; }
+
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>Digital Logic</h2>
+            <p>Hardware Foundations Suite</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Syllabus Completion</div>
+            <div class="metric-value" id="metric-text">0/8 Modules Mastered</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Arithmetic & Radix</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-number-systems')"><span>1. Radix & Complements</span><input type="checkbox" class="nav-checkbox" id="nav-chk-number-systems" onclick="event.stopPropagation(); syncCheckbox('number-systems')"></div></li>
+            
+            <div class="nav-heading">Boolean Minimization</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-logic-gates')"><span>2. Universal Gates & Logics</span><input type="checkbox" class="nav-checkbox" id="nav-chk-logic-gates" onclick="event.stopPropagation(); syncCheckbox('logic-gates')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-algebra-kmap')"><span>3. K-Map & Normal Forms</span><input type="checkbox" class="nav-checkbox" id="nav-chk-algebra-kmap" onclick="event.stopPropagation(); syncCheckbox('algebra-kmap')"></div></li>
+            
+            <div class="nav-heading">Data Routing Nodes</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-combinational-core')"><span>4. Adders & Arithmetic Logic</span><input type="checkbox" class="nav-checkbox" id="nav-chk-combinational-core" onclick="event.stopPropagation(); syncCheckbox('combinational-core')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-routing-circuits')"><span>5. Multiplexing & Data Paths</span><input type="checkbox" class="nav-checkbox" id="nav-chk-routing-circuits" onclick="event.stopPropagation(); syncCheckbox('routing-circuits')"></div></li>
+            
+            <div class="nav-heading">Sequential Layouts</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-flip-flops')"><span>6. Latches & Flip-Flops</span><input type="checkbox" class="nav-checkbox" id="nav-chk-flip-flops" onclick="event.stopPropagation(); syncCheckbox('flip-flops')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-registers')"><span>7. Shift Register Pipelines</span><input type="checkbox" class="nav-checkbox" id="nav-chk-registers" onclick="event.stopPropagation(); syncCheckbox('registers')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-counters')"><span>8. Synchronous Counters</span><input type="checkbox" class="nav-checkbox" id="nav-chk-counters" onclick="event.stopPropagation(); syncCheckbox('counters')"></div></li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>Digital Logic Core Specification</h1>
+            <p>Radix systems, prime implicant reduction constraints, combinational data paths, and finite-state clock boundaries.</p>
+        </header>
+
+        <section class="content-card" id="sec-number-systems">
+            <div class="card-header-row">
+                <h2>1. Number Systems & Complement Arithmetic</h2>
+                <button class="action-button" id="btn-number-systems" onclick="toggleTopicState('number-systems')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Radix (r): <strong>Base Weighting Value</strong></div>
+                <div class="summary-badge">(r-1)'s Comp: <strong>Diminished Radix Complement</strong></div>
+                <div class="summary-badge">r's Comp: <strong>True Radix Complement</strong></div>
+                <div class="summary-badge">Overflow: <strong>Sign-Bit Carry XOR Bound</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Mathematical Complements Formula Definition</div>
+                <p>Given an $n$-digit integer $N$ encoded in a base-radix $r$ system:</p>
+                <ul>
+                    <li><strong>Diminished Radix Complement ($(r-1)$'s Complement):</strong>
+                        $$\text{Complement} = (r^n - 1) - N$$
+                        *(Evaluated by subtracting every individual digit of $N$ from the highest digit value $r-1$). Examples include **1's complement** ($r=2$) and **9's complement** ($r=10$).*
+                    </li>
+                    <li><strong>True Radix Complement ($r$'s Complement):</strong>
+                        $$\text{Complement} = r^n - N = \left[ (r^n - 1) - N \right] + 1$$
+                        *(Obtained by adding 1 to the least significant bit of its corresponding $(r-1)$'s complement). Examples include **2's complement** ($r=2$) and **10's complement** ($r=10$).*
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Signed Fixed-Point Representation Bounds</div>
+                <p>For an $n$-bit binary word size, the fixed-point allocation ranges scale across schemas as follows:</p>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Encoding Strategy</th><th>Minimum Minimum Target Dynamic Range Bound</th><th>Maximum Target Dynamic Range Bound</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Sign-Magnitude</strong></td><td>$-(2^{n-1} - 1)$</td><td>$+(2^{n-1} - 1)$</td></tr>
+                            <tr><td><strong>1's Complement</strong></td><td>$-(2^{n-1} - 1)$</td><td>$+(2^{n-1} - 1)$</td></tr>
+                            <tr><td><strong>2's Complement</strong></td><td>$-2^{n-1}$</td><td>$+(2^{n-1} - 1)$</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Overflow Detection Rule:</strong>
+                    <ul>
+                        <li>An arithmetic overflow occurs when adding two numbers with the same sign produces a result with the opposite sign. In an Arithmetic Logic Unit (ALU), this condition is detected by checking the carry bits entering and leaving the sign column:
+                            $$\text{Overflow} = C_{\text{in}} \oplus C_{\text{out}}$$
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-logic-gates">
+            <div class="card-header-row">
+                <h2>2. Logic Gates & Universal Realizations</h2>
+                <button class="action-button" id="btn-logic-gates" onclick="toggleTopicState('logic-gates')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">NAND: <strong>Universal Complement Product</strong></div>
+                <div class="summary-badge">NOR: <strong>Universal Complement Sum</strong></div>
+                <div class="summary-badge">XOR: <strong>Odd Function Parity Gate</strong></div>
+                <div class="summary-badge">XNOR: <strong>Coincidence Equivalence Validator</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Universal Gate Implementations Cost Matrix</div>
+                <p>NAND and NOR gates are universal because they can implement any fundamental boolean operation. The matrix below shows the minimum number of universal gates required to realize each standard logical primitive:</p>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Target Primitive Realization</th><th>Minimum Number of NAND Gates Needed</th><th>Minimum Number of NOR Gates Needed</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>NOT</code></td><td>1</td><td>1</td></tr>
+                            <tr><td><code>AND</code></td><td>2</td><td>3</td></tr>
+                            <tr><td><code>OR</code></td><td>3</td><td>2</td></tr>
+                            <tr><td><code>XOR</code></td><td>4</td><td>5</td></tr>
+                            <tr><td><code>XNOR</code></td><td>5</td><td>4</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">XOR/XNOR Identity Matrix Theorems</div>
+                <ul>
+                    <li>$A \oplus 0 = A, \quad A \oplus 1 = \bar{A}, \quad A \oplus A = 0, \quad A \oplus \bar{A} = 1$</li>
+                    <li>Both XOR and XNOR obey the commutative and associative laws:
+                        $$A \oplus (B \oplus C) = (A \oplus B) \oplus C$$
+                    </li>
+                    <li><strong>Parity Rule:</strong> For $n$ independent input variables, an XOR gate output evaluates to $1$ if and only if the input combination contains an **odd number of 1s**.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-algebra-kmap">
+            <div class="card-header-row">
+                <h2>3. Boolean Algebra & Karnaugh Map Minimization</h2>
+                <button class="action-button" id="btn-algebra-kmap" onclick="toggleTopicState('algebra-kmap')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">SOP: <strong>Sum of Products (ORing ANDs)</strong></div>
+                <div class="summary-badge">POS: <strong>Product of Sums (ANDing ORs)</strong></div>
+                <div class="summary-badge">Minterm (m): <strong>Product Term Evaluating to 1</strong></div>
+                <div class="summary-badge">Maxterm (M): <strong>Sum Term Evaluating to 0</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Axiomatic Theorems of Boolean Algebra</div>
+                <ul>
+                    <li><strong>De Morgan's Laws:</strong> $$\overline{A \cdot B} = \bar{A} + \bar{B}, \quad \overline{A + B} = \bar{A} \cdot \bar{B}$$</li>
+                    <li><strong>Consensus Theorem:</strong> $$A B + \bar{A} C + B C = A B + \bar{A} C$$</li>
+                    <li><strong>Distributive Law Expansion:</strong> $$A + (B \cdot C) = (A + B) \cdot (A + C)$$</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Karnaugh Map (K-Map) Engine Architecture</div>
+                <p>K-Maps organize boolean truth tables into multi-dimensional grids mapped via **Gray Code sequences** (ensuring only a single bit changes between adjacent cells to maintain spatial adjacency properties).</p>
+                
+                <ul>
+                    <li><strong>Prime Implicant (PI):</strong> A product term obtained by combining adjacent cells in a K-Map into the largest possible group (subcube of size $2^k$). It cannot be further expanded.</li>
+                    <li><strong>Essential Prime Implicant (EPI):</strong> A Prime Implicant that contains at least one minterm cell that is not covered by any other Prime Implicant. EPIs **must always be included** in the final minimized boolean expression.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-combinational-core">
+            <div class="card-header-row">
+                <h2>4. Combinational Circuits — Arithmetic Cores</h2>
+                <button class="action-button" id="btn-combinational-core" onclick="toggleTopicState('combinational-core')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Half Adder: <strong>2 Inputs, 2 Outputs Profile</strong></div>
+                <div class="summary-badge">Full Adder: <strong>3 Inputs, 2 Outputs Profile</strong></div>
+                <div class="summary-badge">Look-Ahead: <strong>Parallel Carry Generation</strong></div>
+                <div class="summary-badge">Comparator: <strong>Magnitude Difference Evaluator</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Full Adder Logic Specifications</div>
+                <p>Given binary inputs $A$, $B$, and Carry-In $C_{\text{in}}$:</p>
+                <ul>
+                    <li>$$\text{Sum } (S) = A \oplus B \oplus C_{\text{in}}$$</li>
+                    <li>$$\text{Carry-Out } (C_{\text{out}}) = A B + B C_{\text{in}} + A C_{\text{in}} = A B + C_{\text{in}}(A \oplus B)$$</li>
+                    <li>*Implementation Limits:* A full adder can be realized using exactly **two half adders and a single OR gate**.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Carry Look-Ahead Adder (CLA) Engine</div>
+                <p>To bypass the long propagation delays found in standard Ripple-Carry Adders, a Carry Look-Ahead Adder computes carry bits in parallel using generate ($G_i$) and propagate ($P_i$) functions:</p>
+                <ul>
+                    <li>$$\text{Carry Generate: } G_i = A_i \cdot B_i, \quad \text{Carry Propagate: } P_i = A_i \oplus B_i$$</li>
+                    <li>$$\text{Parallel Carry Equations: } C_{i+1} = G_i + P_i C_i$$
+                        $$C_1 = G_0 + P_0 C_0$$
+                        $$C_2 = G_1 + P_1 G_0 + P_1 P_0 C_0$$
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-routing-circuits">
+            <div class="card-header-row">
+                <h2>5. Combinational Data Path Modules (MUX / DEMUX / Decoders)</h2>
+                <button class="action-button" id="btn-routing-circuits" onclick="toggleTopicState('routing-circuits')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">MUX: <strong>$2^n$-to-1 Data Selector</strong></div>
+                <div class="summary-badge">DEMUX: <strong>1-to-$2^n$ Data Distributor</strong></div>
+                <div class="summary-badge">Decoder: <strong>$n$-to-$2^n$ Minterm Generator</strong></div>
+                <div class="summary-badge">Encoder: <strong>$2^n$-to-$n$ Priority Binary Codec</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Multiplexer (MUX) Synthesis Functions</div>
+                <p>A $2^n \times 1$ MUX routes one of its $2^n$ data inputs to a single output line based on the binary state of its $n$ selection lines. It acts as a universal function generator:</p>
+                <ul>
+                    <li>A $2^n \times 1$ MUX can implement **any boolean function containing up to $n+1$ independent variables** without requiring any additional external logic gates.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Decoders & Encoders Architecture</div>
+                <ul>
+                    <li><strong>Decoder ($n \times 2^n$):</strong> Converts an $n$-bit binary input into an active signal at one of its $2^n$ unique output lines. The outputs correspond exactly to the set of **canonical minterms** for those input variables.</li>
+                    <li><strong>Priority Encoder:</strong> Resolves simultaneous input requests by converting the highest-priority active input line into its corresponding binary code. It includes a *Valid Output ($V$)* bit to distinguish an active input on line 0 from a state where no inputs are active.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-flip-flops">
+            <div class="card-header-row">
+                <h2>6. Sequential Circuits — State Bistables</h2>
+                <button class="action-button" id="btn-flip-flops" onclick="toggleTopicState('flip-flops')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">SR FF: <strong>$S=R=1$ Invalid Anomaly</strong></div>
+                <div class="summary-badge">JK FF: <strong>$J=K=1$ Toggle State Condition</strong></div>
+                <div class="summary-badge">D FF: <strong>Data Delay Buffer ($Q_{n+1} = D$)</strong></div>
+                <div class="summary-badge">T FF: <strong>Inverting Clock Divider ($Q_{n+1} = T \oplus Q_n$)</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Characteristic Equations Engine</div>
+                <p>The characteristic equations define the next-state behavior ($Q_{n+1}$) of a flip-flop based on its current inputs and present state ($Q_n$):</p>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Flip-Flop Type</th><th>Characteristic Target Equation</th><th>Excitation Rule ($Q_n \to Q_{n+1}$)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>SR</strong></td><td>$Q_{n+1} = S + \bar{R}Q_n \quad (\text{Constraint: } S \cdot R = 0)$</td><td>$S = Q_{n+1}\bar{Q}_n, \quad R = \bar{Q}_{n+1}Q_n$</td></tr>
+                            <tr><td><strong>JK</strong></td><td>$Q_{n+1} = J\bar{Q}_n + \bar{K}Q_n$</td><td>$J = Q_{n+1}\bar{Q}_n + XQ_n, \quad K = \bar{Q}_{n+1}Q_n + X\bar{Q}_n$</td></tr>
+                            <tr><td><strong>D</strong></td><td>$Q_{n+1} = D$</td><td>$D = Q_{n+1}$</td></tr>
+                            <tr><td><strong>T</strong></td><td>$Q_{n+1} = T \oplus Q_n = T\bar{Q}_n + \bar{T}Q_n$</td><td>$T = Q_{n+1} \oplus Q_n$</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Race-Around Hazard Condition:</strong>
+                    <ul>
+                        <li>In a level-triggered JK flip-flop, a **Race-Around Condition** occurs when $J=K=1$ and the clock pulse width ($t_w$) is longer than the flip-flop's internal propagation delay ($\Delta t$). This causes the output to toggle repeatedly and unpredictably during a single clock cycle. This hazard is eliminated by using **edge-triggered clocking inputs** or a Master-Slave flip-flop architecture.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-registers">
+            <div class="card-header-row">
+                <h2>7. Registers & Shift Counter Configurations</h2>
+                <button class="action-button" id="btn-registers" onclick="toggleTopicState('registers')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">SISO: <strong>Serial In / Serial Out Pipe</strong></div>
+                <div class="summary-badge">SIPO: <strong>Serial In / Parallel Out Pipe</strong></div>
+                <div class="summary-badge">Ring Counter: <strong>Straight Loop ($N$ Modulo States)</strong></div>
+                <div class="summary-badge">Johnson Counter: <strong>Inverted Loop ($2N$ Modulo States)</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Shift Register Interconnect Topologies</div>
+                <ul>
+                    <li><strong>SISO / SIPO / PISO / PIPO:</strong> Linear arrays of cascaded flip-flops used to store or reformat binary data. Moving an $n$-bit data word through a SISO register requires $n$ clock cycles for the write phase, and $n-1$ additional cycles to fully shift the data out.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Circulating Shift Counter State Metrics</div>
+                <p>Specialized shift registers configured with feedback loops loop back to the input stage:</p>
+                <ul>
+                    <li><strong>Ring Counter:</strong> The primary output of the final flip-flop ($Q_n$) connects directly back to the first stage input ($D_0$). An $N$-bit shift register configured as a Ring Counter provides exactly **$N$ unique operational states**.</li>
+                    <li><strong>Johnson Counter (Twisted Ring Counter):</strong> The inverted output of the final stage ($\bar{Q}_n$) loops back to the first stage input ($D_0$). An $N$-bit register configured this way provides **$2N$ unique operational states**, doubling its counting capacity.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-counters">
+            <div class="card-header-row">
+                <h2>8. Asynchronous & Synchronous Counters</h2>
+                <button class="action-button" id="btn-counters" onclick="toggleTopicState('counters')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Ripple Counter: <strong>Cascaded Clock Propagations</strong></div>
+                <div class="summary-badge">Synchronous Counter: <strong>Unified Parallel Shared Clock</strong></div>
+                <div class="summary-badge">Mod-M Counter: <strong>M Unique Valid Counting States</strong></div>
+                <div class="summary-badge">Max Frequency: <strong>$f_{\text{max}} = 1 / (n \cdot t_{\text{pd}})$ Limit</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Counter Architectures Comparison</div>
+                <ul>
+                    <li><strong>Asynchronous (Ripple) Counter:</strong> The clock signal drives only the first flip-flop stage. Subsequent stages are clocked by the output of the preceding flip-flop. This causes a delayed "ripple" effect across the counter.
+                        <br>The maximum operating frequency is limited by the accumulated propagation delays across all $n$ stages:
+                        $$f_{\text{max}} = \frac{1}{n \cdot t_{\text{pd}}}$$
+                    </li>
+                    <li><strong>Synchronous Counter:</strong> A unified, parallel clock signal **drives all flip-flops simultaneously**. This eliminates accumulated propagation delay, allowing the counter to run at much higher frequencies. The maximum frequency is bounded only by the delay of a single stage plus its look-ahead logic gates:
+                        $$f_{\text{max}} = \frac{1}{t_{\text{pd}} + t_{\text{gate}}}$$
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">State Design Analysis Sequence</div>
+                <p>To construct a synchronous sequence counter:</p>
+                <ol>
+                    <li>Derive the required State Transition Diagram and State Table.</li>
+                    <li>Determine the next-state values based on the flip-flop excitation rules.</li>
+                    <li>Minimize the input control expressions using K-Maps.</li>
+                    <li>Implement the look-ahead combinational logic circuits.</li>
+                </ol>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Interactive Dashboard Tracking Logic
+        const Logic_Registry = [
+            { id: "number-systems" },
+            { id: "logic-gates" },
+            { id: "algebra-kmap" },
+            { id: "combinational-core" },
+            { id: "routing-circuits" },
+            { id: "flip-flops" },
+            { id: "registers" },
+            { id: "counters" }
+        ];
+
+        function scrollToCard(targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initAppTracker() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_logic_dashboard_progress')) || {};
+            
+            Logic_Registry.forEach(module => {
+                const status = !!userProgress[module.id];
+                
+                // Sync Checkboxes
+                const chk = document.getElementById(`nav-chk-${module.id}`);
+                if (chk) chk.checked = status;
+
+                // Sync Card Action Buttons
+                const btn = document.getElementById(`btn-${module.id}`);
+                if (btn) {
+                    if (status) {
+                        btn.innerText = "✓ Mastered";
+                        btn.classList.add('completed');
+                    } else {
+                        btn.innerText = "Mark Mastered";
+                        btn.classList.remove('completed');
+                    }
+                }
+            });
+            evaluateMetrics();
+        }
+
+        function updateProgressState(id, statusValue) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_logic_dashboard_progress')) || {};
+            userProgress[id] = statusValue;
+            localStorage.setItem('gate_logic_dashboard_progress', JSON.stringify(userProgress));
+
+            const chk = document.getElementById(`nav-chk-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (chk) chk.checked = statusValue;
+            if (btn) {
+                if (statusValue) {
+                    btn.innerText = "✓ Mastered";
+                    btn.classList.add('completed');
+                } else {
+                    btn.innerText = "Mark Mastered";
+                    btn.classList.remove('completed');
+                }
+            }
+            evaluateMetrics();
+        }
+
+        function toggleTopicState(id) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_logic_dashboard_progress')) || {};
+            updateProgressState(id, !userProgress[id]);
+        }
+
+        function syncCheckbox(id) {
+            const chk = document.getElementById(`nav-chk-${id}`);
+            if (chk) updateProgressState(id, chk.checked);
+        }
+
+        function evaluateMetrics() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_logic_dashboard_progress')) || {};
+            let matchCounter = 0;
+
+            Logic_Registry.forEach(module => {
+                if (userProgress[module.id] === true) matchCounter++;
+            });
+
+            const ratioFactor = Logic_Registry.length > 0 ? Math.round((matchCounter / Logic_Registry.length) * 100) : 0;
+            document.getElementById('metric-fill').style.width = ratioFactor + '%';
+            document.getElementById('metric-text').innerText = `${matchCounter}/${Logic_Registry.length} Modules Mastered (${ratioFactor}%)`;
+        }
+
+        window.onload = initAppTracker;
+    </script>
+</body>
+</html>

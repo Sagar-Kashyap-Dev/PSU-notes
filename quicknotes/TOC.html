@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOC Quick Revision Guide</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --border-color: #334155;
+            --success-color: #10b981;
+            --formula-bg: #090d16;
+            --table-border: #475569;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .reset-btn {
+            background-color: #f43f5e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .reset-btn:hover {
+            background-color: #e11d48;
+        }
+
+        .topic-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .topic-card.completed {
+            opacity: 0.4;
+            filter: grayscale(60%);
+            border-color: var(--success-color);
+        }
+
+        .topic-card.completed h2 {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--accent-color);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            user-select: none;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            transition: all 0.2s;
+        }
+
+        .checkbox-container:hover {
+            background: rgba(56, 189, 248, 0.2);
+        }
+
+        .checkbox-container input {
+            cursor: pointer;
+            accent-color: var(--success-color);
+            width: 16px;
+            height: 16px;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        ul {
+            margin: 0 0 15px 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .formula-box {
+            background-color: var(--formula-bg);
+            padding: 12px 16px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+            font-family: "Consolas", "Courier New", monospace;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 15px 0;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            border: 1px solid var(--table-border);
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-color);
+        }
+
+        .none-text {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>TOC Ultimate MCQ Revision Portal</h1>
+        <p>Track your Theory of Computation core constraints. Check off items as you master them.</p>
+        <button class="reset-btn" onclick="clearProgress()">Reset All Progress</button>
+    </header>
+
+    <div class="topic-card" data-topic="toc_basics">
+        <div class="card-header">
+            <h2>1. TOC Basics</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Theory of Computation explores the fundamental capabilities and boundaries of math problems solvable using distinct conceptual mathematical machines.</li>
+            <li><strong>Core Compilers / Compute Modules:</strong> Finite Automata &rarr; Pushdown Automata &rarr; Linear Bounded Automata &rarr; Turing Machines.</li>
+        </ul>
+        <div class="section-title">Common MCQ Traps</div>
+        <ul>
+            <li><strong>Regular Languages:</strong> Represent the absolute simplest computational language class footprint.</li>
+            <li><strong>Turing Machine:</strong> Remains the absolute most powerful computational model archetype (maps to general computing capacity limits).</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="alphabet_string_lang">
+        <div class="card-header">
+            <h2>2. Alphabet, String & Language Definitions</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Foundations</div>
+        <ul>
+            <li><strong>Alphabet (&Sigma;):</strong> A strict, non-empty **finite set** of atomic symbols.</li>
+            <li><strong>String:</strong> A specific finite linear sequence of symbols derived explicitly from an input alphabet set.</li>
+            <li><strong>Language (L):</strong> A set of legal strings structured over a target alphabet domain. Can be finite or infinite.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Mathematical Distinction Trap: <code>&Oslash; &ne; {&epsilon;}</code></li>
+            <li><code>&Oslash;</code> represents a completely <strong>empty language set</strong> containing zero elements.</li>
+            <li><code>{&epsilon;}</code> represents a language set containing exactly one item: the **empty string** (length zero).</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="fa_foundations">
+        <div class="card-header">
+            <h2>3. Finite Automata (FA) Core Frameworks</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Automata Variations</div>
+        <ul>
+            <li><strong>DFA (Deterministic Finite Automata):</strong> Has exactly one predictable transition path execution path per input symbol from any state.</li>
+            <li><strong>NFA (Nondeterministic Finite Automata):</strong> Can process zero, one, or multiple dynamic transition paths simultaneously for a single symbol state step.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>DFA structure implies <strong>zero structural ambiguity or choice variation</strong>.</li>
+            <li><strong>Equivalence Trap:</strong> NFA and DFA possess <strong>identical mathematical language recognition power</strong>. Any language parsed by an NFA can be parsed by a corresponding DFA via subset construction.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="dfa_tuples">
+        <div class="card-header">
+            <h2>4. Deterministic Finite Automata (DFA)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">The Standard 5-Tuple Definition</div>
+        <div class="formula-box" style="text-align: center;">
+            M = (Q, &Sigma;, &delta;, q<sub>0</sub>, F)
+        </div>
+        <ul>
+            <li><code>Q</code>: Finite non-empty set of internal states.</li>
+            <li><code>&Sigma;</code>: Finite input alphabet set.</li>
+            <li><code>&delta;</code>: Transition map function operating as: <code>&delta; : Q &times; &Sigma; &rarr; Q</code>.</li>
+            <li><code>q<sub>0</sub></code>: Explicit initial start state member where <code>q<sub>0</sub> &in; Q</code>.</li>
+            <li><code>F</code>: Set of final/accepting states where <code>F &sube; Q</code>.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>A DFA always contains exactly **one single initial start state**.</li>
+            <li>String acceptance is evaluated strictly by verifying if processing finishes inside an active **final state**.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="nfa_details">
+        <div class="card-header">
+            <h2>5. Nondeterministic Finite Automata (NFA)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Operational Shifts</div>
+        <ul>
+            <li>Transition maps return a powerset array block: <code>&delta; : Q &times; &Sigma; &rarr; 2<sup>Q</sup></code>.</li>
+            <li>Can support spontaneous state modifications using empty <strong>&epsilon;-moves (epsilon jumps)</strong> without consuming an active input symbol.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>NFA:</strong> Substantially simpler to conceptually model and design for specific word target lookups.</li>
+            <li><strong>DFA:</strong> Drastically simpler to write, convert, and implement as an active execution code algorithm.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="regular_expressions">
+        <div class="card-header">
+            <h2>6. Regular Expressions (RE)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Formal Operational Operators</div>
+        <ul>
+            <li><code>+</code> or <code>|</code> &rarr; Represents boolean <strong>Union / OR</strong> operations.</li>
+            <li><code>.</code> &rarr; Coordinates structural syntax <strong>Concatenation</strong> properties.</li>
+            <li><code>*</code> &rarr; <strong>Kleene Star</strong> operator (represents zero or more repetitions of the target sequence).</li>
+        </ul>
+        <div class="section-title">Common MCQs Syntax</div>
+        <ul>
+            <li>The universal expression <code>(a + b)*</code> compiles out into every conceivable string permutation sequence composed entirely of any count of 'a' and 'b' elements, including the zero length string <code>&epsilon;</code>.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="regular_closure">
+        <div class="card-header">
+            <h2>7. Regular Languages & Closure Properties</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Definitions</div>
+        <ul>
+            <li>A language is formally classified as regular if and only if it can be verified via a valid DFA, NFA, or parsed by a descriptive Regular Expression syntax mapping.</li>
+        </ul>
+        <div class="section-title">Closure Matrix</div>
+        <ul>
+            <li>Regular languages are highly stable and are explicitly <strong>CLOSED</strong> under:
+                <span style="color: var(--accent-color); font-weight: bold;">Union, Intersection, Complement, Set Difference, Kleene Star, and Concatenation</span>.
+            </li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="pumping_lemma_reg">
+        <div class="card-header">
+            <h2>8. Pumping Lemma (Regular Proofs)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">The Operational Condition Criteria</div>
+        <div class="formula-box">
+            If L is regular, any string s with length |s| &ge; p can be partitioned into s = xyz satisfying:<br>
+            1. |xy| &le; p<br>
+            2. |y| > 0<br>
+            3. xy<sup>n</sup>z &in; L for every single iteration integer n &ge; 0
+        </div>
+        <div class="section-title">Common MCQs Core Logic Trap</div>
+        <ul>
+            <li>The Pumping Lemma can **NEVER** be utilized to prove a language is regular. It is applied exclusively as an inductive contradiction weapon to prove that a language is <strong>NOT regular</strong> (e.g., proving <code>L = a<sup>n</sup>b<sup>n</sup></code> lacks regular status due to infinite memory constraint traps).</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="cfg_grammar">
+        <div class="card-header">
+            <h2>9. Context Free Grammars (CFG)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">The Formal 4-Tuple Architecture</div>
+        <div class="formula-box" style="text-align: center;">
+            G = (V, &Sigma;, P, S)
+        </div>
+        <ul>
+            <li><code>V</code>: Finite set of non-terminal variables.</li>
+            <li><code>&Sigma;</code>: Finite set of terminal characters completely disjointed from V.</li>
+            <li><code>P</code>: Production rules mapped mapping down as: <code>A &rarr; &alpha;</code> where <code>A &in; V</code> and <code>&alpha; &in; (V &cup; &Sigma;)*</code>.</li>
+            <li><code>S</code>: Unique designated top-level initial start symbol where <code>S &in; V</code>.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="cfl_languages">
+        <div class="card-header">
+            <h2>10. Context Free Languages (CFL)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Structural Properties</div>
+        <ul>
+            <li>Languages generated natively by valid Context Free Grammars. Can be completely parsed mechanically via a standard stack-backed **Pushdown Automaton (PDA)**.</li>
+        </ul>
+        <div class="section-title">Common MCQs Examples</div>
+        <ul>
+            <li>Nested structural matching problems, balance loops, or standard arithmetic balanced parentheses strings (e.g., <code>L = { a<sup>n</sup>b<sup>n</sup> | n &ge; 0 }</code>) constitute standard examples of **Context Free Languages**.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="pda_automata">
+        <div class="card-header">
+            <h2>11. Pushdown Automata (PDA) Architecture</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Structural Hardware Engine</div>
+        <div class="formula-box" style="text-align: center;">
+            PDA = Finite State Control Engine + 1 Infinite LIFO Memory Stack
+        </div>
+        <ul>
+            <li>Provides the structural execution environment for Context Free Language analysis. Stack tracks operations via standard **Push (insert)** and **Pop (evacuate/evaluate)** actions.</li>
+        </ul>
+        <div class="section-title">Common MCQs Limits</div>
+        <ul>
+            <li>The introduction of a stack gives the PDA the ability to manage **nested structural dependencies** and infinite count checks.</li>
+            <li><strong>Deterministic vs Non-Deterministic Power Trap:</strong> Unlike Finite Automata, Non-Deterministic PDAs (NPDA) are <strong>strictly more powerful</strong> than Deterministic PDAs (DPDA). DPDAs cannot recognize all context-free languages (e.g., even palindromes like <code>ww<sup>R</sup></code>).</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="pda_acceptance">
+        <div class="card-header">
+            <h2>12. PDA Acceptance Standards</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Acceptance Frameworks</div>
+        <ul>
+            <li><strong>Acceptance by Final State:</strong> Reaches a verified matching accepting state block after emptying the input string.</li>
+            <li><strong>Acceptance by Empty Stack:</strong> Empties the internal LIFO memory execution stack completely to signal successful validation.</li>
+        </ul>
+        <div class="section-title">Common MCQs Identity</div>
+        <ul>
+            <li>Both acceptance design methods are mathematically equivalent. Any language validated via final state parameters can be modified to validate via empty stack configurations.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="pumping_lemma_cfl">
+        <div class="card-header">
+            <h2>13. Pumping Lemma (CFL Proofs)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">The Operational 5-way Split Split Criteria</div>
+        <div class="formula-box">
+            If L is CFL, any string s with length |s| &ge; p can be partitioned into s = uvwxy satisfying:<br>
+            1. |vwx| &le; p<br>
+            2. |vx| > 0<br>
+            3. uv<sup>n</sup>wx<sup>n</sup>y &in; L for all n &ge; 0
+        </div>
+        <ul>
+            <li>Used to prove a target language layout is <strong>NOT Context-Free</strong> (e.g., proving triple system alignments like <code>L = a<sup>n</sup>b<sup>n</sup>c<sup>n</sup></code> lie outside CFL capabilities).</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="turing_machine">
+        <div class="card-header">
+            <h2>14. Turing Machine (TM) Foundations</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Structural Properties</div>
+        <ul>
+            <li>The absolute peak computational capability reference design archetype. Maps down as the definitive mathematical model of general universal computation.</li>
+            <li><strong>Physical Concepts:</strong> An active read/write R/W Head scanning across a logically **Infinite Storage Tape** partitioned into distinct address cells.</li>
+        </ul>
+        <div class="section-title">Common MCQs Mapping</div>
+        <ul>
+            <li>If an algorithmic procedure can handle a problem on any digital supercomputer, a **Turing Machine** can process it.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="tm_tuples">
+        <div class="card-header">
+            <h2>15. Turing Machine 7-Tuple Architecture</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="formula-box" style="text-align: center;">
+            M = (Q, &Sigma;, &Gamma;, &delta;, q<sub>0</sub>, B, F)
+        </div>
+        <ul>
+            <li><code>Q</code>: Finite set of operational internal state maps.</li>
+            <li><code>&Sigma;</code>: Input alphabet set (Symbols allowed inside initial raw input strings).</li>
+            <li><code>&Gamma;</code>: Complete <strong>Tape Alphabet</strong> space (where <code>&Sigma; &subf; &Gamma;</code>).</li>
+            <li><code>&delta;</code>: Next step transition map function: <code>&delta; : Q &times; &Gamma; &rarr; Q &times; &Gamma; &times; {L, R}</code> (Moves left or right).</li>
+            <li><code>q<sub>0</sub></code>: Unique initial start state element.</li>
+            <li><code>B</code>: Explicit **Blank Symbol** placeholder indicating unallocated tape space (where <code>B &in; &Gamma;</code> but <code>B &notin; &Sigma;</code>).</li>
+            <li><code>F</code>: Set of designated final accepting states.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="tm_variants">
+        <div class="card-header">
+            <h2>16. Turing Machine Variations</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Structural Variants</div>
+        <ul>
+            <li>Multi-tape Turing Machines (uses separate parallel track heads).</li>
+            <li>Multi-track Turing Machines.</li>
+            <li>Non-deterministic Turing Machines (NTM).</li>
+        </ul>
+        <div class="section-title">Common MCQs Equivalency Principle</div>
+        <ul>
+            <li><strong>Power Trap:</strong> All structural multi-tape or non-deterministic Turing Machine variants are **completely equivalent in absolute computing power** to a standard single-tape deterministic Turing Machine. They only modify performance execution speed metrics, not language coverage capabilities.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="decidability">
+        <div class="card-header">
+            <h2>17. Decidability & Undecidability</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Class Definitions</div>
+        <ul>
+            <li><strong>Decidable Problems:</strong> Problems that can be evaluated via an explicit algorithm that is guaranteed to finish and **halt for every input** string (either accepting or rejecting safely).</li>
+            <li><strong>Undecidable Problems:</strong> Problems for which it is mathematically impossible to construct a universal foolproof algorithm that guarantees a clean halt decision output for every input scenario.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="halting_problem">
+        <div class="card-header">
+            <h2>18. The Halting Problem</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Mathematical Fact</div>
+        <ul>
+            <li>It is impossible to create a generalized algorithm that takes an arbitrary computer program file and an input, and correctly predicts whether that program will run to completion or loop infinitely.</li>
+        </ul>
+        <div class="section-title">Common MCQs Identity</div>
+        <ul>
+            <li>The **Halting Problem** is the classic, definitive proof of an **undecidable problem**, proven by Alan Turing using diagonalization methods.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="recursive_vs_re">
+        <div class="card-header">
+            <h2>19. Recursive vs. Recursively Enumerable (RE)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Language Properties</div>
+        <ul>
+            <li><strong>Recursive Languages (Decidable):</strong> Parsed via a Turing Machine that **always halts** without exception, whether a string is accepted or rejected.</li>
+            <li><strong>Recursively Enumerable (RE) Languages (Semi-Decidable):</strong> Parsed via a Turing Machine that completes and halts with an 'Accept' flag if the string is in the language. However, if the string is invalid, the machine may loop infinitely.</li>
+        </ul>
+        <div class="section-title">Common MCQs Complement Trap</div>
+        <ul>
+            <li>If a language <code>L</code> is Recursively Enumerable (RE) **AND** its complement <code>L'</code> is also Recursively Enumerable, then the language <code>L</code> is guaranteed to be **Recursive (Decidable)**.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="chomsky_hierarchy">
+        <div class="card-header">
+            <h2>20. Chomsky Hierarchy Matrix</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Grammar Type Class</th>
+                    <th>Associated Language Class</th>
+                    <th>Target Automaton Engine</th>
+                    <th>Production Restrictions Formula</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Type 0</strong></td>
+                    <td>Unrestricted / RE</td>
+                    <td><strong>Turing Machine (TM)</strong></td>
+                    <td>&alpha; &rarr; &beta; (No restrictions)</td>
+                </tr>
+                <tr>
+                    <td><strong>Type 1</strong></td>
+                    <td>Context-Sensitive (CSL)</td>
+                    <td><strong>Linear Bounded Automata (LBA)</strong></td>
+                    <td>|&alpha;| &le; |&beta;| (Length expanding)</td>
+                </tr>
+                <tr>
+                    <td><strong>Type 2</strong></td>
+                    <td>Context-Free (CFL)</td>
+                    <td><strong>Pushdown Automata (PDA)</strong></td>
+                    <td>A &rarr; &alpha; (Single variable on Left)</td>
+                </tr>
+                <tr>
+                    <td><strong>Type 3</strong></td>
+                    <td>Regular Language</td>
+                    <td><strong>Finite Automata (DFA/NFA)</strong></td>
+                    <td>A &rarr; aB or A &rarr; a (Strictly linear)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="topic-card" data-topic="complete_closure">
+        <div class="card-header">
+            <h2>21. Language Closure Properties Matrix</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Language Class</th>
+                    <th>Union</th>
+                    <th>Intersection</th>
+                    <th>Complement</th>
+                    <th>Concatenation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Regular</strong></td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                </tr>
+                <tr>
+                    <td><strong>CFL</strong></td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                    <td style="color: #f43f5e; font-weight: bold;">NO</td>
+                    <td style="color: #f43f5e; font-weight: bold;">NO</td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                </tr>
+                <tr>
+                    <td><strong>CSL</strong></td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                </tr>
+                <tr>
+                    <td><strong>Recursive</strong></td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                </tr>
+                <tr>
+                    <td><strong>RE</strong></td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                    <td style="color: #f43f5e; font-weight: bold;">NO</td>
+                    <td style="color: var(--success-color); font-weight: bold;">YES</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="section-title">Common MCQs Highlights</div>
+        <ul>
+            <li>Context-Free Languages (CFL) are explicitly **NOT closed under Intersection or Complement**.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="ambiguity_parsing">
+        <div class="card-header">
+            <h2>22. Ambiguity in Grammar Layouts</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>A grammar is formally classified as ambiguous if there exists at least one valid string that can produce **two or more distinct parse trees** (or separate leftmost/rightmost derivations).</li>
+            <li><strong>Inherent Ambiguity:</strong> A context-free language is inherently ambiguous if every possible CFG that generates it is guaranteed to be ambiguous.</li>
+        </ul>
+        <div class="section-title">Common MCQs Compiler Core Trap</div>
+        <ul>
+            <li>Ambiguous grammars cause structural parsing issues in compilers because they lead to multiple competing interpretation paths for a single line of code.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="parsing_tech">
+        <div class="card-header">
+            <h2>23. Parsing Techniques</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Architectures</div>
+        <ul>
+            <li><strong>Top-Down Parsers:</strong> Attempts to reconstruct the target parse tree starting from the root start symbol downwards (e.g., LL(1), Recursive Descent parsers).</li>
+            <li><strong>Bottom-Up Parsers:</strong> Begins parsing at the raw terminal strings and works backwards towards the start symbol via string reduction operations (e.g., LR(k), Shift-Reduce parsers).</li>
+        </ul>
+        <div class="section-title">Common MCQs Power Comparison</div>
+        <ul>
+            <li>**Bottom-Up Parsing (LR frameworks)** is strictly more powerful and supports a broader range of language grammars than Top-Down Parsing (LL frameworks).</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="normal_forms">
+        <div class="card-header">
+            <h2>24. Grammar Normal Forms (CNF & GNF)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">CNF (Chomsky Normal Form) Structural Rules</div>
+        <div class="formula-box">
+            All production rules must match exactly one of these two formats:<br>
+            1. A &rarr; BC &nbsp;(Variable leads to exactly two variables)<br>
+            2. A &rarr; a &nbsp;&nbsp;(Variable leads to exactly one terminal character)
+        </div>
+        <div class="section-title">GNF (Greibach Normal Form) Structural Rules</div>
+        <div class="formula-box">
+            All production rules must match this format structure:<br>
+            A &rarr; a&alpha; &nbsp;(Variable leads to exactly one terminal followed by zero or more variables)
+        </div>
+        <div class="section-title">Common MCQs Bounds</div>
+        <ul>
+            <li>Converting a standard CFG into CNF yields a parse tree where every internal step node has a maximum branching factor of exactly 2 (a binary tree framework).</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="toc_traps" style="border: 1px dashed #38bdf8; background-color: #1a1e2d;">
+        <div class="card-header">
+            <h2 style="color: #f43f5e;">&#9888; Critical CIL MT TOC MCQ Traps Checklist</h2>
+            <label class="checkbox-container" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8;">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <ul>
+            <li>DFA transitions are completely deterministic; NFA transitions support multiple paths. They have **identical mathematical power**.</li>
+            <li>Regular Expressions correspond directly to Finite Automata. Context-Free Grammars require Pushdown Automata.</li>
+            <li>Turing Machines represent the peak computational capability in the Chomsky hierarchy.</li>
+            <li>The Pumping Lemma is an inductive tool used to prove that a language is <strong>NOT</strong> regular/context-free; it cannot verify regular status.</li>
+            <li>Pushdown Automata utilize an isolated LIFO memory stack. Turing Machines run across an infinite R/W tape.</li>
+            <li>The Halting Problem is mathematically **undecidable**.</li>
+            <li>Recursive Languages are completely decidable and are guaranteed to halt. Recursively Enumerable languages can loop infinitely on invalid inputs.</li>
+            <li>Regular languages are closed under complementation operations. Context-Free Languages (CFL) are **NOT closed under complementation or intersection**.</li>
+            <li>Ambiguity means a grammar can generate **two or more distinct parse trees** for a single string.</li>
+            <li>Finite Automata maintain zero tracking memory records; Pushdown Automata contain stack memory storage links.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // Storage configuration unique identifier key for TOC tracking
+    const STORAGE_KEY = 'cil_mt_toc_progress';
+
+    // Run processing on load to restore checkbox configurations
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        
+        document.querySelectorAll('.topic-card').forEach(card => {
+            const id = card.getAttribute('data-topic');
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            
+            if (id && savedProgress[id]) {
+                checkbox.checked = true;
+                card.classList.add('completed');
+            }
+        });
+    });
+
+    function toggleComplete(checkbox) {
+        const card = checkbox.closest('.topic-card');
+        const id = card.getAttribute('data-topic');
+        
+        // Fetch existing dictionary state mapping
+        const currentProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+        if (checkbox.checked) {
+            card.classList.add('completed');
+            if (id) currentProgress[id] = true;
+        } else {
+            card.classList.remove('completed');
+            if (id) delete currentProgress[id];
+        }
+
+        // Overwrite adjustments back to tracking dictionary
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentProgress));
+    }
+
+    function clearProgress() {
+        if (confirm("Are you sure you want to reset all TOC revision portal checkboxes?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            document.querySelectorAll('.topic-card').forEach(card => {
+                card.classList.remove('completed');
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                if (checkbox) checkbox.checked = false;
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

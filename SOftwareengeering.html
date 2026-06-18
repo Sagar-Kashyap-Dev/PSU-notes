@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE — Software Engineering Master Engine</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #0284c7;
+            --brand-accent: #e0f2fe;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* Split-Pane Control Interface */
+        #app-sidebar {
+            width: 330px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 330px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1180px;
+            width: calc(100% - 330px);
+        }
+
+        /* Sidebar Panels */
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #bae6fd; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #0369a1; letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #cbd5e1; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #0369a1; width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        /* Document Architecture Layouts */
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        .summary-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; background: var(--bg-workspace); padding: 1rem; border-radius: var(--radius-interactive); border: 1px solid var(--border-color); }
+        .summary-badge { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-bold); font-weight: 500; }
+        .summary-badge strong { color: #0284c7; }
+
+        .grid-block { margin-bottom: 2rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: #0284c7; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 0.75rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); }
+        th, td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        .alert-box ul { margin-left: 1.25rem; }
+        .alert-box li { color: #7f1d1d; }
+
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>SWE Core Engine</h2>
+            <p>Software Engineering</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Engineering Mastery</div>
+            <div class="metric-value" id="metric-text">0/6 Modules Mastered</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Process Frameworks</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-sdlc')"><span>1. SDLC & Requirement Eng</span><input type="checkbox" class="nav-checkbox" id="nav-chk-sdlc" onclick="event.stopPropagation(); syncCheckbox('sdlc')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-process-models')"><span>2. Software Process Models</span><input type="checkbox" class="nav-checkbox" id="nav-chk-process-models" onclick="event.stopPropagation(); syncCheckbox('process-models')"></div></li>
+            
+            <div class="nav-heading">Architectural Design</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-design-metrics')"><span>3. Cohesion, Coupling & Metrics</span><input type="checkbox" class="nav-checkbox" id="nav-chk-design-metrics" onclick="event.stopPropagation(); syncCheckbox('design-metrics')"></div></li>
+            
+            <div class="nav-heading">Verification & Validation</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-testing')"><span>4. Quality & Testing Levels</span><input type="checkbox" class="nav-checkbox" id="nav-chk-testing" onclick="event.stopPropagation(); syncCheckbox('testing')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-v-and-v')"><span>5. Verification vs Validation</span><input type="checkbox" class="nav-checkbox" id="nav-chk-v-and-v" onclick="event.stopPropagation(); syncCheckbox('v-and-v')"></div></li>
+            
+            <div class="nav-heading">Object Modeling</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-uml')"><span>6. Unified Modeling (UML)</span><input type="checkbox" class="nav-checkbox" id="nav-chk-uml" onclick="event.stopPropagation(); syncCheckbox('uml')"></div></li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>Software Engineering Specification</h1>
+            <p>System developmental pipelines, micro-architectural encapsulation matrices, rigorous test boundaries, and structured object lifecycles.</p>
+        </header>
+
+        <section class="content-card" id="sec-sdlc">
+            <div class="card-header-row">
+                <h2>1. Software Development Life Cycle & Requirements</h2>
+                <button class="action-button" id="btn-sdlc" onclick="toggleTopicState('sdlc')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">SRS: <strong>Software Requirements Specification</strong></div>
+                <div class="summary-badge">Functional: <strong>System Input/Output Behavior Rules</strong></div>
+                <div class="summary-badge">Non-Functional: <strong>Security, Latency, & Scaling Constraints</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Engineering Phase Sequence</div>
+                <p>The Software Development Life Cycle (SDLC) defines a clear phase progression for software construction:</p>
+                $$\text{Feasibility Analysis} \longrightarrow \text{Requirements Gathering} \longrightarrow \text{System Architecture} \longrightarrow \text{Implementation} \longrightarrow \text{Testing} \longrightarrow \text{Deployment \& Maintenance}$$
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Requirement Engineering Pipeline</div>
+                <ul>
+                    <li><strong>Elicitation & Analysis:</strong> Interacting with stakeholders to discover real domain constraints, separating unambiguous operational functions from qualities.</li>
+                    <li><strong>Specification (SRS Document):</strong> The formal contract describing what the system must achieve without detailing how it will be implemented internally.</li>
+                    <li><strong>Validation:</strong> Reviewing the SRS alongside users to prevent design errors early, ensuring requirements are complete, consistent, and traceable.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-process-models">
+            <div class="card-header-row">
+                <h2>2. Process Lifecycle Models Taxonomy</h2>
+                <button class="action-button" id="btn-process-models" onclick="toggleTopicState('process-models')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Waterfall: <strong>Rigid Linear Phases</strong></div>
+                <div class="summary-badge">Spiral: <strong>Risk-Driven Evolutionary Loops</strong></div>
+                <div class="summary-badge">Incremental: <strong>Staged Feature Delivery</strong></div>
+                <div class="summary-badge">Agile: <strong>Iterative Feedback-Driven Adaptation</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Comparative Model Blueprint Matrix</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Process Paradigm</th><th>Core Operational Mechanics</th><th>Primary Risk Profile Handling</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Waterfall</strong></td><td>Linear, non-overlapping downward phases. Each step requires a signed-off document deliverable before the next begins.</td><td>Poor. Defects discovered during late-stage deployment force expensive structural re-engineering.</td></tr>
+                            <tr><td><strong>Spiral</strong></td><td>Iterative execution loops split into four quadrants: Objective Setting, Risk Analysis, Engineering, and Evaluation.</td><td>Excellent. Dedicated risk assessment sweeps prevent architectural failures early in each loop.</td></tr>
+                            <tr><td><strong>Incremental</strong></td><td>The system is broken down, developed, and delivered in small feature blocks, adding operational capabilities over time.</td><td>Moderate. Core architecture must be solid up front, but individual features drop in smoothly.</td></tr>
+                            <tr><td><strong>Agile (Scrum/XP)</strong></td><td>Time-boxed iteration windows ("Sprints") delivering working increments based on continuous user feedback.</td><td>High Adaptation. Welcomes changing specifications mid-stream, lowering alignment risk.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-design-metrics">
+            <div class="card-header-row">
+                <h2>3. Design Architecture Principle Matrices</h2>
+                <button class="action-button" id="btn-design-metrics" onclick="toggleTopicState('design-metrics')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Cohesion: <strong>Intra-module strength functional focus</strong></div>
+                <div class="summary-badge">Coupling: <strong>Inter-module dependency connectivity</strong></div>
+                <div class="summary-badge">Goal: <strong>High Cohesion & Low Coupling</strong></div>
+                <div class="summary-badge">Complexity: <strong>McCabe Cyclomatic Control Paths</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Cohesion Scale (Low/Worst to High/Best)</div>
+                <ol>
+                    <li><strong>Coincidental (Worst):</strong> Elements are grouped randomly within a module with no real relationship.</li>
+                    <li><strong>Logical:</strong> Elements perform tasks that are logically similar (e.g., grouping all I/O handling together) but structurally distinct.</li>
+                    <li><strong>Temporal:</strong> Elements are grouped because they execute at the same time during initialization or error routines.</li>
+                    <li><strong>Procedural:</strong> Elements execute in a specific order of steps.</li>
+                    <li><strong>Communicational:</strong> Elements execute in order and operate on the same shared data pool.</li>
+                    <li><strong>Sequential:</strong> The output of one element serves as the direct input to the next ($A \to B$).</li>
+                    <li><strong>Functional (Best):</strong> The module performs exactly one clearly defined, atomic task.</li>
+                </ol>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Coupling Scale (High/Worst to Low/Best)</div>
+                <ul>
+                    <li><strong>Content Coupling (Worst):</strong> One module directly modifies or accesses the internal data/code of another module.</li>
+                    <li><strong>Common Coupling:</strong> Multiple modules share global data stores.</li>
+                    <li><strong>Control Coupling:</strong> One module passes flag variables to explicitly direct the execution path of another module.</li>
+                    <li><strong>Stamp Coupling:</strong> Modules pass complex composite data structures (like an entire object or struct) when they only need a few individual fields.</li>
+                    <li><strong>Data Coupling:</strong> Modules communicate purely by passing simple parameters or basic data types.</li>
+                    <li><strong>No Coupling (Best):</strong> Modules are completely independent and share no boundaries.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">McCabe Cyclomatic Complexity Mathematics</div>
+                <p>Measures the structural complexity of a program's Control Flow Graph (CFG):</p>
+                $$V(G) = E - V + 2P$$
+                *Where $E$ represents graph edges, $V$ represents nodes, and $P$ represents connected components (typically $P=1$ for a single program).*
+                <p>Alternatively, calculated via predicate nodes ($C$) or regions ($R$):</p>
+                $$V(G) = C + 1 = R$$
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-testing">
+            <div class="card-header-row">
+                <h2>4. Testing Lifecycles & Validation Layers</h2>
+                <button class="action-button" id="btn-testing" onclick="toggleTopicState('testing')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Unit: <strong>Atomic function isolated tests</strong></div>
+                <div class="summary-badge">Integration: <strong>Interface bridge connection tests</strong></div>
+                <div class="summary-badge">System: <strong>End-to-end full-stack checks</strong></div>
+                <div class="summary-badge">Acceptance: <strong>User validation signature tests</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Verification and Validation V-Model</div>
+                
+                <p>Testing maps step-by-step to corresponding architectural design phases:</p>
+                <ul>
+                    <li><strong>Unit Testing:</strong> Targets isolated methods or classes. Uses **Stubs** (simulated lower-level modules called by the unit) and **Drivers** (simulated higher-level calling frameworks).</li>
+                    <li><strong>Integration Testing:</strong> Verifies communication across module interfaces. Strategies include *Top-Down* (requires stubs), *Bottom-Up* (requires drivers), and *Big Bang* (integrating everything at once; highly discouraged).</li>
+                    <li><strong>System Testing:</strong> Validates the completely assembled application against global requirements.</li>
+                    <li><strong>Acceptance Testing:</strong> Performed by the client. Includes **Alpha Testing** (conducted at the developer's site) and **Beta Testing** (conducted by users in real-world environments).</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-v-and-v">
+            <div class="card-header-row">
+                <h2>5. Verification vs. Validation Paradigm</h2>
+                <button class="action-button" id="btn-v-and-v" onclick="toggleTopicState('v-and-v')">Mark Mastered</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Core Definition Split</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Dimension Property</th><th>Verification Processes</th><th>Validation Processes</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Target Question</strong></td><td>"Are we building the product right?"</td><td>"Are we building the right product?"</td></tr>
+                            <tr><td><strong>Execution State</strong></td><td>Static analysis. Evaluated **without running the program** code.</td><td>Dynamic analysis. Evaluated by **executing test cases** on the active runtime system.</td></tr>
+                            <tr><td><strong>Artifacts Checked</strong></td><td>Appraises code syntax, architecture design documents, specifications, and layout schemas.</td><td>Appraises the compiled, running system against actual user requirements.</td></tr>
+                            <tr><td><strong>Core Tools</strong></td><td>Code walk-throughs, inspections, formal peer reviews, and mathematical safety proofs.</td><td>Black-box testing, functional assertions, stress testing, and user evaluation trials.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-uml">
+            <div class="card-header-row">
+                <h2>6. Unified Modeling Language (UML) Behavioral Systems</h2>
+                <button class="action-button" id="btn-uml" onclick="toggleTopicState('uml')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Structural: <strong>Static Class Diagrams</strong></div>
+                <div class="summary-badge">Behavioral: <strong>Dynamic Activity Sequences</strong></div>
+                <div class="summary-badge">Actors: <strong>External Boundary Entities</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Core UML Diagram Modalities</div>
+                <ul>
+                    <li><strong>Use Case Diagrams:</strong> Capture system functional boundaries from an external user's perspective, mapping connections between Actors and specific Use Cases using `<<include>>` or `<<extend>>` relationships.</li>
+                    <li><strong>Class Diagrams:</strong> Map the static data schema of the application, detailing class fields, methods, and structural associations (e.g., Generalization, Aggregation, and deep lifecycle Composition).</li>
+                    <li><strong>Activity Diagrams:</strong> Model operational control flow step-by-step, capturing concurrency using parallel execution forks and joins.</li>
+                    <li><strong>Sequence Diagrams:</strong> Capture dynamic object interactions over time, tracing message exchanges along vertical lifelines.</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Interactive Dashboard Tracking Logic
+        const SWE_Registry = [
+            { id: "sdlc" },
+            { id: "process-models" },
+            { id: "design-metrics" },
+            { id: "testing" },
+            { id: "v-and-v" },
+            { id: "uml" }
+        ];
+
+        function scrollToCard(targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initAppTracker() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_swe_dashboard_progress')) || {};
+            
+            SWE_Registry.forEach(module => {
+                const status = !!userProgress[module.id];
+                
+                // Sync Checkboxes
+                const chk = document.getElementById(`nav-chk-${module.id}`);
+                if (chk) chk.checked = status;
+
+                // Sync Card Action Buttons
+                const btn = document.getElementById(`btn-${module.id}`);
+                if (btn) {
+                    if (status) {
+                        btn.innerText = "✓ Mastered";
+                        btn.classList.add('completed');
+                    } else {
+                        btn.innerText = "Mark Mastered";
+                        btn.classList.remove('completed');
+                    }
+                }
+            });
+            evaluateMetrics();
+        }
+
+        function updateProgressState(id, statusValue) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_swe_dashboard_progress')) || {};
+            userProgress[id] = statusValue;
+            localStorage.setItem('gate_swe_dashboard_progress', JSON.stringify(userProgress));
+
+            const chk = document.getElementById(`nav-chk-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (chk) chk.checked = statusValue;
+            if (btn) {
+                if (statusValue) {
+                    btn.innerText = "✓ Mastered";
+                    btn.classList.add('completed');
+                } else {
+                    btn.innerText = "Mark Mastered";
+                    btn.classList.remove('completed');
+                }
+            }
+            evaluateMetrics();
+        }
+
+        function toggleTopicState(id) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_swe_dashboard_progress')) || {};
+            updateProgressState(id, !userProgress[id]);
+        }
+
+        function syncCheckbox(id) {
+            const chk = document.getElementById(`nav-chk-${id}`);
+            if (chk) updateProgressState(id, chk.checked);
+        }
+
+        function evaluateMetrics() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_swe_dashboard_progress')) || {};
+            let matchCounter = 0;
+
+            SWE_Registry.forEach(module => {
+                if (userProgress[module.id] === true) matchCounter++;
+            });
+
+            const ratioFactor = SWE_Registry.length > 0 ? Math.round((matchCounter / SWE_Registry.length) * 100) : 0;
+            document.getElementById('metric-fill').style.width = ratioFactor + '%';
+            document.getElementById('metric-text').innerText = `${matchCounter}/${SWE_Registry.length} Modules Mastered (${ratioFactor}%)`;
+        }
+
+        window.onload = initAppTracker;
+    </script>
+</body>
+</html>

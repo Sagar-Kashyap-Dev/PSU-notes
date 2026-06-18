@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CN Quick Revision Guide</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --border-color: #334155;
+            --success-color: #10b981;
+            --formula-bg: #090d16;
+            --table-border: #475569;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .reset-btn {
+            background-color: #f43f5e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .reset-btn:hover {
+            background-color: #e11d48;
+        }
+
+        .topic-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .topic-card.completed {
+            opacity: 0.4;
+            filter: grayscale(60%);
+            border-color: var(--success-color);
+        }
+
+        .topic-card.completed h2 {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--accent-color);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            user-select: none;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            transition: all 0.2s;
+        }
+
+        .checkbox-container:hover {
+            background: rgba(56, 189, 248, 0.2);
+        }
+
+        .checkbox-container input {
+            cursor: pointer;
+            accent-color: var(--success-color);
+            width: 16px;
+            height: 16px;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        ul {
+            margin: 0 0 15px 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .formula-box {
+            background-color: var(--formula-bg);
+            padding: 12px 16px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+            font-family: "Consolas", "Courier New", monospace;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 15px 0;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            border: 1px solid var(--table-border);
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-color);
+        }
+
+        .none-text {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>CN Ultimate MCQ Revision Portal</h1>
+        <p>Track your networking preparation. Check off topics as you master them.</p>
+        <button class="reset-btn" onclick="clearProgress()">Reset All Progress</button>
+    </header>
+
+    <div class="topic-card" data-topic="cn_basics">
+        <div class="card-header">
+            <h2>1. Computer Network Basics</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Computer Network:</strong> Interconnected devices that communicate and share resources.</li>
+            <li><strong>Core Communication Requirements:</strong> Sender, Receiver, Medium, Protocol.</li>
+        </ul>
+        <div class="section-title">Key Advantages</div>
+        <ul>
+            <li>Resource sharing, Seamless Communication, High Reliability, and Scalability.</li>
+        </ul>
+        <div class="section-title">Common MCQ Traps</div>
+        <ul>
+            <li>Internet = A global network of networks.</li>
+            <li>Protocol = Formally defined set of rules governing communication.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <p class="none-text">None.</p>
+    </div>
+
+    <div class="topic-card" data-topic="network_types">
+        <div class="card-header">
+            <h2>2. Types of Networks</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>PAN:</strong> Personal Area Network (Smallest coverage footprint, e.g., Bluetooth).</li>
+            <li><strong>LAN:</strong> Local Area Network (Office/Home range).</li>
+            <li><strong>MAN:</strong> Metropolitan Area Network (Citywide range).</li>
+            <li><strong>WAN:</strong> Wide Area Network (Country/Global range, e.g., Internet).</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Smallest coverage scale &rarr; <strong>PAN</strong></li>
+            <li>Largest coverage scale &rarr; <strong>WAN</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="topologies">
+        <div class="card-header">
+            <h2>3. Network Topologies</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Structural Layouts</div>
+        <ul>
+            <li><strong>Bus:</strong> Single backbone central cable architecture. Single point of failure.</li>
+            <li><strong>Star:</strong> Connected directly via a central Hub or Switch.</li>
+            <li><strong>Ring:</strong> Data circulates in a strict closed loop.</li>
+            <li><strong>Mesh:</strong> Every single node connects directly to every other node (Fully redundant).</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Most structurally reliable/fault-tolerant &rarr; <strong>Mesh Topology</strong></li>
+            <li>Most common in modern commercial deployments &rarr; <strong>Star Topology</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="osi_model">
+        <div class="card-header">
+            <h2>4. OSI Model</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Layers & Functions (Top to Bottom)</div>
+        <ul>
+            <li><strong>Application:</strong> Direct user interfaces and network services.</li>
+            <li><strong>Presentation:</strong> Data formatting, encryption, decryption, and compression.</li>
+            <li><strong>Session:</strong> Authentication, session setup, maintenance, and teardown.</li>
+            <li><strong>Transport:</strong> End-to-end delivery, flow control, error recovery (Segments).</li>
+            <li><strong>Network:</strong> Path selection, logical routing, and logical addressing (Packets).</li>
+            <li><strong>Data Link:</strong> Reliable node-to-node hop delivery, framing, physical MAC addressing (Frames).</li>
+            <li><strong>Physical:</strong> Unstructured bit transmission over physical media (Bits).</li>
+        </ul>
+        <div class="section-title">Mnemonic</div>
+        <p style="font-style: italic; color: var(--accent-color); margin-left: 20px;">
+            "<strong>A</strong>ll <strong>P</strong>eople <strong>S</strong>eem <strong>T</strong>o <strong>N</strong>eed <strong>D</strong>ata <strong>P</strong>rocessing"
+        </p>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Routing operations happen at &rarr; <strong>Network Layer</strong></li>
+            <li>Framing and MAC parsing occur at &rarr; <strong>Data Link Layer</strong></li>
+            <li>Data encryption/compression happens at &rarr; <strong>Presentation Layer</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="tcp_ip_model">
+        <div class="card-header">
+            <h2>5. TCP/IP Model</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Architecture Layers</div>
+        <ul>
+            <li><strong>Application Layer</strong> (Combines OSI Layers 5, 6, 7)</li>
+            <li><strong>Transport Layer</strong> (Maps directly to OSI Transport)</li>
+            <li><strong>Internet Layer</strong> (Maps directly to OSI Network)</li>
+            <li><strong>Network Access Layer</strong> (Combines OSI Layers 1, 2)</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>The TCP/IP Internet Layer is functionally equivalent to the **OSI Network Layer**.</li>
+            <li>Standard reference TCP/IP model has **4 core layers**.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="network_devices">
+        <div class="card-header">
+            <h2>6. Network Devices</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Device Mappings</div>
+        <ul>
+            <li><strong>Hub:</strong> Physical Layer device. Dumb, non-intelligent broadcast mechanism.</li>
+            <li><strong>Switch:</strong> Data Link Layer device. Inspects incoming frames and reads <strong>MAC addresses</strong>.</li>
+            <li><strong>Router:</strong> Network Layer device. Selects paths using destination <strong>IP addresses</strong>.</li>
+            <li><strong>Gateway:</strong> Operates across upper layers to perform structural protocol conversions.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Switch decisions depend on &rarr; <strong>MAC Address</strong></li>
+            <li>Router decisions depend on &rarr; <strong>IP Address</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="transmission_media">
+        <div class="card-header">
+            <h2>7. Transmission Media</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Guided vs Unguided</div>
+        <ul>
+            <li><strong>Guided (Wired):</strong> Twisted Pair, Coaxial Cable, Optical Fiber.</li>
+            <li><strong>Unguided (Wireless):</strong> Radio Waves, Microwaves, Infrared.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Offers highest structural data bandwidth &rarr; <strong>Optical Fiber</strong></li>
+            <li>Completely immune to Electromagnetic Interference (EMI) &rarr; <strong>Optical Fiber</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="switching_techniques">
+        <div class="card-header">
+            <h2>8. Switching Techniques</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Paradigms</div>
+        <ul>
+            <li><strong>Circuit Switching:</strong> Establishes a dedicated physical path end-to-end beforehand (e.g., Landline Telephone networks).</li>
+            <li><strong>Packet Switching:</strong> Splits data into self-contained packets; paths can vary dynamically.</li>
+            <li><strong>Message Switching:</strong> Uses a full complete message framework along with <strong>Store-and-Forward</strong> hops.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>The modern public global Internet relies fundamentally on &rarr; <strong>Packet Switching</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="data_link_layer">
+        <div class="card-header">
+            <h2>9. Data Link Layer</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Functions</div>
+        <ul>
+            <li>Framing, Error Detection/Correction, Flow Control, and Physical MAC Addressing.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>The Data Link Layer guarantees reliable <strong>node-to-node (hop-by-hop)</strong> delivery.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="error_detection">
+        <div class="card-header">
+            <h2>10. Error Detection</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Methods</div>
+        <ul>
+            <li><strong>Parity Bit:</strong> Simple single-bit error verification check.</li>
+            <li><strong>Checksum:</strong> Accumulator-based verification used heavily within TCP/IP transport headers.</li>
+            <li><strong>CRC (Cyclic Redundancy Check):</strong> Polynomial division technique operating at hardware level.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Most reliable mathematical error-detection mechanism &rarr; <strong>CRC</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="flow_control">
+        <div class="card-header">
+            <h2>11. Flow Control</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Mechanisms</div>
+        <ul>
+            <li><strong>Stop-and-Wait:</strong> Sender dispatches exactly one single frame, blocks execution, and waits for ACK before sending next.</li>
+            <li><strong>Sliding Window:</strong> Sender can pipeline multiple unacknowledged frames concurrently before blocking.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Sliding Window frameworks yield substantially higher link <strong>efficiency</strong> than basic Stop-and-Wait.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="arq_protocols">
+        <div class="card-header">
+            <h2>12. ARQ Protocols</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Automatic Repeat Request Types</div>
+        <ul>
+            <li><strong>Stop-and-Wait ARQ:</strong> Retransmits the single current frame on timeout or NAK.</li>
+            <li><strong>Go-Back-N ARQ:</strong> Retransmits the entire window starting from the oldest erroneous unacknowledged frame onward. Receiver discards out-of-order packets.</li>
+            <li><strong>Selective Repeat ARQ:</strong> Buffers out-of-order items. Retransmits <strong>ONLY</strong> the specifically damaged or missing frames.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Most bandwidth-efficient ARQ design pattern &rarr; <strong>Selective Repeat ARQ</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="mac_address">
+        <div class="card-header">
+            <h2>13. MAC Address</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>48-bit global address</strong> (6 bytes space total).</li>
+            <li>Permanently burned physical address assigned globally by the hardware manufacturer.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>MAC addresses are processed at &rarr; <strong>Data Link Layer (MAC Sublayer)</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="ip_addressing">
+        <div class="card-header">
+            <h2>14. IP Addressing</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Versions</div>
+        <ul>
+            <li><strong>IPv4:</strong> 32 bits long (Expressed as 4 decimal octets separated by dots).</li>
+            <li><strong>IPv6:</strong> 128 bits long (Expressed as 8 groups of colon-separated hexadecimal values).</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>IPv6 addresses are natively formatted and written using **hexadecimal representation**.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="ipv4_classes">
+        <div class="card-header">
+            <h2>15. IPv4 Classful Spaces</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Class</th>
+                    <th>First Octet Range</th>
+                    <th>Default Subnet Mask</th>
+                    <th>Primary Purpose</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Class A</strong></td>
+                    <td>1 &ndash; 126</td>
+                    <td>255.0.0.0</td>
+                    <td>Massive networks (Few networks, huge hosts)</td>
+                </tr>
+                <tr>
+                    <td><strong>Class B</strong></td>
+                    <td>128 &ndash; 191</td>
+                    <td>255.255.0.0</td>
+                    <td>Medium to large enterprise deployments</td>
+                </tr>
+                <tr>
+                    <td><strong>Class C</strong></td>
+                    <td>192 &ndash; 223</td>
+                    <td>255.255.255.0</td>
+                    <td>Small networks (Many networks, few hosts)</td>
+                </tr>
+                <tr>
+                    <td><strong>Class D</strong></td>
+                    <td>224 &ndash; 239</td>
+                    <td>N/A</td>
+                    <td><strong>Multicasting streams</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>Class E</strong></td>
+                    <td>240 &ndash; 255</td>
+                    <td>N/A</td>
+                    <td>Experimental / Research reserves</td>
+                </tr>
+            </tbody>
+        </table>
+        <p style="font-size:0.85rem; color: var(--text-muted);">*Note: 127.x.x.x is intentionally reserved for local loopback testing addresses.</p>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Class D addresses are reserved exclusively for &rarr; <strong>Multicasting</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="subnetting">
+        <div class="card-header">
+            <h2>16. Subnetting</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Key Math Layouts</div>
+        <div class="formula-box">
+            Total Subnets Formed = 2<sup>n</sup> &nbsp;(where n = count of borrowed network bits)<br>
+            Usable Hosts per Subnet = 2<sup>h</sup> &minus; 2 &nbsp;(where h = remaining host bits)
+        </div>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Why subtract 2 from host count? To account for the unassignable **Network Address** (first address) and the dedicated **Subnet Broadcast Address** (last address).</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="routing">
+        <div class="card-header">
+            <h2>17. Routing</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Routing:</strong> Dynamic or structural path selection process across intermediary network hubs.</li>
+            <li><strong>Static Routing:</strong> Paths configured manually by network administrators.</li>
+            <li><strong>Dynamic Routing:</strong> Protocols calculate optimal paths automatically based on state metrics.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Routing decisions and logical map processing are performed by structural **routers**.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="routing_protocols">
+        <div class="card-header">
+            <h2>18. Routing Protocols</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Protocols</div>
+        <ul>
+            <li><strong>RIP (Routing Information Protocol):</strong> Uses Distance Vector routing logic. Relies strictly on <strong>Hop Count</strong> as its metric. Maximum allowable hop count is **15** (16 denotes infinity/unreachable).</li>
+            <li><strong>OSPF (Open Shortest Path First):</strong> Uses Link-State routing logic. Relies on Dijkstra's algorithm to calculate optimal shortest paths.</li>
+            <li><strong>BGP (Border Gateway Protocol):</strong> Path Vector protocol used to handle routing between distinct Autonomous Systems (AS).</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Core protocol running the public Internet backbone infrastructure &rarr; <strong>BGP</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="transport_protocols">
+        <div class="card-header">
+            <h2>19. Transport Layer (TCP vs UDP)</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">TCP Features</div>
+        <ul>
+            <li>Connection-oriented stateful workflow. Reliable data stream guarantee. Implements explicit Flow Control and Error Recovery.</li>
+        </ul>
+        <div class="section-title">UDP Features</div>
+        <ul>
+            <li>Connectionless stateless execution. Faster transmission overhead. Zero reliability or sequence delivery guarantees.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>HTTP / HTTPS applications require underlying &rarr; <strong>TCP connections</strong></li>
+            <li>DNS queries (small payload lookups) rely primarily on &rarr; <strong>UDP overhead</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="tcp_handshake">
+        <div class="card-header">
+            <h2>20. TCP Deep Dive</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Three-Way Handshake Connection Steps</div>
+        <div class="formula-box" style="text-align: center;">
+            Client &mdash;[ SYN ]&rarr; Server <br>
+            Client &larr;[ SYN-ACK ]&mdash; Server <br>
+            Client &mdash;[ ACK ]&rarr; Server
+        </div>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>TCP guarantees in-order, lossless, reliable data byte-stream delivery.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="udp_details">
+        <div class="card-header">
+            <h2>21. UDP Details</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Lacks connection setup handshakes, active flow control windows, or built-in retransmission recovery.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Real-time services (VoIP streaming, online multiplayer gaming, live broadcast feeds) prefer **UDP** due to lower latency.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="app_protocols">
+        <div class="card-header">
+            <h2>22. Application Layer Protocols</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Protocol</th>
+                    <th>Purpose</th>
+                    <th>Standard Port Mappings</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>HTTP</strong></td>
+                    <td>Unencrypted web browsing text transmission</td>
+                    <td><code>80</code></td>
+                </tr>
+                <tr>
+                    <td><strong>HTTPS</strong></td>
+                    <td>Secure encrypted web browsing streams</td>
+                    <td><code>443</code></td>
+                </tr>
+                <tr>
+                    <td><strong>FTP</strong></td>
+                    <td>File Transfer Protocol connection handles</td>
+                    <td><code>20</code> (Data), <code>21</code> (Control)</td>
+                </tr>
+                <tr>
+                    <td><strong>SMTP</strong></td>
+                    <td>Simple Mail Transfer Protocol (Sending emails)</td>
+                    <td><code>25</code></td>
+                </tr>
+                <tr>
+                    <td><strong>DNS</strong></td>
+                    <td>Domain Name System translations</td>
+                    <td><code>53</code></td>
+                </tr>
+                <tr>
+                    <td><strong>TELNET</strong></td>
+                    <td>Plaintext unencrypted remote login access</td>
+                    <td><code>23</code></td>
+                </tr>
+                <tr>
+                    <td><strong>SSH</strong></td>
+                    <td>Secure Shell encrypted remote terminal access</td>
+                    <td><code>22</code></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Secure, production-grade remote terminal shell authentication &rarr; <strong>SSH (Port 22)</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="dns_details">
+        <div class="card-header">
+            <h2>23. DNS</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Domain Name System:</strong> Resolves human-readable alphanumeric strings directly into computer-parseable physical IP addresses.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>DNS relies on an organized, globally distributed <strong>hierarchical structural database</strong> framework.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="network_security">
+        <div class="card-header">
+            <h2>24. Network Security Basics</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Concepts</div>
+        <ul>
+            <li><strong>Firewall:</strong> Packet-filtering security mechanism inspecting inbound/outbound payloads based on defined safety criteria rules.</li>
+            <li><strong>Encryption:</strong> Standard scramble transformation algorithm protecting data confidentiality.</li>
+            <li><strong>VPN:</strong> Virtual Private Network tunnel creating a masked path through public paths.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Filtering traffic based on incoming or outgoing packet headers is handled by a **Firewall**.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="wireless_networks">
+        <div class="card-header">
+            <h2>25. Wireless Networks</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Wi-Fi:</strong> Wireless Local Area Network communication layout.</li>
+            <li><strong>Bluetooth:</strong> Ultra-short range Wireless Personal Area Network interface standard.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Wi-Fi maps to &rarr; <strong>WLAN</strong></li>
+            <li>Bluetooth maps to &rarr; <strong>PAN</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="ieee_standards">
+        <div class="card-header">
+            <h2>26. Important IEEE Standards</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>IEEE Standard Node</th>
+                    <th>Associated Technical Specification</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>IEEE 802.3</strong></td>
+                    <td><strong>Ethernet</strong> (Wired LAN framework)</td>
+                </tr>
+                <tr>
+                    <td><strong>IEEE 802.11</strong></td>
+                    <td><strong>Wi-Fi</strong> (Wireless LAN specification)</td>
+                </tr>
+                <tr>
+                    <td><strong>IEEE 802.15</strong></td>
+                    <td><strong>Bluetooth</strong> (Wireless Personal Area network)</td>
+                </tr>
+                <tr>
+                    <td><strong>IEEE 802.16</strong></td>
+                    <td><strong>WiMAX</strong> (Broadband Wireless Metropolitan network)</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Standard industrial design node designation for wired Ethernet networks &rarr; <strong>IEEE 802.3</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="cn_formulas">
+        <div class="card-header">
+            <h2>27. CN Formulas Worth Memorizing</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Link Performance Delays</div>
+        <div class="formula-box">
+            Transmission Delay (T<sub>t</sub>) = Packet Size / Bandwidth<br><br>
+            Propagation Delay (T<sub>p</sub>) = Distance / Propagation Speed of Medium<br><br>
+            Total Node Link Delay = T<sub>t</sub> + T<sub>p</sub> + Queuing Delay + Processing Delay
+        </div>
+        <div class="section-title">Capacity & Allocation Metrics</div>
+        <div class="formula-box">
+            Bandwidth-Delay Product (BDP) = Bandwidth &times; Round Trip Time (RTT)<br><br>
+            Subnet Host Capacity Calculation = 2<sup>h</sup> &minus; 2 &nbsp;(where h = host bits count)
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="cn_traps" style="border: 1px dashed #38bdf8; background-color: #1a1e2d;">
+        <div class="card-header">
+            <h2 style="color: #f43f5e;">&#9888; Critical CIL MT CN MCQ Traps Checklist</h2>
+            <label class="checkbox-container" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8;">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <ul>
+            <li>OSI spans 7 layers | TCP/IP structural stack consolidates into 4 functional layers.</li>
+            <li>Presentation Layer manages all system encoding, encryption, and data compression.</li>
+            <li>Network Layer selects paths dynamically; Data Link Layer packages bitframes.</li>
+            <li>Hubs act as unintelligent physical broadcast links | Switches read MAC frames.</li>
+            <li>Optical Fiber provides maximum raw link bandwidth and complete immunity to EMI.</li>
+            <li>The global internet runs on standard Packet Switching models.</li>
+            <li>CRC is the most secure and reliable error detection technique used at the hardware link layer.</li>
+            <li>Sliding Window utilization efficiency far outperforms structural Stop-and-Wait links.</li>
+            <li>MAC addresses are 48 bits long | IPv4 values require 32 bits | IPv6 needs 128 bits.</li>
+            <li>Class D IP blocks are dedicated solely to Multicast stream traffic.</li>
+            <li>TCP enforces connection-oriented reliability | UDP focuses on lightweight speed.</li>
+            <li>TCP constructs operational endpoints using a distinct Three-Way Handshake (SYN &rarr; SYN-ACK &rarr; ACK).</li>
+            <li>HTTPS listens natively on secure Port 443 | HTTP defaults to unencrypted Port 80.</li>
+            <li>FTP splits activities using Port 20 (Data streams) and Port 21 (Command handling control).</li>
+            <li>RIP calculates routing metrics by total Hop Count (15 max capacity limits).</li>
+            <li>OSPF scales via Link-State maps | BGP handles Inter-Domain loop-free routing setups.</li>
+            <li>IEEE 802.3 manages Ethernet parameters | IEEE 802.11 dictates Wi-Fi guidelines.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // Storage configuration unique identifier key for CN tracking
+    const STORAGE_KEY = 'cil_mt_cn_progress';
+
+    // Run processing on load to restore checkbox configurations
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        
+        document.querySelectorAll('.topic-card').forEach(card => {
+            const id = card.getAttribute('data-topic');
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            
+            if (id && savedProgress[id]) {
+                checkbox.checked = true;
+                card.classList.add('completed');
+            }
+        });
+    });
+
+    function toggleComplete(checkbox) {
+        const card = checkbox.closest('.topic-card');
+        const id = card.getAttribute('data-topic');
+        
+        // Fetch existing dictionary state mapping
+        const currentProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+        if (checkbox.checked) {
+            card.classList.add('completed');
+            if (id) currentProgress[id] = true;
+        } else {
+            card.classList.remove('completed');
+            if (id) delete currentProgress[id];
+        }
+
+        // Overwrite adjustments back to tracking dictionary
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentProgress));
+    }
+
+    function clearProgress() {
+        if (confirm("Are you sure you want to reset all Computer Networks revision portal checkboxes?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            document.querySelectorAll('.topic-card').forEach(card => {
+                card.classList.remove('completed');
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                if (checkbox) checkbox.checked = false;
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

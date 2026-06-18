@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE — Compiler Design Master Engine</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #7c3aed;
+            --brand-accent: #f5f3ff;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* Split-Pane Control Interface */
+        #app-sidebar {
+            width: 330px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 330px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1180px;
+            width: calc(100% - 330px);
+        }
+
+        /* Sidebar Panels */
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #ddd6fe; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #6d28d9; letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #cbd5e1; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #6d28d9; width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        /* Document Architecture Layouts */
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        .summary-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; background: var(--bg-workspace); padding: 1rem; border-radius: var(--radius-interactive); border: 1px solid var(--border-color); }
+        .summary-badge { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-bold); font-weight: 500; }
+        .summary-badge strong { color: #7c3aed; }
+
+        .grid-block { margin-bottom: 2rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 0.75rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); }
+        th, td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        .alert-box ul { margin-left: 1.25rem; }
+        .alert-box li { color: #7f1d1d; }
+
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>Compiler Engine</h2>
+            <p>Design & Toolchains</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Pipeline Mastery</div>
+            <div class="metric-value" id="metric-text">0/8 Modules Mastered</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Front-End Processing</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-compiler-phases')"><span>1. Phases & Architecture</span><input type="checkbox" class="nav-checkbox" id="nav-chk-compiler-phases" onclick="event.stopPropagation(); syncCheckbox('compiler-phases')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-lexical')"><span>2. Lexical & Finite Automata</span><input type="checkbox" class="nav-checkbox" id="nav-chk-lexical" onclick="event.stopPropagation(); syncCheckbox('lexical')"></div></li>
+            
+            <div class="nav-heading">Syntax Analysis</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-top-down')"><span>3. Top-Down Parsing & LL(1)</span><input type="checkbox" class="nav-checkbox" id="nav-chk-top-down" onclick="event.stopPropagation(); syncCheckbox('top-down')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-bottom-up')"><span>4. Bottom-Up & LR Parsing</span><input type="checkbox" class="nav-checkbox" id="nav-chk-bottom-up" onclick="event.stopPropagation(); syncCheckbox('bottom-up')"></div></li>
+            
+            <div class="nav-heading">Semantics & Code Gen</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-sdt')"><span>5. Syntax-Directed Translation</span><input type="checkbox" class="nav-checkbox" id="nav-chk-sdt" onclick="event.stopPropagation(); syncCheckbox('sdt')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-icg')"><span>6. Intermediate Code (ICG)</span><input type="checkbox" class="nav-checkbox" id="nav-chk-icg" onclick="event.stopPropagation(); syncCheckbox('icg')"></div></li>
+            
+            <div class="nav-heading">Backend & Runtime</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-optimization')"><span>7. Code Optimization Primitives</span><input type="checkbox" class="nav-checkbox" id="nav-chk-optimization" onclick="event.stopPropagation(); syncCheckbox('optimization')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-runtime-error')"><span>8. Symbol Tables & Errors (YACC)</span><input type="checkbox" class="nav-checkbox" id="nav-chk-runtime-error" onclick="event.stopPropagation(); syncCheckbox('runtime-error')"></div></li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>Compiler Design Specification</h1>
+            <p>Phased translation passes, LL/LR syntax validation graphs, attribution transformations, and code optimizations.</p>
+        </header>
+
+        <section class="content-card" id="sec-compiler-phases">
+            <div class="card-header-row">
+                <h2>1. Compiler Phases & Structural Workflow</h2>
+                <button class="action-button" id="btn-compiler-phases" onclick="toggleTopicState('compiler-phases')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Analysis: <strong>Front-End (Machine-Independent)</strong></div>
+                <div class="summary-badge">Synthesis: <strong>Back-End (Machine-Dependent)</strong></div>
+                <div class="summary-badge">Passes: <strong>Phased Pipeline Optimization Groups</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Complete Pipeline Architecture</div>
+                <p>A compiler processes a source program through linear translation phases. The <strong>Symbol Table</strong> and <strong>Error Handler</strong> communicate directly with every single phase:</p>
+                
+                <ol>
+                    <li><strong>Lexical Analyzer (Scanner):</strong> Transforms raw source characters into validated tokens.</li>
+                    <li><strong>Syntax Analyzer (Parser):</strong> Group tokens into hierarchical parse trees based on Context-Free Grammars.</li>
+                    <li><strong>Semantic Analyzer:</strong> Performs type checking, scope tracking, and semantic rule validation.</li>
+                    <li><strong>Intermediate Code Generator:</strong> Emits clean, machine-independent low-level code (e.g., Three-Address Code).</li>
+                    <li><strong>Code Optimizer:</strong> Minimizes execution latency and memory footprint of the intermediate structure.</li>
+                    <li><strong>Target Code Generator:</strong> Maps refined operations into machine-specific assembly or object instructions.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-lexical">
+            <div class="card-header-row">
+                <h2>2. Lexical Analysis & Finite Automata Engine</h2>
+                <button class="action-button" id="btn-lexical" onclick="toggleTopicState('lexical')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Token: <strong>Syntactic Category Type Class</strong></div>
+                <div class="summary-badge">Lexeme: <strong>Raw Source Value String Instance</strong></div>
+                <div class="summary-badge">Pattern: <strong>Regular Expression Rule Matcher</strong></div>
+                <div class="summary-badge">Engine: <strong>Lex/Flex Automated Scanning Generators</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Automata Mechanics in Scanning</div>
+                <ul>
+                    <li>Lexical match rules are defined using <strong>Regular Expressions</strong> and translated into execution paths via **Deterministic Finite Automata (DFA)**.</li>
+                    <li><strong>Lookahead Guard Buffer:</strong> Uses a trailing buffer system (e.g., evaluating `if` vs `ifa`) to track input pointers until a longest matching legal prefix token is identified.</li>
+                    <li><strong>Lexical Errors:</strong> Triggered when the input character stream fails to match any established regular transition path (resolved via strategies like character insertion, deletion, or substitution).</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-top-down">
+            <div class="card-header-row">
+                <h2>3. Top-Down Parsing & LL(1) Grammars</h2>
+                <button class="action-button" id="btn-top-down" onclick="toggleTopicState('top-down')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">LL(1): <strong>Left-to-right | Leftmost | 1 Lookahead</strong></div>
+                <div class="summary-badge">Left Recursion: <strong>$A \to A\alpha \mid \beta \implies$ Infinite Loop Failures</strong></div>
+                <div class="summary-badge">Left Factoring: <strong>Resolving common prefix paths</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">FIRST & FOLLOW Formulations</div>
+                <p>These sets guide production choice in predictive parsing tables:</p>
+                <ul>
+                    <li><strong>$\text{FIRST}(\alpha)$:</strong> The set of terminals that begin strings derived from $\alpha$. If $\alpha \xrightarrow{*} \epsilon$, then $\epsilon \in \text{FIRST}(\alpha)$.</li>
+                    <li><strong>$\text{FOLLOW}(A)$:</strong> The set of terminals that can appear immediately to the right of variable $A$ in some sentential form:
+                        $$\text{If } S \text{ is start symbol, } \$ \in \text{FOLLOW}(S)$$
+                        $$\text{For production } A \to \alpha B \beta, \text{ add } (\text{FIRST}(\beta) \setminus \{\epsilon\}) \text{ to } \text{FOLLOW}(B).$$
+                        $$\text{If } \beta \xrightarrow{*} \epsilon, \text{ add all elements of } \text{FOLLOW}(A) \text{ to } \text{FOLLOW}(B).$$
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">LL(1) Matrix Constraints</div>
+                <p>A grammar is LL(1) if and only if for every pair of distinct productions $A \to \alpha \mid \beta$:</p>
+                <ol>
+                    <li>$\text{FIRST}(\alpha) \cap \text{FIRST}(\beta) = \emptyset$ (No overlapping starter terminals).</li>
+                    <li>If one production derives $\epsilon$ (e.g., $\beta \xrightarrow{*} \epsilon$), then $\text{FIRST}(\alpha) \cap \text{FOLLOW}(A) = \emptyset$.</li>
+                </ol>
+            </div>
+        </main>
+
+        <section class="content-card" id="sec-bottom-up">
+            <div class="card-header-row">
+                <h2>4. Bottom-Up Parsing & LR Parser Engines</h2>
+                <button class="action-button" id="btn-bottom-up" onclick="toggleTopicState('bottom-up')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Handle: <strong>Minterm substring matching a production</strong></div>
+                <div class="summary-badge">LR(0): <strong>Kernel Items without explicit lookaheads</strong></div>
+                <div class="summary-badge">SLR(1): <strong>Reduces driven by global FOLLOW checks</strong></div>
+                <div class="summary-badge">LR(1): <strong>Precise, context-specific lookahead tracking</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Complete Parser Hierarchy Power Scale</div>
+                <p>Bottom-up parsers construct a rightmost derivation in reverse by executing **Shift** and **Reduce** stack operations. Power limits scale as follows:</p>
+                $$\text{LR}(0) < \text{SLR}(1) < \text{LALR}(1) < \text{CLR}(1)$$
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Parser Strategy Type</th><th>Total Operational State Space Bounds</th><th>Lookahead Context Resolution Target</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>LR(0) / SLR(1)</strong></td><td>Identical state space size (Uses $I_0$ sets)</td><td>SLR(1) restricts reduction actions strictly to $\text{FOLLOW}(A)$ cells.</td></tr>
+                            <tr><td><strong>CLR(1)</strong></td><td>Much larger state space (Splits items based on lookahead context)</td><td>Extremely powerful; handles complex language constructs but uses a massive table.</td></tr>
+                            <tr><td><strong>LALR(1)</strong></td><td>Identical state space size to LR(0)</td><td>Merges CLR(1) states that share identical core item structures, resolving lookahead discrepancies.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Table Conflict Conditions:</strong>
+                    <ul>
+                        <li><strong>Shift/Reduce (S/R) Conflict:</strong> The engine cannot decide whether to shift the next input token or execute a production reduction.</li>
+                        <li><strong>Reduce/Reduce (R/R) Conflict:</strong> The engine matches multiple valid productions and cannot decide which reduction to prioritize.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-sdt">
+            <div class="card-header-row">
+                <h2>5. Semantic Analysis & Syntax-Directed Translation (SDT)</h2>
+                <button class="action-button" id="btn-sdt" onclick="toggleTopicState('sdt')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Synthesized: <strong>Computed up from node children</strong></div>
+                <div class="summary-badge">Inherited: <strong>Computed down from parent/sibling nodes</strong></div>
+                <div class="summary-badge">S-Attributed: <strong>Uses synthesized attributes exclusively</strong></div>
+                <div class="summary-badge">L-Attributed: <strong>Inherits only from left siblings or parents</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Attribute Dependency Vectors</div>
+                <ul>
+                    <li><strong>S-Attributed SDT:</strong> Evaluated bottom-up alongside standard **LR parsing operations**. All semantic actions are executed immediately at the end of production reductions.</li>
+                    <li><strong>L-Attributed SDT:</strong> Can evaluate synthesized or inherited attributes, provided dependencies do not flow from right-to-left. L-attributed specifications can be cleanly evaluated during top-down **LL(1) parsing passes**.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-icg">
+            <div class="card-header-row">
+                <h2>6. Intermediate Code Generation (ICG) Matrix</h2>
+                <button class="action-button" id="btn-icg" onclick="toggleTopicState('icg')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">AST: <strong>Abstract Syntax Tree</strong></div>
+                <div class="summary-badge">DAG: <strong>Directed Acyclic Graph Value Multiplexer</strong></div>
+                <div class="summary-badge">Three-Address: <strong>Max 3 Operands per Instruction</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Three-Address Code (3AC) Storage Layouts</div>
+                <p>Computes operations using an explicit form: $x = y \text{ op } z$. Storage implementations include:</p>
+                <ul>
+                    <li><strong>Quadruples:</strong> Uses explicit records tracking: $\langle \text{op}, \text{arg1}, \text{arg2}, \text{result} \rangle$.</li>
+                    <li><strong>Triples:</strong> Eliminates explicit temporary variable names by referencing operations via table row indices: $\langle \text{op}, \text{arg1}, \text{arg2} \rangle$.</li>
+                    <li><strong>Indirect Triples:</strong> Decouples operations from the execution sequence using an array of pointers to stable triple rows.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-optimization">
+            <div class="card-header-row">
+                <h2>7. Code Optimization Strategies</h2>
+                <button class="action-button" id="btn-optimization" onclick="toggleTopicState('optimization')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Basic Block: <strong>Single Entry, Single Exit Code Block</strong></div>
+                <div class="summary-badge">Loop Invariant: <strong>Hoisting constant logic calculations</strong></div>
+                <div class="summary-badge">Strength Reduction: <strong>Replacing costly operations (e.g., $x \times 2 \to x \ll 1$)</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Optimization Paradigms Matrix</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Optimization Tactic Class</th><th>Functional Execution Method</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Constant Folding</strong></td><td>Computes constant expressions at compile time rather than runtime (e.g., replacing $x = 3 + 5$ with $x = 8$).</td></tr>
+                            <tr><td><strong>Common Subexpression Elimination (CSE)</strong></td><td>Detects redundant, identical expressions and replaces them with a single temporary variable reference.</td></tr>
+                            <tr><td><strong>Dead Code Elimination</strong></td><td>Prunes instructions or entire blocks that can never be reached or whose outputs never affect program execution.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-runtime-error">
+            <div class="card-header-row">
+                <h2>8. Symbol Tables, Error Recovery & YACC Systems</h2>
+                <button class="action-button" id="btn-runtime-error" onclick="toggleTopicState('runtime-error')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Symbol Table: <strong>Scope & Type Info Hash Map</strong></div>
+                <div class="summary-badge">Panic Mode: <strong>Discard tokens until a delimiter is hit</strong></div>
+                <div class="summary-badge">YACC / Bison: <strong>LALR(1) Structural Parser Generators</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Error Recovery Models</div>
+                <ul>
+                    <li><strong>Panic-Mode Error Recovery:</strong> The parser discards incoming tokens until it encounters a designated **synchronizing token** (such as a semicolon or closing brace). This isolates the error and allows the parser to resume syntax checking.</li>
+                    <li><strong>Phrase-Level Recovery:</strong> Replaces an erroneous input prefix with a local correction string (e.g., appending a missing semicolon) to allow continuous processing.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">YACC Implementation Architecture</div>
+                <p>YACC (`Yet Another Compiler-Compiler`) converts a Context-Free Grammar specification into a high-performance **LALR(1) parser engine**:</p>
+                <ul>
+                    <li>Uses the token output stream from `Lex` scanners to execute actions. Conflict tracking defaults to resolving shift/reduce ambiguities in favor of **shifting**, and reduce/reduce ambiguities by picking the **first declared production**.</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Interactive Dashboard Tracking Logic
+        const Compiler_Registry = [
+            { id: "compiler-phases" },
+            { id: "lexical" },
+            { id: "top-down" },
+            { id: "bottom-up" },
+            { id: "sdt" },
+            { id: "icg" },
+            { id: "optimization" },
+            { id: "runtime-error" }
+        ];
+
+        function scrollToCard(targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initAppTracker() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_compiler_dashboard_progress')) || {};
+            
+            Compiler_Registry.forEach(module => {
+                const status = !!userProgress[module.id];
+                
+                // Sync Checkboxes
+                const chk = document.getElementById(`nav-chk-${module.id}`);
+                if (chk) chk.checked = status;
+
+                // Sync Card Action Buttons
+                const btn = document.getElementById(`btn-${module.id}`);
+                if (btn) {
+                    if (status) {
+                        btn.innerText = "✓ Mastered";
+                        btn.classList.add('completed');
+                    } else {
+                        btn.innerText = "Mark Mastered";
+                        btn.classList.remove('completed');
+                    }
+                }
+            });
+            evaluateMetrics();
+        }
+
+        function updateProgressState(id, statusValue) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_compiler_dashboard_progress')) || {};
+            userProgress[id] = statusValue;
+            localStorage.setItem('gate_compiler_dashboard_progress', JSON.stringify(userProgress));
+
+            const chk = document.getElementById(`nav-chk-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (chk) chk.checked = statusValue;
+            if (btn) {
+                if (statusValue) {
+                    btn.innerText = "✓ Mastered";
+                    btn.classList.add('completed');
+                } else {
+                    btn.innerText = "Mark Mastered";
+                    btn.classList.remove('completed');
+                }
+            }
+            evaluateMetrics();
+        }
+
+        function toggleTopicState(id) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_compiler_dashboard_progress')) || {};
+            updateProgressState(id, !userProgress[id]);
+        }
+
+        function syncCheckbox(id) {
+            const chk = document.getElementById(`nav-chk-${id}`);
+            if (chk) updateProgressState(id, chk.checked);
+        }
+
+        function evaluateMetrics() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_compiler_dashboard_progress')) || {};
+            let matchCounter = 0;
+
+            Compiler_Registry.forEach(module => {
+                if (userProgress[module.id] === true) matchCounter++;
+            });
+
+            const ratioFactor = Compiler_Registry.length > 0 ? Math.round((matchCounter / Compiler_Registry.length) * 100) : 0;
+            document.getElementById('metric-fill').style.width = ratioFactor + '%';
+            document.getElementById('metric-text').innerText = `${matchCounter}/${Compiler_Registry.length} Modules Mastered (${ratioFactor}%)`;
+        }
+
+        window.onload = initAppTracker;
+    </script>
+</body>
+</html>

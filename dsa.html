@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE — Data Structures</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #2563eb;
+            --brand-accent: #eff6ff;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* Split Pane Architecture Layout */
+        #app-sidebar {
+            width: 320px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 320px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1150px;
+            width: calc(100% - 320px);
+        }
+
+        /* Sidebar Tracker Components */
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #dbeafe; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #e2e8f0; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: var(--brand-primary); width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        /* Content Dashboard Layouts */
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        /* Crisp Core Fact Summary Badge Grid */
+        .summary-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; background: var(--bg-workspace); padding: 1rem; border-radius: var(--radius-interactive); border: 1px solid var(--border-color); }
+        .summary-badge { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-bold); font-weight: 500; display: flex; align-items: center; gap: 0.4rem; }
+        .summary-badge strong { color: var(--brand-primary); }
+
+        /* Topic Subsection Structural Organization */
+        .grid-block { margin-bottom: 2rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: var(--brand-primary); text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); }
+        th, td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        .alert-box ul { margin-left: 1.25rem; }
+        .alert-box li { color: #7f1d1d; }
+
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>GATE CSE Master</h2>
+            <p>Data Structures Deep Revision</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Syllabus Progress</div>
+            <div class="metric-value" id="metric-text">0/7 Mastered</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Linear Data Structures</div>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-arrays')">
+                    <span>1. Arrays & Sparse Matrix</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-arrays" onclick="event.stopPropagation(); syncCheckbox('arrays')">
+                </div>
+            </li>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-linkedlists')">
+                    <span>2. Linked Lists (All Types)</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-linkedlists" onclick="event.stopPropagation(); syncCheckbox('linkedlists')">
+                </div>
+            </li>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-stacks')">
+                    <span>3. Stacks & Expressions</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-stacks" onclick="event.stopPropagation(); syncCheckbox('stacks')">
+                </div>
+            </li>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-queues')">
+                    <span>4. Queues & Variants</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-queues" onclick="event.stopPropagation(); syncCheckbox('queues')">
+                </div>
+            </li>
+
+            <div class="nav-heading">Non-Linear Data Structures</div>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-trees')">
+                    <span>5. Trees, BST, AVL & Heaps</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-trees" onclick="event.stopPropagation(); syncCheckbox('trees')">
+                </div>
+            </li>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-graphs')">
+                    <span>6. Graphs & Traversals</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-graphs" onclick="event.stopPropagation(); syncCheckbox('graphs')">
+                </div>
+            </li>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-hashing')">
+                    <span>7. Hashing Algorithms</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-hashing" onclick="event.stopPropagation(); syncCheckbox('hashing')">
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>Syllabus Engine Architecture</h1>
+            <p>Every analytical point, complexity metric, operational condition, and high-yield trap mapped strictly for GATE CSE.</p>
+        </header>
+
+        <section class="content-card" id="sec-arrays">
+            <div class="card-header-row">
+                <h2>1. Arrays & Sparse Matrix</h2>
+                <button class="action-button" id="btn-arrays" onclick="toggleTopicState('arrays')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Type: <strong>Linear DS</strong></div>
+                <div class="summary-badge">Memory: <strong>Contiguous Block</strong></div>
+                <div class="summary-badge">Access: <strong>O(1)</strong></div>
+                <div class="summary-badge">Traversal: <strong>O(n)</strong></div>
+                <div class="summary-badge">Binary Search: <strong>O(log n)</strong></div>
+                <div class="summary-badge">Insertion/Deletion (Middle): <strong>O(n)</strong></div>
+                <div class="summary-badge">Cache: <strong>Highly Friendly</strong></div>
+                <div class="summary-badge">Row-Major: <strong>C/C++</strong></div>
+                <div class="summary-badge">Column-Major: <strong>Fortran</strong></div>
+            </div>
+            
+            <div class="grid-block">
+                <div class="block-title">Definition & Structural Properties</div>
+                <ul>
+                    <li><strong>Array Definition:</strong> A finite, ordered collection of homogeneous elements mapped directly across a single block of contiguous memory locations.</li>
+                    <li><strong>Sparse Matrix Definition:</strong> A matrix of dimension $M \times N$ where the count of zero elements is significantly greater than the count of non-zero elements ($\text{Zeros} \gg \text{Non-Zeros}$).</li>
+                    <li><strong>Static Array:</strong> Fixed-size structures allocated at compile-time on the stack; size boundaries cannot be mutated during runtime execution.</li>
+                    <li><strong>Dynamic Array:</strong> Resizable array structures allocated on the runtime heap. When capacity is reached, it dynamically provisions a new block (typically using a doubling growth strategy factor of $2\times$), copying elements in $\mathcal{O}(N)$ time, which averages out to an amortized $\mathcal{O}(1)$ insertion cost.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Memory Layout Mapping & Address Formulas</div>
+                <ul>
+                    <li><strong>Physical Contiguity:</strong> Memory addresses follow a strict sequential layout. Knowing the base address and the element size is all that is needed to calculate the exact address of any item.</li>
+                    <li><strong>Row-Major Order (RMO):</strong> Elements are stored sequentially, row by row. Used by default in C and C++.
+                        <br>Formula for $A[i][j]$ in a 2D array of size $M \times N$ (0-indexed): 
+                        $$\text{Address}(A[i][j]) = \text{Base} + (i \times N + j) \times \text{size}$$
+                    </li>
+                    <li><strong>Column-Major Order (CMO):</strong> Elements are stored sequentially, column by column. Used by default in Fortran.
+                        <br>Formula for $A[i][j]$ in a 2D array of size $M \times N$ (0-indexed): 
+                        $$\text{Address}(A[i][j]) = \text{Base} + (j \times M + i) \times \text{size}$$
+                    </li>
+                    <li><strong>General Upper/Lower Bound Formula (1-Indexed or Arbitrary Range $L_1 \dots U_1, L_2 \dots U_2$):</strong>
+                        <br>Let $\text{Rows} = (U_1 - L_1 + 1)$ and $\text{Cols} = (U_2 - L_2 + 1)$.
+                        $$\text{RMO Address}(A[i][j]) = \text{Base} + \left[(i - L_1) \times \text{Cols} + (j - L_2)\right] \times \text{size}$$
+                        $$\text{CMO Address}(A[i][j]) = \text{Base} + \left[(j - L_2) \times \text{Rows} + (i - L_1)\right] \times \text{size}$$
+                    </li>
+                    <li><strong>Sparse Matrix Triplet Storage:</strong> Represented as an $K \times 3$ matrix array where $K$ is the number of non-zero elements. Row 0 stores matrix metadata: `[Total Rows, Total Columns, Total Non-Zero Elements]`. Each subsequent row explicitly stores a data element's coordinates: `[Row_Index, Column_Index, Value]`.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Operational Complexity Profiles</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Operation</th><th>Time Complexity (Best Case)</th><th>Time Complexity (Worst Case)</th><th>Space Complexity</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Random Access Lookup via Index</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(1)$</td></tr>
+                            <tr><td>Linear Search</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(N)$</td><td>$\mathcal{O}(1)$</td></tr>
+                            <tr><td>Binary Search (Sorted Array)</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(\log N)$</td><td>$\mathcal{O}(1)$</td></tr>
+                            <tr><td>Insertion / Deletion at the End</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(1)$ (Static) / $\mathcal{O}(N)$ (Dynamic resizing)</td><td>$\mathcal{O}(1)$</td></tr>
+                            <tr><td>Insertion / Deletion in Middle or Head</td><td>$\mathcal{O}(1)$ (at tail)</td><td>$\mathcal{O}(N)$ (requires shifting elements)</td><td>$\mathcal{O}(1)$</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Engineering Trade-offs & Comparisons</div>
+                <ul>
+                    <li><strong>Advantages:</strong> Instantaneous $O(1)$ index access; excellent **cache locality** and high hardware cache hit ratios due to sequential memory locations.</li>
+                    <li><strong>Disadvantages:</strong> Fixed sizes can result in wasted space or out-of-memory errors; inserting and deleting elements introduces performance overhead because items must be shifted in memory to close or create gaps.</li>
+                    <li><strong>Comparison with Linked Lists:</strong> Arrays provide fast $O(1)$ random lookups compared to the slower $O(N)$ sequential lookups in linked lists. However, linked lists offer flexible, true $O(1)$ local insertions and deletions without needing to move adjacent data.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Core Structural Applications</div>
+                <ul>
+                    <li>Primary building block for Hash Tables, Binary Heaps, and matrices.</li>
+                    <li>Used to implement lookup tables, CPU registers, and string operations.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Common Exam Traps & Pitfalls:</strong>
+                    <ul>
+                        <li><strong>Index Offset Shifting:</strong> Always check whether the problem states the array is 0-indexed or 1-indexed. Forgetting to subtract 1 from indices in 1-indexed problems will lead to incorrect address calculations.</li>
+                        <li><strong>Incorrect Dimension Multipliers:</strong> When calculating addresses in Row-Major Order, always multiply the row offset by the total number of **columns** ($N$), not the total number of rows.</li>
+                        <li><strong>Dynamic Expansion Bounds:</strong> Remember that a dynamic array's worst-case insertion time is $\mathcal{O}(N)$ when resizing occurs, but its **amortized** insertion time remains a constant $\mathcal{O}(1)$.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-linkedlists">
+            <div class="card-header-row">
+                <h2>2. Linked Lists (Singly, Doubly, Circular)</h2>
+                <button class="action-button" id="btn-linkedlists" onclick="toggleTopicState('linkedlists')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Type: <strong>Dynamic Linear DS</strong></div>
+                <div class="summary-badge">Memory: <strong>Non-Contiguous (Heap)</strong></div>
+                <div class="summary-badge">Random Access: <strong>O(n)</strong></div>
+                <div class="summary-badge">Insert at Head: <strong>O(1)</strong></div>
+                <div class="summary-badge">Pointer Overhead: <strong>High</strong></div>
+                <div class="summary-badge">Cache Hit: <strong>Poor Locality</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Definition & Structural Layouts</div>
+                <ul>
+                    <li><strong>Linked List Definition:</strong> A dynamic linear data structure where elements are stored in separate node objects. Their logical order is maintained by explicit pointer references rather than physical proximity in memory.</li>
+                    <li><strong>Singly Linked List Node:</strong> Composed of an element data field and a single address pointer (`next`) targeting the following node. The last node's pointer targets `NULL`.</li>
+                    <li><strong>Doubly Linked List Node:</strong> Composed of an element data field and two tracking pointers: `next` (targeting the subsequent node) and `prev` (targeting the preceding node). This allows full bidirectional traversal.</li>
+                    <li><strong>Circular Linked List Node:</strong> A variation where the last node's `next` pointer points back to the `head` node instead of terminating at `NULL`, closing the structure into a continuous loop.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Memory Allocation & Cache Behavior</div>
+                <ul>
+                    <li><strong>Heap Allocation:</strong> Individual node allocations are processed dynamically using heap managers (like `malloc` or `new`). Nodes can be scattered across non-contiguous physical addresses.</li>
+                    <li><strong>Cache Line Misses:</strong> Because nodes are stored in non-contiguous locations, traversing a linked list frequently causes cache misses, making it less performant than an array for raw sequential processing.</li>
+                    <li><strong>Memory Overhead:</strong> Requires extra memory to store pointers alongside data fields. On standard 64-bit architectures, each pointer introduces an 8-byte tracking overhead.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Operational Complexity Profiles</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Operation Type</th><th>Singly Linked List</th><th>Doubly Linked List</th><th>Circular (with Tail Pointer)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Insert / Delete at Head</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(1)$</td></tr>
+                            <tr><td>Insert / Delete at Tail</td><td>$\mathcal{O}(N)$ (without tail) / $\mathcal{O}(1)$</td><td>$\mathcal{O}(1)$ (with tail pointer)</td><td>$\mathcal{O}(1)$</td></tr>
+                            <tr><td>Search / Random Index Access</td><td>$\mathcal{O}(N)$</td><td>$\mathcal{O}(N)$</td><td>$\mathcal{O}(N)$</td></tr>
+                            <tr><td>Insert After a Given Node</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(1)$</td></tr>
+                            <tr><td>Delete a Given Node Object</td><td>$\mathcal{O}(N)$ (requires finding prev)</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(N)$</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Engineering Trade-offs & Comparisons</div>
+                <ul>
+                    <li><strong>Advantages:</strong> Dynamic resizing at runtime; elements can be inserted or deleted locally in $\mathcal{O}(1)$ time without needing to shift data in memory.</li>
+                    <li><strong>Disadvantages:</strong> Does not support random access; searching requires sequential traversals; added pointer storage overhead.</li>
+                    <li><strong>Singly vs. Doubly Lists:</strong> Doubly linked lists allow you to delete a given node in true $\mathcal{O}(1)$ time because the node already contains a link to its predecessor. Singly linked lists require an $\mathcal{O}(N)$ search to find the preceding node before updating references.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Common Exam Traps & Pitfalls:</strong>
+                    <ul>
+                        <li><strong>Orphaned Pointer Subtrees:</strong> Always update link pointers in the correct order. For example, when inserting node `X` after node `P` in a singly linked list, you must set `X->next = P->next` **before** updating `P->next = X`. Reversing this order will orphan the rest of the list.</li>
+                        <li><strong>Circular Traversal Infinity:</strong> When looping through a circular list, terminating loops with conditions like `while(curr != NULL)` will cause an infinite loop. Instead, terminate the loop when the tracker returns to the starting node: `while(curr != head)`.</li>
+                        <li><strong>Tail Deletion in Singly Lists:</strong> Even if a singly linked list maintains an explicit `tail` pointer, deleting the last node still takes $\mathcal{O}(N)$ time. This is because you must traverse the list from the head to find the second-to-last node and update its `next` pointer to `NULL`.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-stacks">
+            <div class="card-header-row">
+                <h2>3. Stack & Expression Mechanics</h2>
+                <button class="action-button" id="btn-stacks" onclick="toggleTopicState('stacks')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Type: <strong>Restricted Linear DS</strong></div>
+                <div class="summary-badge">Protocol: <strong>LIFO (Last In First Out)</strong></div>
+                <div class="summary-badge">Core Operations: <strong>Push / Pop / Peek</strong></div>
+                <div class="summary-badge">Operation Complexity: <strong>O(1) Strict</strong></div>
+                <div class="summary-badge">Infix to Postfix: <strong>1 Left-to-Right Scan</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Definition & Structural Constraints</div>
+                <ul>
+                    <li><strong>Stack Definition:</strong> A restricted linear data structure that follows the **Last-In, First-Out (LIFO)** access protocol. Elements can only be added or removed from a single end called the **Top**.</li>
+                    <li><strong>Array Implementation:</strong> Uses a fixed-size array along with a scalar tracking variable, `top`. An index check for `top == Capacity - 1` signals a **Stack Overflow** condition, while `top == -1` signals a **Stack Underflow** condition.</li>
+                    <li><strong>Linked List Implementation:</strong> Uses a singly linked list where insertions and deletions happen exclusively at the `head` node. This approach avoids stack overflows since memory is allocated dynamically on the heap.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Core Operations & Variations</div>
+                <ul>
+                    <li><strong>Push:</strong> Adds an element to the top of the stack. Takes $\mathcal{O}(1)$ time.</li>
+                    <li><strong>Pop:</strong> Removes and returns the top element from the stack. Takes $\mathcal{O}(1)$ time.</li>
+                    <li><strong>Peek/Top:</strong> Returns the top element without removing it. Takes $\mathcal{O}(1)$ time.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Expression Parsing Frameworks (Infix, Postfix, Prefix)</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Expression Type</th><th>Operator Placement Diagram</th><th>Evaluation Scan Direction</th><th>Operator Precedence Stack Rules</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Infix</strong></td><td><code>A + B</code> (Standard human notation)</td><td>N/A (Requires operator precedence rules)</td><td>Operators are pushed to the stack based on priority rules.</td></tr>
+                            <tr><td><strong>Postfix (RPN)</strong></td><td><code>A B +</code> (Optimal compiler execution)</td><td>Left-to-Right Scan</td><td>Operators process the top two items on the stack. No brackets needed.</td></tr>
+                            <tr><td><strong>Prefix</strong></td><td><code>+ A B</code> (LISP structural notation)</td><td>Right-to-Left Scan</td><td>Operators process the top two items on the stack. No brackets needed.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Comprehensive Algorithmic Conversions</div>
+                <ul>
+                    <li><strong>Infix to Postfix Algorithm (Shunting-yard):</strong>
+                        <ol>
+                            <li>Scan the infix string from **Left to Right**.</li>
+                            <li>If the scanned character is an **operand**, append it immediately to the output string.</li>
+                            <li>If the character is an **open parenthesis `(`**, push it directly onto the operator stack.</li>
+                            <li>If the character is a **closing parenthesis `)`**, pop elements off the stack and append them to the output string until an open parenthesis `(` is encountered. Pop and discard the open parenthesis.</li>
+                            <li>If an **operator** is encountered, pop operators off the stack and append them to the output string if they have **greater than or equal precedence** to the current operator. Then, push the current operator onto the stack.</li>
+                        </ol>
+                    </li>
+                    <li><strong>Operator Associativity Exception:</strong> When dealing with the right-associative exponentiation operator (`^`), a incoming `^` does **not** pop an existing `^` off the stack, because right-associative operators evaluate from right to left.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Core Structural Applications</div>
+                <ul>
+                    <li>Managing function calls and activation records on the runtime stack frame.</li>
+                    <li>Implementing undo/redo histories, browser navigation history, and matching brackets/parentheses in compilers.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Common Exam Traps & Pitfalls:</strong>
+                    <ul>
+                        <li><strong>Operand Order in Postfix Evaluation:</strong> When evaluating a postfix expression, popping an operator means the first item popped is the **right operand** and the second item popped is the **left operand**. For example, for the sequence `A B -`, popping `B` then `A` must be evaluated as `A - B`, not `B - A`. This distinction is crucial for non-commutative operators like subtraction and division.</li>
+                        <li><strong>Permutation Generation Limits:</strong> A common exam question asks if a given sequence can be generated by a stack. For an input sequence $1, 2, 3 \dots N$, a output permutation $p_1, p_2 \dots p_n$ is **impossible** if there exist indices where $i < j < k$ such that $p_k < p_i < p_j$.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-queues">
+            <div class="card-header-row">
+                <h2>4. Queues (Circular, Priority Queue, Deque)</h2>
+                <button class="action-button" id="btn-queues" onclick="toggleTopicState('queues')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Protocol: <strong>FIFO (First In First Out)</strong></div>
+                <div class="summary-badge">Pointers: <strong>Front (Delete) / Rear (Insert)</strong></div>
+                <div class="summary-badge">Circular Condition: <strong>(Rear + 1) % Cap == Front</strong></div>
+                <div class="summary-badge">Priority Queue: <strong>O(log n) Heap Bounds</strong></div>
+                <div class="summary-badge">Deque: <strong>Double-Ended Access</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Definition & Structural Implementations</div>
+                <ul>
+                    <li><strong>Queue Definition:</strong> A restricted linear data structure that follows the **First-In, First-Out (FIFO)** operational protocol. Elements are added at one end, called the **Rear** (Enqueue), and removed from the opposite end, called the **Front** (Dequeue).</li>
+                    <li><strong>Linear Array Queue Limitations:</strong> In a basic linear array layout, deleting items advances the `front` pointer forward. This space cannot be reused without shifting elements, which can cause false overflow errors where space is available but the `rear` pointer has reached the end of the array.</li>
+                    <li><strong>Circular Queue Architecture:</strong> Solves linear array limitations by wrapping indices back to the beginning of the array using modulo arithmetic:
+                        <br><code>Rear = (Rear + 1) % Capacity</code>
+                        <br><code>Front = (Front + 1) % Capacity</code>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Advanced Structural Variations</div>
+                <ul>
+                    <li><strong>Deque (Double-Ended Queue):</strong> A flexible queue variant that supports insertions and deletions at both the Front and Rear boundaries.
+                        <ul>
+                            <li><strong>Input-Restricted Deque:</strong> Insertions are restricted to the rear, but deletions can be performed at both ends.</li>
+                            <li><strong>Output-Restricted Deque:</strong> Deletions are restricted to the front, but insertions can be performed at both ends.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Priority Queue:</strong> Elements are assigned priority values, and items with higher priorities are served before lower priority items. Arrival order is ignored if priorities differ. This structure is most efficiently implemented using a **Binary Heap**.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Operational Complexity Profiles</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Queue Model Type</th><th>Enqueue Operation</th><th>Dequeue Operation</th><th>Space Complexity Overhead</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Standard Linear / Circular Queue</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(N)$</td></tr>
+                            <tr><td>Priority Queue (Binary Heap variant)</td><td>$\mathcal{O}(\log N)$</td><td>$\mathcal{O}(\log N)$</td><td>$\mathcal{O}(N)$</td></tr>
+                            <tr><td>Deque (Double-Ended Layout)</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(1)$</td><td>$\mathcal{O}(N)$</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Core Structural Applications</div>
+                <ul>
+                    <li>Asynchronous data buffering for IO pipelines (such as print spools or disk writing buffers).</li>
+                    <li>Operating system CPU task scheduling queues (like Round-Robin queues) and network packet buffering.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Common Exam Traps & Pitfalls:</strong>
+                    <ul>
+                        <li><strong>Circular Full vs Empty Confusion:</strong> In a standard circular queue implementation, the conditions for an empty queue and a full queue both result in `Front == Rear`. To fix this, look at how the problem resolves the conflict: either it leaves one slot empty to flag a full queue using `(Rear + 1) % Capacity == Front`, or it tracks status using an explicit counter variable.</li>
+                        <li><strong>Stack-to-Queue Transformation Costs:</strong> Implementing a queue using two stacks requires transferring elements between them. While individual operations can take $\mathcal{O}(N)$ time in the worst case during a transfer, the **amortized** time complexity for each operation over a series of actions remains a highly efficient $\mathcal{O}(1)$.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-trees">
+            <div class="card-header-row">
+                <h2>5. Trees (Binary Tree, BST, AVL, Heap, Threaded)</h2>
+                <button class="action-button" id="btn-trees" onclick="toggleTopicState('trees')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Type: <strong>Hierarchical Non-Linear DS</strong></div>
+                <div class="summary-badge">BST Inorder: <strong>Always Sorted</strong></div>
+                <div class="summary-badge">AVL Balance Factor: <strong>{-1, 0, +1} Strict</strong></div>
+                <div class="summary-badge">Max-Heap Root: <strong>Maximum Element</strong></div>
+                <div class="summary-badge">Threaded Tree: <strong>No Null Pointers</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Comprehensive Tree Classifications</div>
+                <ul>
+                    <li><strong>General Binary Tree:</strong> A hierarchical structure where each node can have at most two children, designated as the left child and the right child.</li>
+                    <li><strong>Binary Search Tree (BST):</strong> Enforces an ordering property where for any given node, all keys in its left subtree must be strictly less than the node's key, and all keys in its right subtree must be strictly greater than the node's key.</li>
+                    <li><strong>AVL Tree:</strong> A self-balancing Binary Search Tree where the height difference between the left and right subtrees (the **Balance Factor**) of any node cannot exceed $\pm 1$.
+                        $$\text{Balance Factor} = \text{Height}(\text{Left Subtree}) - \text{Height}(\text{Right Subtree}) \in \{-1, 0, 1\}$$
+                    </li>
+                    <li><strong>Binary Heap:</strong> A complete binary tree that satisfies the heap property:
+                        <ul>
+                            <li>*Max-Heap:* Every parent node's key is greater than or equal to the keys of its children. The absolute maximum element is always at the root.</li>
+                            <li>*Min-Heap:* Every parent node's key is less than or equal to the keys of its children. The absolute minimum element is always at the root.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Threaded Binary Tree:</strong> Replaces unused `NULL` pointers with structural threads. In an inorder threaded tree, a left `NULL` pointer is replaced with a thread pointing to the node's **inorder predecessor**, and a right `NULL` pointer is replaced with a thread pointing to its **inorder successor**. This allows tree traversals without using a stack or recursion.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Memory Allocation Frameworks</div>
+                <ul>
+                    <li><strong>Linked Representation:</strong> Each node is allocated dynamically as an object containing data along with `left_child` and `right_child` address pointers.</li>
+                    <li><strong>Sequential Array Representation (Heaps):</strong> Perfect for Complete Binary Trees. Elements are mapped directly to flat array positions without using pointers:
+                        <ul>
+                            <li>Parent of node at index $i$ is located at index: $\lfloor \frac{i-1}{2} \rfloor$</li>
+                            <li>Left child of node at index $i$ is located at index: $2i + 1$</li>
+                            <li>Right child of node at index $i$ is located at index: $2i + 2$</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Operational Complexity Profiles</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Tree Model Type</th><th>Search Traversal</th><th>Insertion Complexity</th><th>Deletion Complexity</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Standard Skewed BST</td><td>$\mathcal{O}(N)$</td><td>$\mathcal{O}(N)$</td><td>$\mathcal{O}(N)$</td></tr>
+                            <tr><td>Balanced AVL Tree</td><td>$\mathcal{O}(\log N)$</td><td>$\mathcal{O}(\log N)$</td><td>$\mathcal{O}(\log N)$</td></tr>
+                            <tr><td>Binary Heap Structure</td><td>$\mathcal{O}(N)$ (requires linear scan)</td><td>$\mathcal{O}(\log N)$ (Up-Heapify)</td><td>$\mathcal{O}(\log N)$ (Extract root via Down-Heapify)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Essential Mathematical Axioms</div>
+                <ul>
+                    <li><strong>Handshaking Lemma variant for Binary Trees:</strong> If a binary tree has $n_0$ leaf nodes and $n_2$ nodes with exactly two children, then:
+                        $$n_0 = n_2 + 1$$
+                    </li>
+                    <li><strong>Strict Catalan Combinations:</strong> The total number of unique structural binary tree shapes that can be formed using $N$ distinct keys is given by the $N^{\text{th}}$ Catalan number:
+                        $$T(N) = \frac{1}{N+1} \binom{2N}{N}$$
+                    </li>
+                    <li><strong>Heap Construction Limits:</strong> Building a binary heap from an arbitrary array of $N$ elements using the bottom-up `Build-Heap` method takes $\mathcal{O}(N)$ time, which is more efficient than inserting elements one by one ($\mathcal{O}(N \log N)$).</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Common Exam Traps & Pitfalls:</strong>
+                    <ul>
+                        <li><strong>Unique Reconstruction Constraints:</strong> You cannot reconstruct a unique binary tree using only its **Preorder** and **Postorder** traversals unless the tree is guaranteed to be a Full Binary Tree (where every node has either 0 or 2 children). To uniquely reconstruct any standard binary tree, you must have the **Inorder** traversal along with either the Preorder or Postorder traversal.</li>
+                        <li><strong>BST Deletion Successor Swap:</strong> When deleting a node with two children from a BST, you swap its value with either its inorder predecessor or its inorder successor. Remember that this replacement node will **always** have at most one child, making its subsequent removal from its original position straightforward.</li>
+                        <li><strong>AVL Rotation Target Identification:</strong> When an insertion unbalances an AVL tree, look for the **deepest** node whose balance factor becomes invalid ($\pm 2$). Rotations must be applied to this specific node to restore balance across the tree.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-graphs">
+            <div class="card-header-row">
+                <h2>6. Graphs (Representation, BFS, DFS, Connected Components, Articulation Points)</h2>
+                <button class="action-button" id="btn-graphs" onclick="toggleTopicState('graphs')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Type: <strong>Non-Linear Network DS</strong></div>
+                <div class="summary-badge">BFS Structure: <strong>Queue Queue</strong></div>
+                <div class="summary-badge">DFS Structure: <strong>Stack / Recursion</strong></div>
+                <div class="summary-badge">Traversal Complexity: <strong>O(V + E)</strong></div>
+                <div class="summary-badge">Matrix Space: <strong>O(V²)</strong></div>
+                <div class="summary-badge">List Space: <strong>O(V + E)</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Definition & Structural Layouts</div>
+                <ul>
+                    <li><strong>Graph Definition:</strong> A non-linear data structure consisting of a finite set of Vertices ($V$) along with a set of Edges ($E$) that connect pairs of vertices. Directed graphs have edges with specific directions, while undirected graphs have bidirectional connections.</li>
+                    <li><strong>Adjacency Matrix Representation:</strong> A 2D array of size $V \times V$ where `Matrix[i][j] = 1` indicates an edge from vertex $i$ to vertex $j$.
+                        <ul>
+                            <li>*Space Complexity Overhead:* $\mathcal{O}(V^2)$, regardless of the number of edges. Excellent for **dense graphs** ($E \approx V^2$).</li>
+                            <li>*Edge Verification:* Checking if an edge exists between two vertices takes constant $\mathcal{O}(1)$ time.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Adjacency List Representation:</strong> An array of size $V$ where each entry points to a linked list containing all neighboring vertices.
+                        <ul>
+                            <li>*Space Complexity Overhead:* $\mathcal{O}(V + E)$ for directed graphs, and $\mathcal{O}(V + 2E)$ for undirected graphs. Ideal for **sparse graphs** ($E \ll V^2$).</li>
+                            <li>*Edge Verification:* Checking if an edge exists requires traversing a vertex's neighbor list, taking $\mathcal{O}(\text{degree}(V))$ time.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Core Traversal Algorithmic Pipelines</div>
+                <ul>
+                    <li><strong>Breadth-First Search (BFS):</strong> Explores the graph level by level, radiating outward from a starting vertex.
+                        <ul>
+                            <li>*Tracking Structure:* Uses an explicit **Queue** along with an array to track visited vertices.</li>
+                            <li>*Application:* Finds the shortest path between two vertices in an unweighted graph.</li>
+                            <li>*Time Complexity:* $\mathcal{O}(V + E)$ when using adjacency lists, and $\mathcal{O}(V^2)$ when using adjacency matrices.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Depth-First Search (DFS):</strong> Explores as deep as possible along each branch before backtracking to explore alternative paths.
+                        <ul>
+                            <li>*Tracking Structure:* Uses the system call stack or an explicit **Stack** structure along with a visited array.</li>
+                            <li>*Edge Classifications:* Categorizes graph edges into Tree Edges, Back Edges, Forward Edges, and Cross Edges.</li>
+                            <li>*Time Complexity:* $\mathcal{O}(V + E)$ when using adjacency lists.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Advanced Property Algorithms</div>
+                <ul>
+                    <li><strong>Connected Components:</strong> Maximal subgraphs in an undirected graph where a path exists between any pair of vertices. The total count of connected components can be found by tracking how many times a full BFS or DFS traversal must be restarted to visit every vertex.</li>
+                    <li><strong>Articulation Point Definition:</strong> A vertex in a connected undirected graph whose removal (along with its connected edges) disconnects the graph, increasing the total number of connected components.</li>
+                    <li><strong>Tarjan's Articulation Point Discovery:</strong> Uses a single DFS pass to track two values for each vertex: `discovery_time[u]` (when the vertex was first visited) and `low_link[u]` (the lowest discovery time reachable from $u$ using at most one back edge). A vertex $u$ is an articulation point if:
+                        <ol>
+                            <li>It is the root of the DFS tree and has **two or more independent children**.</li>
+                            <li>It is not the root of the DFS tree and has a child $v$ such that: `low_link[v] >= discovery_time[u]`.</li>
+                        </ol>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Common Exam Traps & Pitfalls:</strong>
+                    <ul>
+                        <li><strong>Adjacency Matrix Symmetry:</strong> The adjacency matrix of an undirected graph is always symmetric across its main diagonal. For a graph with no self-loops, the diagonal elements are all 0, and the total number of edges in the graph equals the number of 1s in the matrix divided by 2.</li>
+                        <li><strong>Cycle Detection Criteria:</strong> In an undirected graph, finding a **Back Edge** during a DFS traversal indicates the presence of a cycle. However, in a directed graph, finding a cross edge or forward edge does not guarantee a cycle; a cycle is confirmed if and only if a back edge targets a vertex that is currently active on the DFS recursion stack.</li>
+                        <li><strong>DFS Tree Root Articulation:</strong> When evaluating whether the root of a DFS tree is an articulation point, do not simply count its total connections (degree) in the graph. The root is an articulation point if and only if it has **two or more distinct child branches in the generated DFS tree layout**, meaning the traversal had to backtrack completely to the root before it could explore the second child.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-hashing">
+            <div class="card-header-row">
+                <h2>7. Hashing Techniques</h2>
+                <button class="action-button" id="btn-hashing" onclick="toggleTopicState('hashing')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Average Search: <strong>O(1) Strict</strong></div>
+                <div class="summary-badge">Worst-Case Search: <strong>O(n) Degenerate</strong></div>
+                <div class="summary-badge">Chaining: <strong>Open List Array Links</strong></div>
+                <div class="summary-badge">Linear Probing: <strong>Primary Clustering Trap</strong></div>
+                <div class="summary-badge">Double Hashing: <strong>Step Size = h2(k)</strong></div>
+                <div class="summary-badge">Load Factor (λ): <strong>Elements / Capacity</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Definition & Core Mechanics</div>
+                <ul>
+                    <li><strong>Hashing Definition:</strong> A technique that maps variable-sized keys to fixed-size indices in an array (a Hash Table) using a mathematical **Hash Function**. This provides highly efficient, near-$O(1)$ average-case performance for lookups, insertions, and deletions.</li>
+                    <li><strong>Load Factor ($\lambda$):</strong> The ratio of the number of stored elements ($N$) to the total capacity of the hash table ($M$):
+                        $$\lambda = \frac{N}{M}$$
+                    </li>
+                    <li><strong>Hash Functions:</strong> Good hash functions should uniformally distribute keys across the table to minimize collisions. Common methods include:
+                        <ul>
+                            <li>*Division Method:* `h(k) = k % M`, where choosing a prime number for $M$ helps reduce collisions.</li>
+                            <li>*Multiplication Method:* `h(k) = floor(M * ( (k * A) % 1 ))`, where $A$ is a constant fractional value.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Collision Resolution Frameworks</div>
+                <ul>
+                    <li><strong>Chaining (Separate Chaining / Open Enlistment):</strong> The hash table is structured as an array of pointers, where each slot links to an independent linked list containing all keys that map to the same index.
+                        <br>The average time to perform a successful search is bounded by the load factor: $\mathcal{O}(1 + \lambda)$.
+                    </li>
+                    <li><strong>Open Addressing (Closed Hashing):</strong> All elements are stored directly within the hash table array itself. If a target slot is already occupied, the algorithm searches for an alternative open slot based on a probing strategy:
+                        <ul>
+                            <li><strong>Linear Probing:</strong> Checks sequential slots one by one: `h(k, i) = (h'(k) + i) % M`. This simple approach can cause keys to bunch together, creating large blocks of occupied slots known as **Primary Clustering**, which degrades search efficiency.</li>
+                            <li><strong>Quadratic Probing:</strong> Checks alternative slots using a quadratic offset: `h(k, i) = (h'(k) + c1*i + c2*i^2) % M`. This prevents primary clustering but can lead to **Secondary Clustering**, where keys with the same initial hash value follow the exact same probe sequence.</li>
+                            <li><strong>Double Hashing:</strong> Uses a second independent hash function to calculate a custom step size for each key: `h(k, i) = (h1(k) + i * h2(k)) % M`. This effectively eliminates both primary and secondary clustering. The value returned by $h_2(k)$ must be relatively prime to the table size $M$ to ensure the probe sequence can check every slot in the table.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Rehashing:</strong> When the table's load factor exceeds a set limit (typically $\lambda > 0.75$), performance drops. The table size is doubled to the next nearest prime number, and all existing keys are re-mapped using an updated hash function.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Operational Complexity Profiles</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Collision Handling Model</th><th>Search Lookup (Average Case)</th><th>Search Lookup (Worst Case)</th><th>Space Overhead Profile</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Separate Chaining</td><td>$\mathcal{O}(1 + \lambda)$</td><td>$\mathcal{O}(N)$ (when all keys collide into one list)</td><td>Requires extra memory for node pointers.</td></tr>
+                            <tr><td>Open Addressing Layout</td><td>$\mathcal{O}\left(\frac{1}{1-\lambda}\right)$</td><td>$\mathcal{O}(M)$ (when the table is nearly full)</td><td>Stored entirely within the main table array.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Common Exam Traps & Pitfalls:</strong>
+                    <ul>
+                        <li><strong>The Open Addressing Deletion Error:</strong> In an open addressing hash table, you cannot simply delete an element by clearing its slot to `NULL`. If you do, subsequent search operations for other keys that collided past that slot will stop early and incorrectly report that the key does not exist. To prevent this, slots must be marked with a special placeholder flag (such as `Deleted` or `Dummy Node`) to tell the search algorithm to keep probing.</li>
+                        <li><strong>Double Hashing Step Size Rule:</strong> For double hashing to work correctly, the second hash function $h_2(k)$ must never return a value of `0`. A step size of 0 would trap the algorithm in an infinite loop on the very first collision.</li>
+                        <li><strong>Unsorted Hash Constraint:</strong> Always remember that while hashing offers fast average-case lookups, it does not maintain elements in any sorted order. Operations like finding the minimum element, maximum element, or printing keys in sorted order require a full scan of the table, taking $\mathcal{O}(M + N)$ time.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Topic Registration System
+        const topicsRegistry = [
+            { id: "arrays" },
+            { id: "linkedlists" },
+            { id: "stacks" },
+            { id: "queues" },
+            { id: "trees" },
+            { id: "graphs" },
+            { id: "hashing" }
+        ];
+
+        // Smooth Scroll Controller
+        function scrollToCard(targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize App State from Local Storage
+        function initAppTracker() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_ds_dashboard_ultimate_progress')) || {};
+            
+            topicsRegistry.forEach(topic => {
+                const status = !!userProgress[topic.id];
+                
+                // Sync Sidebar Checkboxes
+                const chk = document.getElementById(`nav-chk-${topic.id}`);
+                if (chk) chk.checked = status;
+
+                // Sync Content Card Action Buttons
+                const btn = document.getElementById(`btn-${topic.id}`);
+                if (btn) {
+                    if (status) {
+                        btn.innerText = "✓ Mastered";
+                        btn.classList.add('completed');
+                    } else {
+                        btn.innerText = "Mark Mastered";
+                        btn.classList.remove('completed');
+                    }
+                }
+            });
+            evaluateMetrics();
+        }
+
+        // Update Progress State
+        function updateProgressState(id, statusValue) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_ds_dashboard_ultimate_progress')) || {};
+            userProgress[id] = statusValue;
+            localStorage.setItem('gate_ds_dashboard_ultimate_progress', JSON.stringify(userProgress));
+
+            const chk = document.getElementById(`nav-chk-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (chk) chk.checked = statusValue;
+            if (btn) {
+                if (statusValue) {
+                    btn.innerText = "✓ Mastered";
+                    btn.classList.add('completed');
+                } else {
+                    btn.innerText = "Mark Mastered";
+                    btn.classList.remove('completed');
+                }
+            }
+
+            evaluateMetrics();
+        }
+
+        function toggleTopicState(id) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_ds_dashboard_ultimate_progress')) || {};
+            updateProgressState(id, !userProgress[id]);
+        }
+
+        function syncCheckbox(id) {
+            const chk = document.getElementById(`nav-chk-${id}`);
+            if (chk) updateProgressState(id, chk.checked);
+        }
+
+        // Calculate and Render Metrics
+        function evaluateMetrics() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_ds_dashboard_ultimate_progress')) || {};
+            let matchCounter = 0;
+
+            topicsRegistry.forEach(topic => {
+                if (userProgress[topic.id] === true) matchCounter++;
+            });
+
+            const ratioFactor = topicsRegistry.length > 0 ? Math.round((matchCounter / topicsRegistry.length) * 100) : 0;
+            document.getElementById('metric-fill').style.width = ratioFactor + '%';
+            document.getElementById('metric-text').innerText = `${matchCounter}/${topicsRegistry.length} Mastered (${ratioFactor}%)`;
+        }
+
+        window.onload = initAppTracker;
+    </script>
+</body>
+</html>

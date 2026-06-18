@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE & IT — Enterprise Information Systems Specification</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #059669;
+            --brand-accent: #ecfdf5;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* Split-Pane Control Interface */
+        #app-sidebar {
+            width: 330px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 330px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1180px;
+            width: calc(100% - 330px);
+        }
+
+        /* Sidebar Panels */
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #a7f3d0; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #047857; letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #cbd5e1; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #047857; width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        /* Document Architecture Layouts */
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        .summary-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; background: var(--bg-workspace); padding: 1rem; border-radius: var(--radius-interactive); border: 1px solid var(--border-color); }
+        .summary-badge { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-bold); font-weight: 500; }
+        .summary-badge strong { color: #059669; }
+
+        .grid-block { margin-bottom: 2rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: #059669; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 0.75rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); }
+        th, td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        .alert-box ul { margin-left: 1.25rem; }
+        .alert-box li { color: #7f1d1d; }
+
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>EIS Core Engine</h2>
+            <p>Enterprise Information Systems</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Architecture Mastery</div>
+            <div class="metric-value" id="metric-text">0/5 Modules Mastered</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Management Hierarchy</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-pyramid')"><span>1. Organizational Pyramid</span><input type="checkbox" class="nav-checkbox" id="nav-chk-pyramid" onclick="event.stopPropagation(); syncCheckbox('pyramid')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-tps-mis')"><span>2. TPS & MIS Deep-Dive</span><input type="checkbox" class="nav-checkbox" id="nav-chk-tps-mis" onclick="event.stopPropagation(); syncCheckbox('tps-mis')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-dss-ess')"><span>3. DSS & ESS Frameworks</span><input type="checkbox" class="nav-checkbox" id="nav-chk-dss-ess" onclick="event.stopPropagation(); syncCheckbox('dss-ess')"></div></li>
+            
+            <div class="nav-heading">Enterprise Platforms</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-erp')"><span>4. ERP Systems Infrastructure</span><input type="checkbox" class="nav-checkbox" id="nav-chk-erp" onclick="event.stopPropagation(); syncCheckbox('erp')"></div></li>
+            
+            <div class="nav-heading">Value Chain & Assets</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-crm-scm-kms')"><span>5. CRM, SCM & KMS Engines</span><input type="checkbox" class="nav-checkbox" id="nav-chk-crm-scm-kms" onclick="event.stopPropagation(); syncCheckbox('crm-scm-kms')"></div></li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>Enterprise Information Systems (EIS) Specification</h1>
+            <p>Hierarchical data engines, relational transaction systems, prescriptive analytics models, and cross-functional value chains.</p>
+        </header>
+
+        <section class="content-card" id="sec-pyramid">
+            <div class="card-header-row">
+                <h2>1. The Four-Tier Management Hierarchy</h2>
+                <button class="action-button" id="btn-pyramid" onclick="toggleTopicState('pyramid')">Mark Mastered</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Hierarchical Functional Distribution</div>
+                <p>Enterprise data systems scale across an organizational pyramid, mapping information abstraction levels to management responsibilities:</p>
+                
+                
+
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>System Class</th><th>Management Tier</th><th>Data Input Characteristics</th><th>Decision Structure Type</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>ESS</strong></td><td>Strategic / Senior Executive</td><td>Aggregated internal feeds + Unstructured external market trends</td><td>Highly Unstructured</td></tr>
+                            <tr><td><strong>DSS</strong></td><td>Tactical / Middle Management</td><td>High-volume operational data + Statistical modeling criteria</td><td>Semi-Structured</td></tr>
+                            <tr><td><strong>MIS</strong></td><td>Operational Management</td><td>Structured high-volume transactional summaries from base levels</td><td>Structured / Routine</td></tr>
+                            <tr><td><strong>TPS</strong></td><td>Operational / Clerical Base</td><td>Raw daily enterprise events, receipts, logs, and basic updates</td><td>Highly Structured</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-tps-mis">
+            <div class="card-header-row">
+                <h2>2. Transaction Processing (TPS) & Management Reporting (MIS)</h2>
+                <button class="action-button" id="btn-tps-mis" onclick="toggleTopicState('tps-mis')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">TPS Goal: <strong>ACID Boundary Integrity</strong></div>
+                <div class="summary-badge">Processing Modes: <strong>Batch Processing vs. Online Real-Time (OLTP)</strong></div>
+                <div class="summary-badge">MIS Goal: <strong>Exception & Scheduled Trend Summary Output</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Transaction Processing Systems (TPS) Engineering</div>
+                <p>TPS serves as the core data engine of the enterprise, capturing raw business data. It enforces the strict mathematical safety bounds of database transactions:</p>
+                <ul>
+                    <li><strong>Atomicity:</strong> All components of an operation commit successfully, or the entire transaction rollbacks completely.</li>
+                    <li><strong>Consistency:</strong> Database structural integrity constraints remain stable across changes.</li>
+                    <li><strong>Isolation:</strong> Concurrent transactions execute independently without bleeding state changes into each other.</li>
+                    <li><strong>Durability:</strong> Once committed, transaction records survive any subsequent system or hardware crashes.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Management Information Systems (MIS) Reporting</div>
+                <p>An MIS extracts information directly from underlying TPS databases, converting raw streams into structured summary views. Standard outputs include:</p>
+                <ul>
+                    <li><strong>Scheduled Reports:</strong> Pre-formatted, routine summaries delivered at fixed time intervals (e.g., monthly sales logs).</li>
+                    <li><strong>Exception Reports:</strong> Automated alerts triggered only when data values fall outside pre-configured operational boundaries (e.g., inventory drops below a safety threshold).</li>
+                    <li><strong>Ad-hoc/Drill-Down Queries:</strong> On-demand reports that let managers inspect specific data subsets when sudden patterns emerge.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-dss-ess">
+            <div class="card-header-row">
+                <h2>3. Decision Support (DSS) & Executive Information Systems (ESS)</h2>
+                <button class="action-button" id="btn-dss-ess" onclick="toggleTopicState('dss-ess')">Mark Mastered</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Decision Support Systems (DSS) Architecture</div>
+                <p>A DSS assists managers with semi-structured choices by running advanced analytic simulations on transactional data warehouses. It features three core subsystems:</p>
+                <ol>
+                    <li><strong>DSS Database:</strong> Aggregates historical corporate records alongside relevant market data.</li>
+                    <li><strong>DSS Model Base:</strong> A library of mathematical, statistical, and optimization formulas (e.g., linear regressions, forecasting models).</li>
+                    <li><strong>DSS User Interface:</strong> Interactive layout engines that allow users to run complex predictive scenarios easily.</li>
+                </ol>
+                <p><em>Analytical Modalities:</em> <strong>What-if Analysis</strong> (modifying variables to see how outcomes change) and <strong>Goal-Seeking Analysis</strong> (working backward from a target result to find the required input values).</p>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Executive Support Systems (ESS) Capabilities</div>
+                <ul>
+                    <li>Designed directly for senior executives to address unmapped, long-term strategic decisions.</li>
+                    <li>Aggregates crucial internal metrics with unstructured external feeds, including regulatory shifts, competitive filings, and global economic updates.</li>
+                    <li>Presents data through high-level dashboards featuring real-time <strong>Key Performance Indicators (KPIs)</strong> and seamless drill-down functionality into underlying business groups.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-erp">
+            <div class="card-header-row">
+                <h2>4. Enterprise Resource Planning (ERP) Platforms</h2>
+                <button class="action-button" id="btn-erp" onclick="toggleTopicState('erp')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Core Engine: <strong>Single Consolidated Master Database</strong></div>
+                <div class="summary-badge">Data Model: <strong>Cross-Department Information Sharing</strong></div>
+                <div class="summary-badge">Integration: <strong>Eliminates Fragmented Legacy Data Silos</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">ERP Cross-Functional Cohesion</div>
+                <p>An ERP system consolidates an enterprise's disparate department operations into a unified platform. It synchronizes accounting, human resources, manufacturing, and legal processes around a single shared database structure:</p>
+                
+                
+                
+                <ul>
+                    <li><strong>Real-Time Synchronization:</strong> Updates to a data record in one department (e.g., a completed customer invoice in Sales) immediately ripple through and update dependent ledger data in Finance and Inventory.</li>
+                    <li><strong>Business Process Re-engineering (BPR):</strong> Implementing an ERP platform typically requires rewriting legacy operational paths to match verified industry workflows embedded within the software.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-crm-scm-kms">
+            <div class="card-header-row">
+                <h2>5. Customer (CRM), Supply Chain (SCM), & Knowledge Management (KMS)</h2>
+                <button class="action-button" id="btn-crm-scm-kms" onclick="toggleTopicState('crm-scm-kms')">Mark Mastered</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Customer Relationship Management (CRM) Systems</div>
+                <p>CRM platforms track and optimize every point of contact with a customer across their entire lifecycle. The system divides capabilities into three core areas:</p>
+                <ul>
+                    <li><strong>Operational CRM:</strong> Automates standard front-office business tasks like sales tracking, marketing campaigns, and customer support ticket routing.</li>
+                    <li><strong>Analytical CRM:</strong> Analyzes raw customer data warehouses using data mining techniques to identify buying behaviors, calculate <strong>Customer Lifetime Value (CLV)</strong>, and accurately flag churn risk.</li>
+                    <li><strong>Collaborative CRM:</strong> Shares customer communication logs smoothly across internal teams, ensuring billing, shipping, and support stay aligned.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Supply Chain Management (SCM) Value Chains</div>
+                <p>SCM systems orchestrate the flow of raw materials, manufacturing stages, and distribution logistics across different companies. It balances two main processes:</p>
+                <ul>
+                    <li><strong>Supply Chain Planning:</strong> Generates highly accurate demand forecasts, optimizes resource allocation, and sets manufacturing timelines.</li>
+                    <li><strong>Supply Chain Execution:</strong> Tracks the physical movement of finished goods through warehouses and distribution networks.</li>
+                    <li><em>The Bullwhip Effect:</em> SCM systems prevent structural inventory issues by sharing real-time point-of-sale data upstream. This stops minor changes in retail demand from snowballing into massive, distorted demand spikes for raw material suppliers.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Knowledge Management Systems (KMS) Assets</div>
+                <p>KMS platforms capture, preserve, and distribute an enterprise's collective intellectual capital, managing two key asset types:</p>
+                <ul>
+                    <li><strong>Explicit Knowledge:</strong> Structured, clearly documented data that is easily digitized, indexed, and stored (e.g., standard operating procedures, technical manuals, codebase documentation).</li>
+                    <li><strong>Tacit Knowledge:</strong> Unstructured, highly specialized experiential insights, problem-solving techniques, and intuitions held individually by employees. KMS platforms capture this expertise through interactive knowledge bases, expert finders, and structured internal wikis.</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Interactive Dashboard Tracking Logic
+        const EIS_Registry = [
+            { id: "pyramid" },
+            { id: "tps-mis" },
+            { id: "dss-ess" },
+            { id: "erp" },
+            { id: "crm-scm-kms" }
+        ];
+
+        function scrollToCard(targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initAppTracker() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_eis_dashboard_progress')) || {};
+            
+            EIS_Registry.forEach(module => {
+                const status = !!userProgress[module.id];
+                
+                // Sync Checkboxes
+                const chk = document.getElementById(`nav-chk-${module.id}`);
+                if (chk) chk.checked = status;
+
+                // Sync Card Action Buttons
+                const btn = document.getElementById(`btn-${module.id}`);
+                if (btn) {
+                    if (status) {
+                        btn.innerText = "✓ Mastered";
+                        btn.classList.add('completed');
+                    } else {
+                        btn.innerText = "Mark Mastered";
+                        btn.classList.remove('completed');
+                    }
+                }
+            });
+            evaluateMetrics();
+        }
+
+        function updateProgressState(id, statusValue) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_eis_dashboard_progress')) || {};
+            userProgress[id] = statusValue;
+            localStorage.setItem('gate_eis_dashboard_progress', JSON.stringify(userProgress));
+
+            const chk = document.getElementById(`nav-chk-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (chk) chk.checked = statusValue;
+            if (btn) {
+                if (statusValue) {
+                    btn.innerText = "✓ Mastered";
+                    btn.classList.add('completed');
+                } else {
+                    btn.innerText = "Mark Mastered";
+                    btn.classList.remove('completed');
+                }
+            }
+            evaluateMetrics();
+        }
+
+        function toggleTopicState(id) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_eis_dashboard_progress')) || {};
+            updateProgressState(id, !userProgress[id]);
+        }
+
+        function syncCheckbox(id) {
+            const chk = document.getElementById(`nav-chk-${id}`);
+            if (chk) updateProgressState(id, chk.checked);
+        }
+
+        function evaluateMetrics() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_eis_dashboard_progress')) || {};
+            let matchCounter = 0;
+
+            EIS_Registry.forEach(module => {
+                if (userProgress[module.id] === true) matchCounter++;
+            });
+
+            const ratioFactor = EIS_Registry.length > 0 ? Math.round((matchCounter / EIS_Registry.length) * 100) : 0;
+            document.getElementById('metric-fill').style.width = ratioFactor + '%';
+            document.getElementById('metric-text').innerText = `${matchCounter}/${EIS_Registry.length} Modules Mastered (${ratioFactor}%)`;
+        }
+
+        window.onload = initAppTracker;
+    </script>
+</body>
+</html>

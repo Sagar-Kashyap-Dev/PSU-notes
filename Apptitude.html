@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>70-Day Priority Structured Sheet Tracker</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --sidebar-width: 340px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #112233, #1e3c72);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        header h1 {
+            font-size: 1.3rem;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            background-color: var(--card-bg);
+            border-right: 2px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 5;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            background-color: #e9ecef;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: bold;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        .topics-list {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .topic-row {
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.88rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            user-select: none;
+        }
+
+        .topic-row.heading-1 { 
+            background-color: #cbd5e1; 
+            font-weight: bold; 
+            font-size: 0.92rem;
+        }
+
+        .topic-row.heading-2 { 
+            background-color: #f1f5f9; 
+            font-weight: 600; 
+            padding-left: 25px;
+        }
+
+        .topic-row.item { 
+            padding-left: 45px; 
+            background-color: #ffffff; 
+        }
+
+        .counter-badge {
+            background-color: #e2e8f0;
+            color: #4a5568;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .grid-container {
+            flex: 1;
+            overflow: auto;
+            background-color: #fff;
+        }
+
+        .sheet-table {
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .grid-header-row {
+            height: 60px;
+            background-color: #e9ecef;
+        }
+
+        .date-cell {
+            width: 75px;
+            min-width: 75px;
+            max-width: 75px;
+            text-align: center;
+            border-right: 1px solid var(--border-color);
+            border-bottom: 2px solid var(--border-color);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 5px;
+            background-color: #e9ecef;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        .date-cell.today {
+            background-color: #fde047;
+            color: #000;
+        }
+
+        .date-cell.past {
+            background-color: #dde4ed;
+            color: #555;
+        }
+
+        .grid-row { height: 45px; }
+        .grid-row.heading-1-space { background-color: #cbd5e1; }
+        .grid-row.heading-2-space { background-color: #f1f5f9; }
+
+        .checkbox-cell {
+            width: 75px;
+            text-align: center;
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            vertical-align: middle;
+        }
+
+        .checkbox-cell:hover { background-color: #f8fafc; }
+
+        .checkbox-cell.past-cell {
+            background-color: #f7f8fa;
+        }
+
+        .cell-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+
+        .tracker-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .comment-icon {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            background-color: #cbd5e1;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+        }
+
+        .checkbox-cell:hover .comment-icon,
+        .comment-icon.has-comment {
+            display: block;
+        }
+
+        .comment-icon.has-comment {
+            background-color: #ef4444;
+            width: 10px;
+            height: 10px;
+            border-radius: 3px 3px 0 3px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 340px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transform: scale(0.95);
+            transition: transform 0.15s ease;
+        }
+
+        .modal-overlay.active .modal { transform: scale(1); }
+
+        .modal h3 { margin-bottom: 6px; font-size: 1.05rem; }
+        .modal p { font-size: 0.8rem; color: #64748b; margin-bottom: 12px; }
+        .modal textarea {
+            width: 100%;
+            height: 90px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            resize: none;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .modal-actions { display: flex; justify-content: space-between; }
+        .btn { padding: 6px 14px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        .btn-primary { background-color: #2563eb; color: white; }
+        .btn-secondary { background-color: #e2e8f0; color: #475569; }
+        .btn-danger { background-color: #dc2626; color: white; }
+
+        .reset-link {
+            font-size: 0.75rem;
+            color: #aac4f0;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-left: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>70-Day Priority Structured Roadmap Tracker</h1>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div id="overall-progress" style="font-weight: 500; font-size: 0.95rem;">Total Cleared: 0 Done</div>
+            <span class="reset-link" onclick="confirmResetStartDate()" title="Reset 70-day window to start from today">Reset Start Date</span>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-header">Subjects & Topics (Sorted by Priority)</div>
+            <div class="topics-list" id="sidebar-topics"></div>
+        </div>
+
+        <div class="grid-container" id="grid-container">
+            <table class="sheet-table">
+                <thead>
+                    <tr class="grid-header-row" id="grid-header-dates"></tr>
+                </thead>
+                <tbody id="grid-checkbox-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="comment-modal">
+        <div class="modal">
+            <h3 id="modal-title">Notes</h3>
+            <p id="modal-subtitle">Metadata info</p>
+            <textarea id="comment-text" placeholder="Type structural review notes..."></textarea>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <div>
+                    <button class="btn btn-danger" id="btn-delete-comment" onclick="deleteComment()">Delete</button>
+                    <button class="btn btn-primary" onclick="saveComment()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const rawDataset = [
+            { type: "h1", name: "1. General Awareness" },
+            { type: "h2", name: "⭐ Current Affairs" },
+            { type: "item", name: "⭐ National News", id: "ga_nat_news" },
+            { type: "item", name: "⭐ International News", id: "ga_int_news" },
+            { type: "item", name: "⭐ Government Schemes", id: "ga_gov_schemes" },
+            { type: "item", name: "⭐ Important Appointments", id: "ga_appointments" },
+            { type: "item", name: "⭐ Awards & Honors", id: "ga_awards" },
+            { type: "item", name: "🔹 Sports", id: "ga_sports" },
+            { type: "item", name: "🔹 Books & Authors", id: "ga_books" },
+            { type: "item", name: "🔹 Summits & Conferences", id: "ga_summits" },
+            { type: "item", name: "⭐ Important Days", id: "ga_days" },
+            { type: "item", name: "⭐ Science & Technology Updates", id: "ga_sci_tech" },
+            { type: "h2", name: "🔹 Static GK" },
+            { type: "item", name: "🔹 Indian History", id: "ga_history" },
+            { type: "item", name: "🔹 Indian Geography", id: "ga_geography" },
+            { type: "item", name: "⭐ Indian Polity", id: "ga_polity" },
+            { type: "item", name: "⭐ Indian Constitution", id: "ga_constitution" },
+            { type: "item", name: "⭐ Indian Economy", id: "ga_economy" },
+            { type: "h2", name: "🔹 Important Organizations" },
+            { type: "item", name: "🔹 UN", id: "ga_un" },
+            { type: "item", name: "🔹 IMF", id: "ga_imf" },
+            { type: "item", name: "🔹 World Bank", id: "ga_wb" },
+            { type: "item", name: "🔹 WTO", id: "ga_wto" },
+            { type: "item", name: "⚪ Art & Culture", id: "ga_art_culture" },
+            { type: "item", name: "🔹 Environment & Ecology", id: "ga_environment" },
+            { type: "h2", name: "⭐ PSU / Coal Sector Related" },
+            { type: "item", name: "⭐ Coal India Limited", id: "ga_cil" },
+            { type: "item", name: "⭐ Coal Industry Basics", id: "ga_coal_basics" },
+            { type: "item", name: "⭐ Energy Sector", id: "ga_energy" },
+            { type: "item", name: "🔹 Mining Industry", id: "ga_mining" },
+            { type: "item", name: "⭐ Public Sector Undertakings", id: "ga_psu" },
+
+            { type: "h1", name: "2. Reasoning / Mental Ability" },
+            { type: "h2", name: "⭐ Verbal Reasoning" },
+            { type: "item", name: "🔹 Analogy", id: "re_analogy" },
+            { type: "item", name: "🔹 Classification", id: "re_classification" },
+            { type: "item", name: "⭐ Coding-Decoding", id: "re_coding" },
+            { type: "item", name: "⭐ Blood Relations", id: "re_blood" },
+            { type: "item", name: "⭐ Direction Sense", id: "re_direction" },
+            { type: "item", name: "🔹 Ranking", id: "re_ranking" },
+            { type: "item", name: "⭐ Alphabet Series", id: "re_alpha_series" },
+            { type: "item", name: "⭐ Number Series", id: "re_num_series" },
+            { type: "item", name: "⭐ Syllogism", id: "re_syllogism" },
+            { type: "item", name: "🔹 Statement & Conclusion", id: "re_conclusion" },
+            { type: "item", name: "🔹 Statement & Assumption", id: "re_assumption" },
+            { type: "item", name: "🔹 Cause & Effect", id: "re_cause" },
+            { type: "h2", name: "🔹 Non-Verbal Reasoning" },
+            { type: "item", name: "⚪ Mirror Image", id: "re_mirror" },
+            { type: "item", name: "⚪ Water Image", id: "re_water" },
+            { type: "item", name: "⚪ Paper Folding", id: "re_paper" },
+            { type: "item", name: "⚪ Figure Series", id: "re_fig_series" },
+            { type: "item", name: "⚪ Embedded Figures", id: "re_embed" },
+            { type: "h2", name: "⭐ Analytical Reasoning" },
+            { type: "item", name: "⭐ Seating Arrangement", id: "re_seating" },
+            { type: "item", name: "⭐ Puzzles", id: "re_puzzles" },
+            { type: "item", name: "🔹 Input Output", id: "re_input_output" },
+            { type: "item", name: "🔹 Data Sufficiency", id: "re_data_suff" },
+
+            { type: "h1", name: "3. Quantitative Aptitude" },
+            { type: "h2", name: "⭐ Arithmetic" },
+            { type: "item", name: "⭐ Number System", id: "qa_num_sys" },
+            { type: "item", name: "⭐ Percentage", id: "qa_percentage" },
+            { type: "item", name: "⭐ Profit & Loss", id: "qa_profit_loss" },
+            { type: "item", name: "⭐ Ratio & Proportion", id: "qa_ratio" },
+            { type: "item", name: "⭐ Average", id: "qa_average" },
+            { type: "item", name: "⭐ Time & Work", id: "qa_time_work" },
+            { type: "item", name: "⭐ Time Speed Distance", id: "qa_tsd" },
+            { type: "h2", name: "🔹 Important Arithmetic" },
+            { type: "item", name: "🔹 LCM & HCF", id: "qa_lcm_hcf" },
+            { type: "item", name: "🔹 Simple Interest", id: "qa_si" },
+            { type: "item", name: "🔹 Compound Interest", id: "qa_ci" },
+            { type: "item", name: "🔹 Partnership", id: "qa_partnership" },
+            { type: "item", name: "🔹 Mixture & Allegation", id: "qa_mixture" },
+            { type: "item", name: "🔹 Pipes & Cisterns", id: "qa_pipes" },
+            { type: "item", name: "🔹 Boats & Streams", id: "qa_boats" },
+            { type: "h2", name: "🔹 Algebra" },
+            { type: "item", name: "🔹 Linear Equations", id: "qa_linear" },
+            { type: "item", name: "🔹 Quadratic Equations", id: "qa_quadratic" },
+            { type: "h2", name: "⭐ Modern Math" },
+            { type: "item", name: "🔹 Permutation & Combination", id: "qa_perm_comb" },
+            { type: "item", name: "⭐ Probability", id: "qa_probability" },
+            { type: "h2", name: "⭐ Data Interpretation" },
+            { type: "item", name: "⭐ Bar Graph", id: "qa_bar" },
+            { type: "item", name: "⭐ Pie Chart", id: "qa_pie" },
+            { type: "item", name: "⭐ Table", id: "qa_table" },
+            { type: "item", name: "⭐ Line Graph", id: "qa_line" },
+            { type: "h2", name: "🔹 Miscellaneous" },
+            { type: "item", name: "🔹 Simplification", id: "qa_simplification" },
+            { type: "item", name: "🔹 Approximation", id: "qa_approximation" },
+
+            { type: "h1", name: "4. English Language" },
+            { type: "h2", name: "⭐ Grammar" },
+            { type: "item", name: "⭐ Parts of Speech", id: "en_speech" },
+            { type: "item", name: "⭐ Tenses", id: "en_tenses" },
+            { type: "item", name: "⭐ Subject Verb Agreement", id: "en_sva" },
+            { type: "item", name: "🔹 Articles", id: "en_articles" },
+            { type: "item", name: "🔹 Prepositions", id: "en_prepositions" },
+            { type: "item", name: "🔹 Conjunctions", id: "en_conjunctions" },
+            { type: "item", name: "🔹 Active Passive Voice", id: "en_passive" },
+            { type: "item", name: "🔹 Direct Indirect Speech", id: "en_narration" },
+            { type: "h2", name: "⭐ Vocabulary" },
+            { type: "item", name: "⭐ Synonyms", id: "en_synonyms" },
+            { type: "item", name: "⭐ Antonyms", id: "en_antonyms" },
+            { type: "item", name: "🔹 One Word Substitution", id: "en_ows" },
+            { type: "item", name: "🔹 Idioms & Phrases", id: "en_idioms" },
+            { type: "h2", name: "⭐ Reading Skills" },
+            { type: "item", name: "⭐ Reading Comprehension", id: "en_rc" },
+            { type: "item", name: "🔹 Cloze Test", id: "en_cloze" },
+            { type: "h2", name: "⭐ Error Detection" },
+            { type: "item", name: "⭐ Sentence Correction", id: "en_correction" },
+            { type: "item", name: "⭐ Spotting Errors", id: "en_spotting" },
+            { type: "h2", name: "⭐ Verbal Ability" },
+            { type: "item", name: "🔹 Para Jumbles", id: "en_jumbles" },
+            { type: "item", name: "⭐ Fill in the Blanks", id: "en_fills" }
+        ];
+
+        function sortTopicsByPriority(dataset) {
+            const parsedStructure = [];
+            let currentH1 = null;
+            let currentH2 = null;
+
+            function getPriorityWeight(name) {
+                if (name.startsWith('⭐')) return 1;
+                if (name.startsWith('🔹')) return 2;
+                if (name.startsWith('⚪')) return 3;
+                return 4;
+            }
+
+            dataset.forEach(node => {
+                if (node.type === 'h1') {
+                    currentH1 = { ...node, children: [] };
+                    parsedStructure.push(currentH1);
+                    currentH2 = null;
+                } else if (node.type === 'h2') {
+                    currentH2 = { ...node, children: [] };
+                    if (currentH1) currentH1.children.push(currentH2);
+                    else parsedStructure.push(currentH2);
+                } else if (node.type === 'item') {
+                    if (currentH2) currentH2.children.push(node);
+                    else if (currentH1) currentH1.children.push(node);
+                }
+            });
+
+            parsedStructure.forEach(h1 => {
+                h1.children.sort((a, b) => getPriorityWeight(a.name) - getPriorityWeight(b.name));
+                h1.children.forEach(subNode => {
+                    if (subNode.children) {
+                        subNode.children.sort((a, b) => getPriorityWeight(a.name) - getPriorityWeight(b.name));
+                    }
+                });
+            });
+
+            return parsedStructure;
+        }
+
+        const structuredSortedData = sortTopicsByPriority(rawDataset);
+
+        // ─── FIX: Anchor the 70-day window to a fixed start date ───────────────
+        // On first visit, save today as the start date. Every subsequent visit
+        // reads that same stored date so Day 1 never shifts and past data stays.
+        function getOrSetStartDate() {
+            const stored = localStorage.getItem('studyTracker_startDate');
+            if (stored) return new Date(stored);
+            const today = new Date();
+            const dateStr = today.toISOString().split('T')[0];
+            localStorage.setItem('studyTracker_startDate', dateStr);
+            return today;
+        }
+
+        function confirmResetStartDate() {
+            if (confirm('Reset the 70-day window to start from today?\n\nYour existing check data will be kept but will no longer align with old day columns. Only do this if you want to start a fresh 70-day window.')) {
+                const today = new Date().toISOString().split('T')[0];
+                localStorage.setItem('studyTracker_startDate', today);
+                location.reload();
+            }
+        }
+
+        const startDate = getOrSetStartDate();
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        // Build the fixed 70-day array from startDate
+        const datesArray = [];
+        for (let i = 0; i < 70; i++) {
+            const d = new Date(startDate);
+            d.setDate(startDate.getDate() + i);
+            const raw = d.toISOString().split('T')[0];
+            datesArray.push({
+                raw,
+                dayNum: i + 1,
+                displayStr: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                isToday: raw === todayStr,
+                isPast: raw < todayStr
+            });
+        }
+        // ───────────────────────────────────────────────────────────────────────
+
+        let trackingData = JSON.parse(localStorage.getItem('studyTracker_checks')) || {};
+        let commentData  = JSON.parse(localStorage.getItem('studyTracker_comments')) || {};
+
+        let activeCellTarget = { topicId: null, dateStr: null };
+
+        const sidebarContainer       = document.getElementById('sidebar-topics');
+        const gridHeaderDates        = document.getElementById('grid-header-dates');
+        const gridCheckboxBody       = document.getElementById('grid-checkbox-body');
+        const sidebarScrollContainer = document.querySelector('.topics-list');
+        const gridScrollContainer    = document.getElementById('grid-container');
+
+        // Sync vertical scroll
+        gridScrollContainer.addEventListener('scroll', () => {
+            sidebarScrollContainer.scrollTop = gridScrollContainer.scrollTop;
+        });
+        sidebarScrollContainer.addEventListener('scroll', () => {
+            gridScrollContainer.scrollTop = sidebarScrollContainer.scrollTop;
+        });
+
+        function initApp() {
+            // Render column headers
+            let headerHtml = '';
+            datesArray.forEach(d => {
+                let cls = d.isToday ? 'today' : (d.isPast ? 'past' : '');
+                headerHtml += `<th class="date-cell ${cls}">Day ${d.dayNum}<br>${d.displayStr}</th>`;
+            });
+            gridHeaderDates.innerHTML = headerHtml;
+
+            let sidebarHtml = '';
+            let bodyHtml = '';
+
+            structuredSortedData.forEach(h1 => {
+                sidebarHtml += `<div class="topic-row heading-1">${h1.name}</div>`;
+                bodyHtml += `<tr class="grid-row heading-1-space">${datesArray.map(() => `<td class="checkbox-cell" style="background:#cbd5e1;"></td>`).join('')}</tr>`;
+
+                h1.children.forEach(child => {
+                    if (child.type === 'h2') {
+                        sidebarHtml += `<div class="topic-row heading-2">${child.name}</div>`;
+                        bodyHtml += `<tr class="grid-row heading-2-space">${datesArray.map(() => `<td class="checkbox-cell" style="background:#f1f5f9;"></td>`).join('')}</tr>`;
+                        child.children.forEach(item => {
+                            sidebarHtml += buildSidebarItem(item);
+                            bodyHtml    += renderGridRow(item);
+                        });
+                    } else {
+                        sidebarHtml += buildSidebarItem(child);
+                        bodyHtml    += renderGridRow(child);
+                    }
+                });
+            });
+
+            sidebarContainer.innerHTML   = sidebarHtml;
+            gridCheckboxBody.innerHTML   = bodyHtml;
+            updateMetrics();
+
+            // Auto-scroll to today's column
+            const todayIndex = datesArray.findIndex(d => d.isToday);
+            if (todayIndex > 0) {
+                gridScrollContainer.scrollLeft = todayIndex * 75;
+            }
+        }
+
+        function buildSidebarItem(item) {
+            return `
+                <div class="topic-row item">
+                    <span>${item.name}</span>
+                    <span class="counter-badge" id="counter-${item.id}">0</span>
+                </div>`;
+        }
+
+        function renderGridRow(item) {
+            let rowHtml = `<tr class="grid-row">`;
+            datesArray.forEach(dateObj => {
+                const cellId    = `${item.id}_${dateObj.raw}`;
+                const isChecked = trackingData[cellId] ? 'checked' : '';
+                const hasComment = commentData[cellId] ? 'has-comment' : '';
+                const pastClass  = dateObj.isPast ? 'past-cell' : '';
+
+                rowHtml += `
+                    <td class="checkbox-cell ${pastClass}">
+                        <div class="cell-wrapper">
+                            <input type="checkbox" class="tracker-checkbox"
+                                data-topic="${item.id}" data-date="${dateObj.raw}"
+                                ${isChecked}
+                                onchange="toggleCheckbox(this)">
+                            <div class="comment-icon ${hasComment}" id="cmt-ico-${cellId}"
+                                onclick="openCommentModal('${item.id}', '${dateObj.raw}', '${item.name.replace(/'/g, "\\'")}', '${dateObj.displayStr}')"></div>
+                        </div>
+                    </td>`;
+            });
+            rowHtml += `</tr>`;
+            return rowHtml;
+        }
+
+        function toggleCheckbox(element) {
+            const topicId = element.getAttribute('data-topic');
+            const dateStr = element.getAttribute('data-date');
+            const cellId  = `${topicId}_${dateStr}`;
+
+            if (element.checked) {
+                trackingData[cellId] = true;
+            } else {
+                delete trackingData[cellId];
+            }
+
+            localStorage.setItem('studyTracker_checks', JSON.stringify(trackingData));
+            updateMetrics();
+        }
+
+        function updateMetrics() {
+            const countsMap = {};
+            let totalGlobalChecked = 0;
+
+            Object.keys(trackingData).forEach(key => {
+                // Key format: topicId_YYYY-MM-DD  — topicId itself may contain underscores,
+                // so split on the date pattern rather than the first underscore.
+                const match = key.match(/^(.+)_(\d{4}-\d{2}-\d{2})$/);
+                if (!match) return;
+                const topicId = match[1];
+                countsMap[topicId] = (countsMap[topicId] || 0) + 1;
+                totalGlobalChecked++;
+            });
+
+            document.querySelectorAll('.counter-badge').forEach(badge => {
+                const id = badge.id.replace('counter-', '');
+                badge.innerText = countsMap[id] || 0;
+            });
+
+            document.getElementById('overall-progress').innerText =
+                `Total Progress Sessions: ${totalGlobalChecked} Completed`;
+        }
+
+        function openCommentModal(topicId, dateStr, topicName, dateDisplay) {
+            activeCellTarget.topicId = topicId;
+            activeCellTarget.dateStr = dateStr;
+            const cellId = `${topicId}_${dateStr}`;
+
+            document.getElementById('modal-title').innerText    = topicName;
+            document.getElementById('modal-subtitle').innerText = `Notes for: ${dateDisplay}`;
+
+            const currentComment = commentData[cellId] || '';
+            document.getElementById('comment-text').value = currentComment;
+            document.getElementById('btn-delete-comment').style.display = currentComment ? 'inline-block' : 'none';
+            document.getElementById('comment-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('comment-modal').classList.remove('active');
+        }
+
+        function saveComment() {
+            const cellId      = `${activeCellTarget.topicId}_${activeCellTarget.dateStr}`;
+            const textValue   = document.getElementById('comment-text').value.trim();
+            const iconElement = document.getElementById(`cmt-ico-${cellId}`);
+
+            if (textValue) {
+                commentData[cellId] = textValue;
+                if (iconElement) iconElement.classList.add('has-comment');
+            } else {
+                delete commentData[cellId];
+                if (iconElement) iconElement.classList.remove('has-comment');
+            }
+
+            localStorage.setItem('studyTracker_comments', JSON.stringify(commentData));
+            closeModal();
+        }
+
+        function deleteComment() {
+            const cellId      = `${activeCellTarget.topicId}_${activeCellTarget.dateStr}`;
+            const iconElement = document.getElementById(`cmt-ico-${cellId}`);
+
+            delete commentData[cellId];
+            if (iconElement) iconElement.classList.remove('has-comment');
+
+            localStorage.setItem('studyTracker_comments', JSON.stringify(commentData));
+            closeModal();
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>

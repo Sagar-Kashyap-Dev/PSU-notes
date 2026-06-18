@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OS Quick Revision Guide</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --border-color: #334155;
+            --success-color: #10b981;
+            --formula-bg: #090d16;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .reset-btn {
+            background-color: #f43f5e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .reset-btn:hover {
+            background-color: #e11d48;
+        }
+
+        .topic-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .topic-card.completed {
+            opacity: 0.4;
+            filter: grayscale(60%);
+            border-color: var(--success-color);
+        }
+
+        .topic-card.completed h2 {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--accent-color);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            user-select: none;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            transition: all 0.2s;
+        }
+
+        .checkbox-container:hover {
+            background: rgba(56, 189, 248, 0.2);
+        }
+
+        .checkbox-container input {
+            cursor: pointer;
+            accent-color: var(--success-color);
+            width: 16px;
+            height: 16px;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        ul {
+            margin: 0 0 15px 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .sub-list {
+            list-style-type: circle;
+            margin-top: 4px;
+        }
+
+        .formula-box {
+            background-color: var(--formula-bg);
+            padding: 12px 16px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+            font-family: "Consolas", "Courier New", monospace;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+        }
+
+        .formula-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .formula-inline-card {
+            background-color: var(--formula-bg);
+            padding: 10px;
+            border-radius: 6px;
+            border-top: 2px solid var(--border-color);
+            text-align: center;
+        }
+
+        .formula-inline-card span {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .formula-inline-card code {
+            font-family: "Consolas", "Courier New", monospace;
+            color: #f43f5e;
+            font-size: 1.05rem;
+            font-weight: bold;
+        }
+
+        .none-text {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>OS Ultimate MCQ Revision Portal</h1>
+        <p>Track your preparation. Check off topics as you master them.</p>
+        <button class="reset-btn" onclick="clearProgress()">Reset All Progress</button>
+    </header>
+
+    <div class="topic-card" data-topic="os_basics">
+        <div class="card-header">
+            <h2>1. Operating System Basics</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Operating System acts as an interface between user and hardware.</li>
+            <li>Manages resources: CPU, Memory, I/O Devices, Files.</li>
+            <li>Provides convenience and efficiency.</li>
+        </ul>
+        <div class="section-title">Functions</div>
+        <ul>
+            <li>Process Management</li>
+            <li>Memory Management</li>
+            <li>File Management</li>
+            <li>Device Management</li>
+            <li>Security</li>
+        </ul>
+        <div class="section-title">Common MCQ Traps</div>
+        <ul>
+            <li>Kernel = core part of OS.</li>
+            <li>OS is a resource manager.</li>
+            <li>BIOS is <strong>NOT</strong> an operating system.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <p class="none-text">None.</p>
+    </div>
+
+    <div class="topic-card" data-topic="os_types">
+        <div class="card-header">
+            <h2>2. Types of Operating Systems</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Batch OS:</strong> Jobs executed in batches. No user interaction.</li>
+            <li><strong>Time Sharing OS:</strong> Multiple users share CPU.</li>
+            <li><strong>Multiprogramming OS:</strong> Multiple programs in memory simultaneously.</li>
+            <li><strong>Multitasking OS:</strong> Multiple tasks executed seemingly at the same time.</li>
+            <li><strong>Real-Time OS (RTOS):</strong> Strict timing constraints.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Hard RTOS:</strong> Missing deadline = complete system failure.</li>
+            <li><strong>Soft RTOS:</strong> Occasional deadline miss is acceptable.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <p class="none-text">None.</p>
+    </div>
+
+    <div class="topic-card" data-topic="os_structure">
+        <div class="card-header">
+            <h2>3. Operating System Structure</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Monolithic Kernel:</strong> Entire OS works in kernel mode.</li>
+            <li><strong>Microkernel:</strong> Minimal services in kernel. Moves services to user space.</li>
+            <li><strong>Layered OS:</strong> Organized cleanly in layers from hardware up to user level.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Microkernel advantages:</strong> Better reliability and easier maintenance.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <p class="none-text">None.</p>
+    </div>
+
+    <div class="topic-card" data-topic="processes">
+        <div class="card-header">
+            <h2>4. Processes</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Process:</strong> Program in execution.</li>
+            <li><strong>Components:</strong> Code, Data, Stack, Heap, and Program Counter.</li>
+            <li><strong>Process States:</strong> New, Ready, Running, Waiting (Blocked), Terminated.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>PCB (Process Control Block) stores:</strong> Process ID, State, CPU Registers, and Scheduling Information.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <p class="none-text">None.</p>
+    </div>
+
+    <div class="topic-card" data-topic="threads">
+        <div class="card-header">
+            <h2>5. Threads</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Thread:</strong> Lightweight process (LWP).</li>
+            <li><strong>Shares:</strong> Code, Data, and Files.</li>
+            <li><strong>Owns:</strong> Stack and Registers.</li>
+            <li><strong>Types:</strong> User-Level Threads and Kernel-Level Threads.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Thread switching is significantly <strong>faster</strong> than process switching.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <p class="none-text">None.</p>
+    </div>
+
+    <div class="topic-card" data-topic="cpu_scheduling">
+        <div class="card-header">
+            <h2>6. CPU Scheduling</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Core Algorithms</div>
+        <ul>
+            <li><strong>FCFS (First Come First Serve):</strong> Non-preemptive, simple. <em>Trap:</em> <strong>Convoy Effect</strong>.</li>
+            <li><strong>SJF (Shortest Job First):</strong> Provides minimum average waiting time. <em>Trap:</em> Long jobs may starve.</li>
+            <li><strong>Priority Scheduling:</strong> Higher priority executes first. <em>Trap:</em> Starvation possible. <em>Solution:</em> <strong>Aging</strong>.</li>
+            <li><strong>Round Robin:</strong> Time Quantum used. Preemptive. <em>Trap:</em> Very large quantum &asymp; FCFS.</li>
+        </ul>
+        <div class="section-title">Common Formulas</div>
+        <div class="formula-box">
+            Turnaround Time (TAT) = Completion Time &minus; Arrival Time<br>
+            Waiting Time (WT) = TAT &minus; Burst Time<br>
+            Response Time = First CPU Allocation &minus; Arrival Time
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="process_sync">
+        <div class="card-header">
+            <h2>7. Process Synchronization</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Critical Section:</strong> Shared resource access code segment area.</li>
+            <li><strong>Core Requirements:</strong> Mutual Exclusion, Progress, Bounded Waiting.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Race Condition:</strong> Multiple processes access and manipulate shared data concurrently.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="semaphore">
+        <div class="card-header">
+            <h2>8. Semaphore</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Semaphore:</strong> Integer synchronization variable.</li>
+            <li><strong>Atomic Operations:</strong> Wait (P) and Signal (V).</li>
+            <li><strong>Types:</strong> 
+                <ul class="sub-list">
+                    <li>Binary Semaphore (0 or 1 value only)</li>
+                    <li>Counting Semaphore (Can take multiple instances/unbounded values)</li>
+                </ul>
+            </li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Binary semaphore behaves structurally similar to a mutex.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="mutex">
+        <div class="card-header">
+            <h2>9. Mutex</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Mutex:</strong> Locking mechanism used to synchronize access to a resource (Mutual Exclusion Lock).</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Ownership Principle:</strong> Only the thread/owner that locks a mutex can unlock it. Semaphore does <strong>NOT</strong> have an ownership concept.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="deadlock">
+        <div class="card-header">
+            <h2>10. Deadlock</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Deadlock:</strong> A set of processes wait forever for events/resources held by each other.</li>
+        </ul>
+        <div class="section-title">Necessary Conditions (Coffman Conditions)</div>
+        <ul>
+            <li>Mutual Exclusion</li>
+            <li>Hold and Wait</li>
+            <li>No Preemption</li>
+            <li>Circular Wait</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Simultaneity:</strong> All four conditions <strong>MUST</strong> occur simultaneously for a deadlock to happen.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="deadlock_handling">
+        <div class="card-header">
+            <h2>11. Deadlock Handling Methods</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Methods</div>
+        <ul>
+            <li><strong>Deadlock Prevention:</strong> Restrict resource requests to break at least one Coffman condition.</li>
+            <li><strong>Deadlock Avoidance:</strong> Uses dynamic tracking check. Requires safe state evaluation.</li>
+            <li><strong>Deadlock Detection & Recovery:</strong> Let deadlock occur, detect it via graphs, then recover.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Banker's Algorithm:</strong> Purely a deadlock <strong>avoidance</strong> algorithm.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="bankers_algorithm">
+        <div class="card-header">
+            <h2>12. Banker's Algorithm</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Used dynamically to determine: Safe State and Safe Sequence.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Safe State:</strong> System is guaranteed to avoid a deadlock.</li>
+            <li><strong>Unsafe State:</strong> Not necessarily deadlocked, but has the risk of falling into one.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="memory_management">
+        <div class="card-header">
+            <h2>13. Memory Management</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Logical Address:</strong> Virtual address generated by the CPU.</li>
+            <li><strong>Physical Address:</strong> Actual physical location address inside RAM.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>MMU (Memory Management Unit):</strong> Hardware device that converts logical address to physical address at runtime.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="contiguous_allocation">
+        <div class="card-header">
+            <h2>14. Contiguous Memory Allocation</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Types</div>
+        <ul>
+            <li><strong>Fixed Partitioning:</strong> Memory divided beforehand into static boundaries.</li>
+            <li><strong>Dynamic Partitioning:</strong> Partitions created on-demand dynamically.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>External Fragmentation occurs explicitly in **dynamic partitioning**.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="fragmentation">
+        <div class="card-header">
+            <h2>15. Fragmentation</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Types</div>
+        <ul>
+            <li><strong>Internal Fragmentation:</strong> Wasted unassigned space inside an allocated memory block.</li>
+            <li><strong>External Fragmentation:</strong> Total free memory exists to satisfy a request, but it is scattered non-contiguously.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Paging completely removes **external fragmentation**.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="paging">
+        <div class="card-header">
+            <h2>16. Paging</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Page:</strong> Fixed-size logical block of a process.</li>
+            <li><strong>Frame:</strong> Fixed-size physical block of physical memory.</li>
+        </ul>
+        <div class="section-title">Address Translation Split</div>
+        <div class="formula-box">
+            Logical Address Structure: [ Page Number (d) | Offset (d) ]
+        </div>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Paging eliminates external fragmentation, but may still suffer from **internal fragmentation** (on the last page).</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="page_table">
+        <div class="card-header">
+            <h2>17. Page Table</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Maps Page Number &rarr; Frame Number.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>TLB (Translation Lookaside Buffer):</strong> A high-speed hardware cache used specifically to store page table entries and speed up address translation.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="virtual_memory">
+        <div class="card-header">
+            <h2>18. Virtual Memory</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Allows execution of processes whose total space requirements are larger than physical RAM.</li>
+            <li>Implemented commonly using **Demand Paging**.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Under demand paging, pages are only loaded into main memory when explicitly required.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="page_replacement">
+        <div class="card-header">
+            <h2>19. Page Replacement Algorithms</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Key Parameters</div>
+        <ul>
+            <li><strong>FIFO (First In First Out):</strong> Oldest page removed. <em>Trap:</em> Vulnerable to **Belady's Anomaly**.</li>
+            <li><strong>LRU (Least Recently Used):</strong> Removes page unreferenced for the longest time. Generally better than FIFO.</li>
+            <li><strong>Optimal:</strong> Removes page used farthest in the future. Acts as a theoretical benchmark.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Belady's Anomaly:</strong> Increasing frame allocation leads to *more* page faults. Seen in FIFO, but **not** in LRU.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="thrashing">
+        <div class="card-header">
+            <h2>20. Thrashing</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>A system is thrashing when it spends more time swapping pages in and out than executing actual instructions.</li>
+            <li><strong>Cause:</strong> Excessive page faults due to overallocation.</li>
+            <li><strong>Solutions:</strong> Increase frame availability, or reduce the degree of multiprogramming.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="file_systems">
+        <div class="card-header">
+            <h2>21. File Systems</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>File:</strong> A named logical collection of related data.</li>
+            <li><strong>Operations:</strong> Create, Read, Write, Delete.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Directory mapping structures provide structural file organization.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="disk_scheduling">
+        <div class="card-header">
+            <h2>22. Disk Scheduling</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Algorithms</div>
+        <ul>
+            <li><strong>FCFS:</strong> Requests served in strict arrival order.</li>
+            <li><strong>SSTF (Shortest Seek Time First):</strong> Picks request closest to head. <em>Trap:</em> May cause starvation.</li>
+            <li><strong>SCAN:</strong> Head moves completely end-to-end (**Elevator algorithm**).</li>
+            <li><strong>C-SCAN:</strong> Circular SCAN. Provides a more uniform waiting time by returning straight to the start.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>SSTF can cause starvation. SCAN or C-SCAN give better overall turnaround performance.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="io_management">
+        <div class="card-header">
+            <h2>23. I/O Management</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Interrupt:</strong> Asynchronous signal sent to CPU by hardware to indicate an event.</li>
+            <li><strong>DMA (Direct Memory Access):</strong> Device transfers whole data blocks directly to/from memory without continuous CPU involvement.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>DMA dramatically improves I/O efficiency by freeing up CPU cycles.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="system_calls">
+        <div class="card-header">
+            <h2>24. System Calls</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Provides an operational interface between a user program and the OS kernel.</li>
+            <li><strong>Types:</strong> Process Control, File Management, Device Management, Information Maintenance.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><code>fork()</code> creates a brand new duplicate child process in UNIX environments.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="unix_basics">
+        <div class="card-header">
+            <h2>25. UNIX/Linux Basics</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Common Commands</div>
+        <ul>
+            <li><code>ls</code> &rarr; List directory files</li>
+            <li><code>pwd</code> &rarr; Output present working directory path</li>
+            <li><code>mkdir</code> &rarr; Create a blank directory</li>
+            <li><code>rm</code> &rarr; Remove file</li>
+            <li><code>cp</code> / <code>mv</code> &rarr; Copy file / Move or rename file</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>UNIX is explicitly built as a robust multiuser, multitasking operating system.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="os_formulas">
+        <div class="card-header">
+            <h2>26. OS Formulas Worth Memorizing</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Metrics</div>
+        <div class="formula-box">
+            CPU Utilization = (CPU Busy Time / Total Time) &times; 100<br>
+            Throughput = Number of Completed Processes / Unit Time
+        </div>
+        <div class="section-title">Paging Address Math</div>
+        <div class="formula-box">
+            Effective Access Time (EAT) = (1 - p) &times; MAT + p &times; PFST<br><br>
+            Where:<br>
+            p = Page Fault Rate<br>
+            MAT = Memory Access Time<br>
+            PFST = Page Fault Service Time
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="traps" style="border: 1px dashed #38bdf8; background-color: #1a1e2d;">
+        <div class="card-header">
+            <h2 style="color: #f43f5e;">&#9888; Critical CIL MT OS MCQ Traps Checklist</h2>
+            <label class="checkbox-container" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8;">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <ul>
+            <li>Process = Program in execution | Thread = Lightweight process.</li>
+            <li>PCB stores running environment registers and state flags.</li>
+            <li>FCFS suffers from Convoy Effect | SJF yields the absolute mathematical minimum average waiting time.</li>
+            <li>Priority scheduling can introduce starvation; resolved via **Aging**.</li>
+            <li>Round Robin requires a time quantum framework.</li>
+            <li>Semaphores rely on atomic Wait (P) and Signal (V) triggers.</li>
+            <li>Mutex incorporates strict structural task ownership rules.</li>
+            <li>Deadlocks require all four Coffman conditions simultaneously.</li>
+            <li>Banker's Algorithm belongs strictly to **Deadlock Avoidance**.</li>
+            <li>MMU processes hardware conversion from Logical to Physical addresses.</li>
+            <li>Paging clears external fragmentation, but leaves small internal fragments.</li>
+            <li>TLB functions as an accelerated memory cache for page translations.</li>
+            <li>FIFO is prone to Belady's Anomaly; LRU is completely immune.</li>
+            <li>Thrashing means the operating system spends more time paging than computing.</li>
+            <li>DMA handles complete I/O data streams with negligible CPU overhead.</li>
+            <li><code>fork()</code> generates a child process returning 0 to child, PID to parent.</li>
+            <li>SCAN operates as an Elevator algorithm | SSTF is prone to starvation loops.</li>
+            <li>Hard RTOS rules mandate strict zero-tolerance deadline compliance.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // Storage configuration unique identifier key for OS tracking
+    const STORAGE_KEY = 'cil_mt_os_progress';
+
+    // Run processing on load to restore checkbox configurations
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        
+        document.querySelectorAll('.topic-card').forEach(card => {
+            const id = card.getAttribute('data-topic');
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            
+            if (id && savedProgress[id]) {
+                checkbox.checked = true;
+                card.classList.add('completed');
+            }
+        });
+    });
+
+    function toggleComplete(checkbox) {
+        const card = checkbox.closest('.topic-card');
+        const id = card.getAttribute('data-topic');
+        
+        // Fetch existing dictionary state mapping
+        const currentProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+        if (checkbox.checked) {
+            card.classList.add('completed');
+            if (id) currentProgress[id] = true;
+        } else {
+            card.classList.remove('completed');
+            if (id) delete currentProgress[id];
+        }
+
+        // Overwrite adjustments back to tracking dictionary
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentProgress));
+    }
+
+    function clearProgress() {
+        if (confirm("Are you sure you want to reset all OS revision portal checkboxes?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            document.querySelectorAll('.topic-card').forEach(card => {
+                card.classList.remove('completed');
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                if (checkbox) checkbox.checked = false;
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

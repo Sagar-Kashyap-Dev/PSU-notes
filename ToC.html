@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE — Theory of Computation (TOC) Master Engine</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #2563eb;
+            --brand-accent: #dbeafe;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* Split-Pane Control Interface */
+        #app-sidebar {
+            width: 330px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 330px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1180px;
+            width: calc(100% - 330px);
+        }
+
+        /* Sidebar Panels */
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #bfdbfe; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #1e40af; letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #cbd5e1; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #1e40af; width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        /* Document Architecture Layouts */
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        .summary-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; background: var(--bg-workspace); padding: 1rem; border-radius: var(--radius-interactive); border: 1px solid var(--border-color); }
+        .summary-badge { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-bold); font-weight: 500; }
+        .summary-badge strong { color: #2563eb; }
+
+        .grid-block { margin-bottom: 2rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 0.75rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); }
+        th, td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        .alert-box ul { margin-left: 1.25rem; }
+        .alert-box li { color: #7f1d1d; }
+
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>TOC Core Engine</h2>
+            <p>Theory of Computation</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Syllabus Completion</div>
+            <div class="metric-value" id="metric-text">0/8 Modules Mastered</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Finite Automata</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-regular-langs')"><span>1. Regular Langs & Automata</span><input type="checkbox" class="nav-checkbox" id="nav-chk-regular-langs" onclick="event.stopPropagation(); syncCheckbox('regular-langs')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-minimization')"><span>2. DFA Minimization Core</span><input type="checkbox" class="nav-checkbox" id="nav-chk-minimization" onclick="event.stopPropagation(); syncCheckbox('minimization')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-pumping-regular')"><span>3. Regular Pumping Lemma</span><input type="checkbox" class="nav-checkbox" id="nav-chk-pumping-regular" onclick="event.stopPropagation(); syncCheckbox('pumping-regular')"></div></li>
+            
+            <div class="nav-heading">Context-Free Grammars</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-cfg')"><span>4. CFGs & Ambiguity Systems</span><input type="checkbox" class="nav-checkbox" id="nav-chk-cfg" onclick="event.stopPropagation(); syncCheckbox('cfg')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-normal-forms')"><span>5. Chomsky & Greibach Forms</span><input type="checkbox" class="nav-checkbox" id="nav-chk-normal-forms" onclick="event.stopPropagation(); syncCheckbox('normal-forms')"></div></li>
+            
+            <div class="nav-heading">Pushdown & Turing Architectures</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-pda')"><span>6. Pushdown Automata (PDA)</span><input type="checkbox" class="nav-checkbox" id="nav-chk-pda" onclick="event.stopPropagation(); syncCheckbox('pda')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-turing')"><span>7. Turing Computing Core</span><input type="checkbox" class="nav-checkbox" id="nav-chk-turing" onclick="event.stopPropagation(); syncCheckbox('turing')"></div></li>
+            
+            <div class="nav-heading">Chomsky Hierarchy & Decidability</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-chomsky-decidability')"><span>8. Decidability Decision Matrix</span><input type="checkbox" class="nav-checkbox" id="nav-chk-chomsky-decidability" onclick="event.stopPropagation(); syncCheckbox('chomsky-decidability')"></div></li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>Theory of Computation Specification</h1>
+            <p>Formal language transitions, state-space reduction models, context-free normalizations, and structural limits of undecidability.</p>
+        </header>
+
+        <section class="content-card" id="sec-regular-langs">
+            <div class="card-header-row">
+                <h2>1. Regular Languages & Finite Automata Engine</h2>
+                <button class="action-button" id="btn-regular-langs" onclick="toggleTopicState('regular-langs')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">DFA: <strong>$\delta: Q \times \Sigma \to Q$ Mapping</strong></div>
+                <div class="summary-badge">NFA: <strong>$\delta: Q \times \Sigma \to 2^Q$ Mapping</strong></div>
+                <div class="summary-badge">$\epsilon$-NFA: <strong>$\delta: Q \times (\Sigma \cup \{\epsilon\}) \to 2^Q$</strong></div>
+                <div class="summary-badge">Equivalence: <strong>$\mathcal{L}(\text{DFA}) = \mathcal{L}(\text{NFA})$</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Formal Mathematical Definitions</div>
+                <p>A Finite Automaton is formally defined as a 5-tuple $M = (Q, \Sigma, \delta, q_0, F)$ where:</p>
+                <ul>
+                    <li>$Q$ is a finite, non-empty set of operational machine states.</li>
+                    <li>$\Sigma$ is a finite alphabet of terminal input symbols.</li>
+                    <li>$q_0 \in Q$ is the designated initial state.</li>
+                    <li>$F \subseteq Q$ is the set of final/accepting states.</li>
+                    <li><strong>Transition Function ($\delta$) Architectures:</strong>
+                        <ul>
+                            <li>*Deterministic Finite Automaton (DFA):* $\delta: Q \times \Sigma \to Q$ (Exactly one path exists for each input).</li>
+                            <li>*Nondeterministic Finite Automaton (NFA):* $\delta: Q \times \Sigma \to 2^Q$ (Zero, one, or multiple paths can be evaluated simultaneously).</li>
+                            <li>*NFA with $\epsilon$-transitions ($\epsilon$-NFA):* $\delta: Q \times (\Sigma \cup \{\epsilon\}) \to 2^Q$ (Allows spontaneous transitions without consuming an input symbol).</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-minimization">
+            <div class="card-header-row">
+                <h2>2. DFA Minimization Framework</h2>
+                <button class="action-button" id="btn-minimization" onclick="toggleTopicState('minimization')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Myhill-Nerode: <strong>Equivalence Class Slicing</strong></div>
+                <div class="summary-badge">0-Equivalence: <strong>Separate $F$ from $(Q \setminus F)$</strong></div>
+                <div class="summary-badge">k-Equivalence: <strong>Check Transitions into $(k-1)$ sets</strong></div>
+                <div class="summary-badge">Uniqueness: <strong>Canonical Minimal DFA</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Algorithmic Partitioning Engine (Myhill-Nerode / Hopcroft)</div>
+                <p>Minimizing a DFA merges equivalent states to construct a unique, minimal state-space framework. States $p, q$ are equivalent if for all strings $w \in \Sigma^*$, $\hat{\delta}(p, w) \in F \iff \hat{\delta}(q, w) \in F$.</p>
+                <ol>
+                    <li><strong>Initial Partition ($\Pi_0$):</strong> Divide states into final and non-final sets: $\Pi_0 = \{F, Q \setminus F\}$.</li>
+                    <li><strong>Iterative Step ($\Pi_{k+1}$):</strong> Split an existing block $B$ if a pair of states $p, q \in B$ transition to distinct blocks under any input symbol $a \in \Sigma$:
+                        $$\text{If } \delta(p, a) \in B_i \text{ and } \delta(q, a) \in B_j \quad (B_i \neq B_j), \text{ split } B.$$
+                    </li>
+                    <li>Terminate when $\Pi_{k+1} = \Pi_k$. Each remaining partition block forms a single consolidated state in the minimal DFA.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-pumping-regular">
+            <div class="card-header-row">
+                <h2>3. Regular Expressions & The Pumping Lemma Rule</h2>
+                <button class="action-button" id="btn-pumping-regular" onclick="toggleTopicState('pumping-regular')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Decomposition: <strong>$w = xyz$ String Splits</strong></div>
+                <div class="summary-badge">Length Limit: <strong>$|xy| \le p$ Precondition</strong></div>
+                <div class="summary-badge">Non-Empty: <strong>$|y| \ge 1$ Loop Constraint</strong></div>
+                <div class="summary-badge">Pumping Condition: <strong>$\forall i \ge 0, xy^iz \in L$</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Pumping Lemma for Regular Languages Proof Theorem</div>
+                <p>Used to prove a language $L$ is **not regular** (cannot be used to prove a language is regular). If $L$ is regular, there exists a pumping length $p$ such that any string $w \in L$ with $|w| \ge p$ can be split into three parts, $w = xyz$, satisfying:</p>
+                <ul>
+                    <li>$|y| \ge 1$ (The loop segment cannot be empty).</li>
+                    <li>$|xy| \le p$ (The first two components must fall within the pumping length).</li>
+                    <li>$$xy^iz \in L \quad \text{for all } i \ge 0$$</li>
+                </ul>
+                <p><em>Standard Application Example:</em> Denying regularity for $L = \{a^n b^n \mid n \ge 0\}$ by picking $w = a^p b^p$. Since $|xy| \le p$, $y$ consists entirely of $a$ symbols. Pumping $y$ changes the count of $a$s without changing the count of $b$s, driving the resulting string outside the language definition.</p>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-cfg">
+            <div class="card-header-row">
+                <h2>4. Context-Free Grammars & Structural Parse Trees</h2>
+                <button class="action-button" id="btn-cfg" onclick="toggleTopicState('cfg')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">4-Tuple CFG: <strong>$G = (V, \Sigma, P, S)$ Definition</strong></div>
+                <div class="summary-badge">Derivation: <strong>Leftmost vs. Rightmost Sequences</strong></div>
+                <div class="summary-badge">Ambiguity: <strong>$\ge 2$ Distinct Parse Trees</strong></div>
+                <div class="summary-badge">Inherent Ambiguity: <strong>No Unambiguous Grammar Exists</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Grammar Definitions & Parse Trees</div>
+                <p>A Context-Free Grammar is defined as $G = (V, \Sigma, P, S)$ where production rules follow the constraint $A \to \alpha$ ($A \in V$ and $\alpha \in (V \cup \Sigma)^*$).</p>
+                <ul>
+                    <li><strong>Ambiguity:</strong> A grammar $G$ is ambiguous if there exists a string $w \in \mathcal{L}(G)$ that yields **two or more distinct leftmost derivations (LMDs)**, rightmost derivations (RMDs), or parse trees.</li>
+                    <li><strong>Inherent Ambiguity:</strong> A context-free language $L$ is inherently ambiguous if *every possible context-free grammar* that generates $L$ is structurally ambiguous (e.g., $L = \{a^i b^j c^k \mid i=j \text{ or } j=k\}$).</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-normal-forms">
+            <div class="card-header-row">
+                <h2>5. Simplification & Context-Free Normal Forms</h2>
+                <button class="action-button" id="btn-normal-forms" onclick="toggleTopicState('normal-forms')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Useless Symbols: <strong>Non-Generating or Non-Reachable</strong></div>
+                <div class="summary-badge">$\epsilon$-Productions: <strong>$A \to \epsilon$ Null Transformations</strong></div>
+                <div class="summary-badge">Unit Productions: <strong>$A \to B$ Single Variables</strong></div>
+                <div class="summary-badge">CNF Constraints: <strong>$A \to BC$ or $A \to a$ Rules</strong></div>
+                <div class="summary-badge">GNF Constraints: <strong>$A \to a\alpha$ ($\alpha \in V^*$) Rules</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Simplification Strategy Pipeline</div>
+                <p>To clean a grammar before normalization, remove non-generating and unreachable variables, followed by resolving null ($\epsilon$) and unit productions:</p>
+                $$\text{Grammar } G \longrightarrow \text{Remove Nullable Steps} \longrightarrow \text{Eliminate Unit Chain Steps} \longrightarrow \text{Prune Useless Subtrees}$$
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Formal Normal Forms Reference Structural Definition</div>
+                <ul>
+                    <li><strong>Chomsky Normal Form (CNF):</strong> All production rules are strictly constrained to the formats:
+                        $$A \to BC \quad \text{or} \quad A \to a$$
+                        *Where $A, B, C \in V$ and $a \in \Sigma$. Deriving a string of length $n$ using a CNF grammar requires exactly **$2n - 1$ derivation steps**.*
+                    </li>
+                    <li><strong>Greibach Normal Form (GNF):</strong> All production rules are strictly constrained to the format:
+                        $$A \to a\alpha$$
+                        *Where $a \in \Sigma$ and $\alpha \in V^*$ (Starts with exactly one terminal symbol, followed by zero or more variables).*
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-pda">
+            <div class="card-header-row">
+                <h2>6. Pushdown Automata (PDA & Stack Memory)</h2>
+                <button class="action-button" id="btn-pda" onclick="toggleTopicState('pda')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">7-Tuple PDA: <strong>$(Q, \Sigma, \Gamma, \delta, q_0, Z_0, F)$</strong></div>
+                <div class="summary-badge">DPDA: <strong>$\le 1$ Deterministic Path Mapping</strong></div>
+                <div class="summary-badge">NPDA: <strong>Power-Engine Context Free System</strong></div>
+                <div class="summary-badge">Acceptance: <strong>Final State vs. Empty Stack</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Transition Mechanics & Stack Interfacing</div>
+                <p>PDAs add an infinite LIFO stack to finite automata. Formally defined with transition map $\delta: Q \times (\Sigma \cup \{\epsilon\}) \times \Gamma \to 2^{Q \times \Gamma^*}$.</p>
+                <ul>
+                    <li><strong>Deterministic PDA (DPDA) vs. Nondeterministic PDA (NPDA):</strong> Unlike finite automata, NPDAs are strictly more powerful than DPDAs. NPDAs accept all Context-Free Languages (CFLs), whereas DPDAs accept only **Deterministic CFLs (DCFLs)**. This means languages like the set of even-length palindromes ($L = \{ww^R \mid w \in \{a,b\}^*\}$) require nondeterminism to locate the center axis point.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-turing">
+            <div class="card-header-row">
+                <h2>7. Turing Machines & Computability Foundations</h2>
+                <button class="action-button" id="btn-turing" onclick="toggleTopicState('turing')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">7-Tuple TM: <strong>$(Q, \Sigma, \Gamma, \delta, q_0, B, F)$</strong></div>
+                <div class="summary-badge">Transition Map: <strong>$\delta: Q \times \Gamma \to Q \times \Gamma \times \{L, R\}$</strong></div>
+                <div class="summary-badge">Halting: <strong>Acceptance by Entering Stable Stop</strong></div>
+                <div class="summary-badge">Church-Turing: <strong>Effective Computability Definition</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Universal Machine Engine Architecture</div>
+                <p>A Turing Machine features an infinite read/write tape divided into cells containing symbols from tape alphabet $\Gamma$. Its execution path is driven by transition map $\delta: Q \times \Gamma \to Q \times \Gamma \times \{L, R\}$.</p>
+                [Image diagram of a formal Turing Machine model showing the finite control state unit, the read-write head, and the infinite tape with blank symbols]
+                <ul>
+                    <li><strong>Deterministic vs. Nondeterministic Turing Machines:</strong> Nondeterministic Turing Machines (NTMs) **do not possess extra computational power** over Deterministic Turing Machines (DTMs). Every NTM can be simulated by an equivalent DTM, though it may require an exponential step-count increase.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-chomsky-decidability">
+            <div class="card-header-row">
+                <h2>8. Chomsky Hierarchy & Decidability Decision Matrix</h2>
+                <button class="action-button" id="btn-chomsky-decidability" onclick="toggleTopicState('chomsky-decidability')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Type-3: <strong>Regular Languages (Finite Automata)</strong></div>
+                <div class="summary-badge">Type-2: <strong>Context-Free Languages (PDA)</strong></div>
+                <div class="summary-badge">Type-1: <strong>Context-Sensitive Languages (LBA)</strong></div>
+                <div class="summary-badge">Type-0: <strong>Recursively Enumerable (TM)</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Chomsky Language Taxonomy</div>
+                
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Grammar Class</th><th>Language Family Set</th><th>Accepting Automaton Machine Model</th><th>Production Constraint format</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Type-0</strong></td><td>Recursively Enumerable (REL)</td><td>Turing Machine (TM)</td><td>$\alpha \to \beta \quad (\text{No restrictions})$</td></tr>
+                            <tr><td>-</td><td>Recursive (Decidable)</td><td>Halting Turing Machine (HTM)</td><td>Terminates reliably for all inputs</td></tr>
+                            <tr><td><strong>Type-1</strong></td><td>Context-Sensitive (CSL)</td><td>Linear Bounded Automaton (LBA)</td><td>$|\alpha| \le |\beta|$</td></tr>
+                            <tr><td><strong>Type-2</strong></td><td>Context-Free (CFL)</td><td>Pushdown Automaton (PDA)</td><td>$A \to \alpha \quad (A \in V)$</td></tr>
+                            <tr><td><strong>Type-3</strong></td><td>Regular Languages</td><td>Finite Automaton (DFA/NFA)</td><td>$A \to aB \text{ or } A \to a$</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Complete Decidability Decision Matrix</div>
+                <p>This table lists which structural properties are decidable (<strong>D</strong>) versus undecidable (<strong>U</strong>) across language classes:</p>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Decision Question Property</th><th>Regular</th><th>DCFL</th><th>CFL</th><th>CSL</th><th>REC</th><th>REL</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Membership:</strong> Is string $w \in L$?</td><td><strong>D</strong></td><td><strong>D</strong></td><td><strong>D</strong></td><td><strong>D</strong></td><td><strong>D</strong></td><td><strong>U</strong></td></tr>
+                            <tr><td><strong>Emptiness:</strong> Is language $L = \emptyset$?</td><td><strong>D</strong></td><td><strong>D</strong></td><td><strong>D</strong></td><td><strong>U</strong></td><td><strong>U</strong></td><td><strong>U</strong></td></tr>
+                            <tr><td><strong>Finiteness:</strong> Is language $L$ finite?</td><td><strong>D</strong></td><td><strong>D</strong></td><td><strong>D</strong></td><td><strong>U</strong></td><td><strong>U</strong></td><td><strong>U</strong></td></tr>
+                            <tr><td><strong>Equivalence:</strong> Is $L_1 = L_2$?</td><td><strong>D</strong></td><td><strong>D</strong></td><td><strong>U</strong></td><td><strong>U</strong></td><td><strong>U</strong></td><td><strong>U</strong></td></tr>
+                            <tr><td><strong>Intersection:</strong> Is $L_1 \cap L_2 = \emptyset$?</td><td><strong>D</strong></td><td><strong>U</strong></td><td><strong>U</strong></td><td><strong>U</strong></td><td><strong>U</strong></td><td><strong>U</strong></td></tr>
+                            <tr><td><strong>All-Strings:</strong> Is language $L = \Sigma^*$?</td><td><strong>D</strong></td><td><strong>D</strong></td><td><strong>U</strong></td><td><strong>U</strong></td><td><strong>U</strong></td><td><strong>U</strong></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Interactive Dashboard Tracking Logic
+        const TOC_Registry = [
+            { id: "regular-langs" },
+            { id: "minimization" },
+            { id: "pumping-regular" },
+            { id: "cfg" },
+            { id: "normal-forms" },
+            { id: "pda" },
+            { id: "turing" },
+            { id: "chomsky-decidability" }
+        ];
+
+        function scrollToCard(targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initAppTracker() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_toc_dashboard_progress')) || {};
+            
+            TOC_Registry.forEach(module => {
+                const status = !!userProgress[module.id];
+                
+                // Sync Checkboxes
+                const chk = document.getElementById(`nav-chk-${module.id}`);
+                if (chk) chk.checked = status;
+
+                // Sync Card Action Buttons
+                const btn = document.getElementById(`btn-${module.id}`);
+                if (btn) {
+                    if (status) {
+                        btn.innerText = "✓ Mastered";
+                        btn.classList.add('completed');
+                    } else {
+                        btn.innerText = "Mark Mastered";
+                        btn.classList.remove('completed');
+                    }
+                }
+            });
+            evaluateMetrics();
+        }
+
+        function updateProgressState(id, statusValue) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_toc_dashboard_progress')) || {};
+            userProgress[id] = statusValue;
+            localStorage.setItem('gate_toc_dashboard_progress', JSON.stringify(userProgress));
+
+            const chk = document.getElementById(`nav-chk-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (chk) chk.checked = statusValue;
+            if (btn) {
+                if (statusValue) {
+                    btn.innerText = "✓ Mastered";
+                    btn.classList.add('completed');
+                } else {
+                    btn.innerText = "Mark Mastered";
+                    btn.classList.remove('completed');
+                }
+            }
+            evaluateMetrics();
+        }
+
+        function toggleTopicState(id) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_toc_dashboard_progress')) || {};
+            updateProgressState(id, !userProgress[id]);
+        }
+
+        function syncCheckbox(id) {
+            const chk = document.getElementById(`nav-chk-${id}`);
+            if (chk) updateProgressState(id, chk.checked);
+        }
+
+        function evaluateMetrics() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_toc_dashboard_progress')) || {};
+            let matchCounter = 0;
+
+            TOC_Registry.forEach(module => {
+                if (userProgress[module.id] === true) matchCounter++;
+            });
+
+            const ratioFactor = TOC_Registry.length > 0 ? Math.round((matchCounter / TOC_Registry.length) * 100) : 0;
+            document.getElementById('metric-fill').style.width = ratioFactor + '%';
+            document.getElementById('metric-text').innerText = `${matchCounter}/${TOC_Registry.length} Modules Mastered (${ratioFactor}%)`;
+        }
+
+        window.onload = initAppTracker;
+    </script>
+</body>
+</html>

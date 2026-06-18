@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE — Database Management Systems (DBMS) Core Engine</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #0d9488;
+            --brand-accent: #ccfbf1;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        /* Split-Pane Framework */
+        #app-sidebar {
+            width: 330px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 330px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1200px;
+            width: calc(100% - 330px);
+        }
+
+        /* Sidebar Panels */
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #99f6e4; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #0f766e; letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #cbd5e1; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #0f766e; width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        /* Workspace Document Styles */
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        .summary-badge-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.75rem; background: var(--bg-workspace); padding: 1rem; border-radius: var(--radius-interactive); border: 1px solid var(--border-color); }
+        .summary-badge { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.35rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-bold); font-weight: 500; }
+        .summary-badge strong { color: #0f766e; }
+
+        .grid-block { margin-bottom: 2rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: #0f766e; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 0.75rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.5rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); }
+        th, td { padding: 0.85rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        pre { background-color: #0f172a; color: #f8fafc; padding: 1.25rem; border-radius: var(--radius-interactive); overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; margin: 0.75rem 0; }
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        .alert-box ul { margin-left: 1.25rem; }
+        .alert-box li { color: #7f1d1d; }
+
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+        pre code { background: none; padding: 0; color: inherit; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>DBMS Engine</h2>
+            <p>Database Management Systems</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Engine Verification</div>
+            <div class="metric-value" id="metric-text">0/8 Modules Mastered</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Foundations & Design</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-fundamentals')"><span>1. Architecture & ER Model</span><input type="checkbox" class="nav-checkbox" id="nav-chk-fundamentals" onclick="event.stopPropagation(); syncCheckbox('fundamentals')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-relational')"><span>2. Relational Keys Matrix</span><input type="checkbox" class="nav-checkbox" id="nav-chk-relational" onclick="event.stopPropagation(); syncCheckbox('relational')"></div></li>
+            
+            <div class="nav-heading">Query Languages</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-formal-query')"><span>3. Formal Languages (RA/RC)</span><input type="checkbox" class="nav-checkbox" id="nav-chk-formal-query" onclick="event.stopPropagation(); syncCheckbox('formal-query')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-sql')"><span>4. Structured SQL Engine</span><input type="checkbox" class="nav-checkbox" id="nav-chk-sql" onclick="event.stopPropagation(); syncCheckbox('sql')"></div></li>
+            
+            <div class="nav-heading">Schema Design</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-normalization')"><span>5. FDs & Normalization</span><input type="checkbox" class="nav-checkbox" id="nav-chk-normalization" onclick="event.stopPropagation(); syncCheckbox('normalization')"></div></li>
+            
+            <div class="nav-heading">Transaction Control</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-transactions')"><span>6. Transaction ACID Matrix</span><input type="checkbox" class="nav-checkbox" id="nav-chk-transactions" onclick="event.stopPropagation(); syncCheckbox('transactions')"></div></li>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-concurrency')"><span>7. Concurrency & Recovery</span><input type="checkbox" class="nav-checkbox" id="nav-chk-concurrency" onclick="event.stopPropagation(); syncCheckbox('concurrency')"></div></li>
+            
+            <div class="nav-heading">Storage Mechanics</div>
+            <li><div class="navigation-item" onclick="scrollToCard('sec-indexing')"><span>8. Tree-Based Indexing</span><input type="checkbox" class="nav-checkbox" id="nav-chk-indexing" onclick="event.stopPropagation(); syncCheckbox('indexing')"></div></li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>DBMS Technical Specification</h1>
+            <p>Relational foundations, dependency closure mathematics, isolation anomalies, and disk storage architectures.</p>
+        </header>
+
+        <section class="content-card" id="sec-fundamentals">
+            <div class="card-header-row">
+                <h2>1. System Fundamentals & ER Modeling</h2>
+                <button class="action-button" id="btn-fundamentals" onclick="toggleTopicState('fundamentals')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">DBMS: <strong>Centralized Data Control</strong></div>
+                <div class="summary-badge">File System: <strong>Redundant / Isolated Files</strong></div>
+                <div class="summary-badge">ER Model: <strong>Conceptual Structural Blueprint</strong></div>
+                <div class="summary-badge">Cardinality: <strong>Mapping Constraints Ratio</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">DBMS vs. File System Properties</div>
+                <ul>
+                    <li><strong>File System Disadvantages:</strong> Suffer from physical data dependence, structural data redundancy, storage inconsistency, lack of atomicity for concurrent operations, and poor security isolation.</li>
+                    <li><strong>DBMS Advantages:</strong> Guarantees systemic logical/physical data independence through a 3-schema architecture (External, Conceptual, Internal views). Provides centralized optimization, declarative query execution, and robust access controls.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Entity-Relationship (ER) Components</div>
+                <ul>
+                    <li><strong>Entity:</strong> A definable real-world object. Collected into *Entity Sets* (represented visually as rectangles). **Weak Entities** lack a primary key of their own and depend on an identifying strong entity set (represented as double rectangles).</li>
+                    <li><strong>Attributes:</strong> Characteristic properties of entities (represented as ellipses).
+                        <ul>
+                            <li>*Simple vs. Composite:* Single independent values vs. components that can be broken down further (e.g., Address broken into Street, City).</li>
+                            <li>*Single-valued vs. Multi-valued:* Single values vs. arrays of multiple values (e.g., Phone Numbers; represented as double ellipses).</li>
+                            <li>*Derived:* Values calculated dynamically from other existing data (e.g., Age computed from Date of Birth; represented as dashed ellipses).</li>
+                        </ul>
+                    </li>
+                    <li><strong>Relationships:</strong> Associations linking multiple entities together (represented as diamonds).</li>
+                    <li><strong>Cardinality Ratios:</strong> Mapping constraints that restrict how many relationship instances an entity can participate in: **$1:1$, $1:N$, $N:1$, or $M:N$**.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Design Traps:</strong>
+                    <ul>
+                        <li><strong>ER-to-Relational Structural Reduction Rules:</strong> Binary $M:N$ relationships **always require a dedicated junction table** containing foreign keys pointing to both participating entities. Conversely, $1:N$ relationships can be optimized by avoiding a separate table and simply embedding the primary key of the "$1$" side as a foreign key column directly inside the "$N$" side table.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-relational">
+            <div class="card-header-row">
+                <h2>2. Relational Model & Relational Keys</h2>
+                <button class="action-button" id="btn-relational" onclick="toggleTopicState('relational')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Super Key: <strong>Uniqueness Property Only</strong></div>
+                <div class="summary-badge">Candidate Key: <strong>Minimal Uniqueness Set</strong></div>
+                <div class="summary-badge">Primary Key: <strong>Selected Non-Null Candidate</strong></div>
+                <div class="summary-badge">Foreign Key: <strong>Referential Integrity Variable</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Database Keys Hierarchy</div>
+                <ul>
+                    <li><strong>Super Key (SK):</strong> Any set of one or more columns within a relation that guarantees unique identification for every row. If $K$ is a super key, then any superset of $K$ is also a super key.</li>
+                    <li><strong>Candidate Key (CK):</strong> A **minimal** super key. A super key is a candidate key if and only if removing any column from it breaks its uniqueness property.</li>
+                    <li><strong>Primary Key (PK):</strong> The specific candidate key chosen by the database designer to uniquely identify rows in the table. Must be strictly unique and **cannot contain null values**.</li>
+                    <li><strong>Alternate Key:</strong> Any candidate key that was not selected to be the primary key.</li>
+                    <li><strong>Foreign Key (FK):</strong> A column or group of columns that references the primary key of another table, enforcing **Referential Integrity Constraints** across relations.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Referential Integrity Violation Rules</div>
+                <p>When rows in a referenced parent table are updated or deleted, foreign key configurations determine how the system maintains data integrity:</p>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Action Modifier Configuration</th><th>Behavioral Policy Effect on Foreign Key Records</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>ON DELETE RESTRICT / NO ACTION</code></td><td>Rejects the delete request on the parent table if matching child rows exist.</td></tr>
+                            <tr><td><code>ON DELETE CASCADE</code></td><td>Deletes the referencing child rows from the child table automatically.</td></tr>
+                            <tr><td><code>ON DELETE SET NULL</code></td><td>Updates the referencing columns in the child rows to <code>NULL</code>.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Key Counting Anomalies:</strong>
+                    <ul>
+                        <li><strong>Combinatorial Key Calculations:</strong> Given a relation $R(A_1, A_2, \dots, A_n)$ where the only candidate keys are individual single attributes $A_1$ and $A_2$: The total number of Super Keys possible is calculated by finding all subsets that contain either $A_1$, $A_2$, or both, which equals:
+                            $$\text{Total Super Keys} = 2^{n-1} + 2^{n-1} - 2^{n-2} = 3 \times 2^{n-2}$$
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-formal-query">
+            <div class="card-header-row">
+                <h2>3. Relational Algebra & Calculus Framework</h2>
+                <button class="action-button" id="btn-formal-query" onclick="toggleTopicState('formal-query')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Relational Algebra: <strong>Procedural Engine</strong></div>
+                <div class="summary-badge">Selection (σ): <strong>Row Horizontal Filter</strong></div>
+                <div class="summary-badge">Projection (π): <strong>Column Vertical Filter</strong></div>
+                <div class="summary-badge">Calculus: <strong>Declarative Predicate Model</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Relational Algebra Operations Reference</div>
+                <ul>
+                    <li><strong>Selection ($\sigma_p(R)$):</strong> Filters rows from a relation based on a selection predicate condition $p$. (Horizontal partitioning mechanism).</li>
+                    <li><strong>Projection ($\pi_A(R)$):</strong> Extracts specified columns $A$ from a relation. **Automatically removes duplicate rows** to maintain proper mathematical set properties.</li>
+                    <li><strong>Cartesian Product ($R \times S$):</strong> Combines every row from relation $R$ with every row from relation $S$. If $R$ has $n_1$ rows and $S$ has $n_2$ rows, the result contains $n_1 \times n_2$ rows.</li>
+                    <li><strong>Natural Join ($R \bowtie S$):</strong> Combines rows from two relations that have matching values in their shared, common columns.</li>
+                    <li><strong>Set Operations Rules:</strong> **Union ($\cup$), Intersection ($\cap$), and Set Difference ($-$)** can only be performed if the participating relations are **Union-Compatible** (meaning they have the exact same number of columns matching identical data domains in order).</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Relational Calculus Definitions</div>
+                <ul>
+                    <li><strong>Tuple Relational Calculus (TRC):</strong> A declarative, non-procedural language that describes a query using predicate expressions filtering tuple variables:
+                        $$\{ t \mid P(t) \}$$
+                        Finds all tuples $t$ that satisfy the logical predicate condition $P(t)$.
+                    </li>
+                    <li><strong>Domain Relational Calculus (DRC):</strong> Uses variables that target individual column domains rather than entire records:
+                        $$\{\langle x_1, x_2, \dots, x_n \rangle \mid P(x_1, x_2, \dots, x_n)\}$$
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Formal Quirks:</strong>
+                    <ul>
+                        <li><strong>Safe Expressions Requirement:</strong> Relational calculus queries can accidentally define infinite result sets—such as the expression $\{ t \mid \neg(t \in R) \}$, which matches all possible data points *not* in table $R$. To prevent this, queries must be restricted to **Safe Expressions**, meaning they only return values contained within the database's known data domains.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-sql">
+            <div class="card-header-row">
+                <h2>4. Structured SQL Engine, Joins & Views</h2>
+                <button class="action-button" id="btn-sql" onclick="toggleTopicState('sql')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">DDL: <strong>CREATE / ALTER / DROP</strong></div>
+                <div class="summary-badge">DML: <strong>SELECT / INSERT / UPDATE</strong></div>
+                <div class="summary-badge">Inner Join: <strong>Strict Condition Match Only</strong></div>
+                <div class="summary-badge">Outer Join: <strong>Preserves Non-Matching Rows</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">SQL Sub-Language Classifications</div>
+                <ul>
+                    <li><strong>DDL (Data Definition Language):</strong> Defines and modifies the physical database layout. Commands include `CREATE`, `ALTER`, `DROP`, and `TRUNCATE`. DDL changes are **implicitly auto-committed** to disk.</li>
+                    <li><strong>DML (Data Manipulation Language):</strong> Retrieves and modifies row-level data within tables. Commands include `SELECT`, `INSERT`, `UPDATE`, and `DELETE`.</li>
+                    <li><strong>DCL (Data Control Language):</strong> Manages user access permissions. Commands: `GRANT` and `REVOKE`.</li>
+                    <li><strong>TCL (Transaction Control Language):</strong> Manages transactional processing blocks. Commands: `COMMIT`, `ROLLBACK`, and `SAVEPOINT`.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The Joins Reference Matrix</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Join Framework</th><th>Behavioral Data Processing Strategy</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>INNER JOIN</code></td><td>Returns only rows where the join predicate condition is met on both sides.</td></tr>
+                            <tr><td><code>LEFT OUTER JOIN</code></td><td>Returns all rows from the left table, plus matched rows from the right table (pads unmatched fields with <code>NULL</code>).</td></tr>
+                            <tr><td><code>RIGHT OUTER JOIN</code></td><td>Returns all rows from the right table, plus matched rows from the left table (pads unmatched fields with <code>NULL</code>).</td></tr>
+                            <tr><td><code>FULL OUTER JOIN</code></td><td>Combines Left and Right outer joins, preserving all rows from both tables and padding gaps with <code>NULL</code>.</td></tr>
+                            <tr><td><code>SELF JOIN</code></td><td>Joins a table to itself by creating distinct table aliases (e.g., matching employees to managers within an employee table).</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Views, Triggers, and Assertions</div>
+                <ul>
+                    <li><strong>Views:</strong> Virtual tables defined by an underlying query. They do not store physical data independently unless configured as a materialized view.</li>
+                    <li><strong>Triggers:</strong> Event-driven procedures executed automatically by the database engine in response to specific operations like `INSERT`, `UPDATE`, or `DELETE` on a table.</li>
+                    <li><strong>Assertions:</strong> Declarative database-level constraints that check boolean expressions across multiple tables to ensure data integrity. (Supported conceptually in standard SQL, but rarely implemented natively by production database engines due to high performance overhead).</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Query Pitfalls:</strong>
+                    <ul>
+                        <li><strong>SQL Three-Valued Logic Evaluation:</strong> SQL evaluates logical comparisons using three possible states: `TRUE`, `FALSE`, or `UNKNOWN`. Any direct comparison with a null value (e.g., `WHERE Column = NULL` or `WHERE Column != NULL`) always evaluates to `UNKNOWN` and fails to return rows. To safely find null values, you must use the explicit operators **`IS NULL`** or **`IS NOT NULL`**.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-normalization">
+            <div class="card-header-row">
+                <h2>5. Functional Dependencies & Normalization Engine</h2>
+                <button class="action-button" id="btn-normalization" onclick="toggleTopicState('normalization')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Closure: <strong>Attribute Set Reachability</strong></div>
+                <div class="summary-badge">1NF: <strong>Atomic Column Values</strong></div>
+                <div class="summary-badge">2NF: <strong>No Partial Dependencies</strong></div>
+                <div class="summary-badge">3NF: <strong>No Transitive Dependencies</strong></div>
+                <div class="summary-badge">BCNF: <strong>Left Side Must Be Super Key</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Functional Dependencies (FD) Theory</div>
+                <p>An FD expression $X \rightarrow Y$ states that if two rows match on their values for attribute set $X$, they must also match on their values for attribute set $Y$.
+                    <br>The **Attribute Closure** ($X^+$) is the complete set of all attributes whose values can be determined from $X$ by applying Armstrong's Axioms (Reflexivity, Augmentation, Transitivity).
+                </p>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Database Normal Forms Reference</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Normal Form</th><th>Core Target Condition Constraint Rules</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>1NF</strong></td><td>All column values must be strictly atomic. Multi-valued attributes and nested tables are prohibited.</td></tr>
+                            <tr><td><strong>2NF</strong></td><td>Must be in 1NF, and **no partial dependencies are allowed**. No non-prime attribute can depend on a proper subset of any candidate key.</td></tr>
+                            <tr><td><strong>3NF</strong></td><td>Must be in 2NF. For every non-trivial FD $X \rightarrow Y$, **either $X$ is a super key or $Y$ is a prime attribute** (part of a candidate key). Eliminates transitive dependencies.</td></tr>
+                            <tr><td><strong>BCNF</strong></td><td>A stricter version of 3NF. For every non-trivial FD $X \rightarrow Y$, **$X$ must be a super key**. Eliminated anomalies caused by overlapping candidate keys.</td></tr>
+                            <tr><td><strong>4NF</strong></td><td>Must be in BCNF, and cannot contain non-trivial **Multi-valued Dependencies** ($X \rightarrow\rightarrow Y$).</td></tr>
+                            <tr><td><strong>5NF</strong></td><td>Deals with **Join Dependencies**. A relation can be broken down into smaller tables and perfectly reconstructed without introducing spurious rows.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Deconstructive Trade-offs:</strong>
+                    <ul>
+                        <li><strong>3NF vs. BCNF Trade-off Matrix:</strong> Any relation can be decomposed into smaller 3NF tables while guaranteeing both a **Lossless Join** property and **Dependency Preservation**. However, decomposing a relation into stricter BCNF tables guarantees a lossless join but **cannot always preserve all original functional dependencies**.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-transactions">
+            <div class="card-header-row">
+                <h2>6. Transaction Management & ACID Properties</h2>
+                <button class="action-button" id="btn-transactions" onclick="toggleTopicState('transactions')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Atomicity: <strong>All or Nothing Execution</strong></div>
+                <div class="summary-badge">Consistency: <strong>Preserves Schema Constraints</strong></div>
+                <div class="summary-badge">Isolation: <strong>Concurrently Hidden States</strong></div>
+                <div class="summary-badge">Durability: <strong>Committed States Survive Crashes</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">The ACID Property Framework</div>
+                <ul>
+                    <li><strong>Atomicity:</strong> Guarantees that a transaction executes completely or not at all. Managed by the storage engine's transaction log components.</li>
+                    <li><strong>Consistency:</strong> Ensures a transaction transitions the database from one valid state to another, maintaining all schema constraints and rules.</li>
+                    <li><strong>Isolation:</strong> Keeps the intermediate state changes of concurrent transactions hidden from each other. Managed by the database's concurrency control components.</li>
+                    <li><strong>Durability:</strong> Guarantees that once a transaction commits, its data changes are permanently saved to non-volatile storage and will survive subsequent system crashes. Managed by recovery subsystem components.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Serializability Theory</div>
+                <ul>
+                    <li><strong>Conflict Serializability:</strong> A concurrent schedule is conflict serializable if it is topolgically equivalent to a sequential execution of those transactions. This is verified by checking for cycles in a **Precedence Graph**.
+                        <br>A conflict occurs if two operations belong to different transactions, target the exact same data item, and **at least one of the operations is a write ($W$)**.
+                    </li>
+                    <li><strong>View Serializability:</strong> A less restrictive definition of schedule equivalence that focuses on matching the read, write, and final write behaviors across transactions. Every conflict serializable schedule is view serializable, but some view serializable schedules are not conflict serializable (these are characterized by the presence of **blind writes**).</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Isolation Anomalies:</strong>
+                    <ul>
+                        <li><strong>Dirty Read (Read Uncommitted Data):</strong> Occurs when Transaction 1 modifies a row, Transaction 2 reads that modified row, and then Transaction 1 rolls back its changes, leaving Transaction 2 with invalid data that technically never existed.</li>
+                        <li><strong>Non-Repeatable Read:</strong> Occurs when Transaction 1 reads a row, Transaction 2 updates or deletes that same row and commits, and Transaction 1 re-reads the row only to find its values have changed.</li>
+                        <li><strong>Phantom Read:</strong> Occurs when Transaction 1 runs a query to read a set of rows matching a search criteria, Transaction 2 inserts new rows that match that criteria and commits, and Transaction 1 reruns the query only to find new "phantom" rows in the results.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-concurrency">
+            <div class="card-header-row">
+                <h2>7. Concurrency Control & Recovery Systems</h2>
+                <button class="action-button" id="btn-concurrency" onclick="toggleTopicState('concurrency')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">Shared (S): <strong>Concurrent Read Access Lock</strong></div>
+                <div class="summary-badge">Exclusive (X): <strong>Isolated Single Write Lock</strong></div>
+                <div class="summary-badge">Basic 2PL: <strong>Guarantees Serializability</strong></div>
+                <div class="summary-badge">Strict 2PL: <strong>Prevents Cascading Rollbacks</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Two-Phase Locking (2PL) Protocols</div>
+                <ul>
+                    <li><strong>Growing Phase:</strong> A transaction can acquire new locks but is not allowed to release any existing locks.</li>
+                    <li><strong>Shrinking Phase:</strong> A transaction can release locks but cannot acquire any new ones.</li>
+                    <li><strong>2PL Classifications:</strong>
+                        <ul>
+                            <li>*Basic 2PL:* Guarantees conflict serializability, but can suffer from **Cascading Rollbacks** if a transaction aborts after releasing locks on data that other transactions have already read.</li>
+                            <li>*Strict 2PL:* Requires that all **Exclusive (X) locks** be held until the transaction fully commits or aborts, preventing cascading rollbacks.</li>
+                            <li>*Rigorous 2PL:* Stricter still, requiring **all locks (both Shared and Exclusive)** to be held until the transaction finishes.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Log-Based Recovery Mechanics</div>
+                <p>The system records all data modifications to an append-only **Write-Ahead Log (WAL)** on stable storage before modifying the actual database files on disk. During recovery after a crash, the system processes log records using two groups:</p>
+                <ul>
+                    <li><strong>UNDO List:</strong> Contains transactions that were still active or uncommitted when the crash occurred; their partial changes are reversed to restore data consistency.</li>
+                    <li><strong>REDO List:</strong> Contains transactions that successfully committed before the crash; their changes are reapplied to ensure durability.</li>
+                    <li><strong>Checkpoints:</strong> Periodic operations that flush all dirty log buffers and database pages to disk. This bounds the recovery process, as the system does not need to re-evaluate log records written before the latest completed checkpoint.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Locking Traps:</strong>
+                    <ul>
+                        <li><strong>Deadlocks in 2PL:</strong> While the Two-Phase Locking protocol guarantees conflict serializability, it **does not prevent deadlocks**. Deadlocks occur when transactions fall into a cyclic wait condition, each holding a lock the other needs. Deadlocks must be handled using detection (checking Wait-For Graphs) or prevention strategies (like the Wait-Die or Wound-Wait timestamp schemes).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-indexing">
+            <div class="card-header-row">
+                <h2>8. Physical Disk Storage & Indexing Architectures</h2>
+                <button class="action-button" id="btn-indexing" onclick="toggleTopicState('indexing')">Mark Mastered</button>
+            </div>
+
+            <div class="summary-badge-grid">
+                <div class="summary-badge">B-Tree: <strong>Data Pointers in Internal Nodes</strong></div>
+                <div class="summary-badge">B+ Tree: <strong>Data Pointers in Leaf Nodes Only</strong></div>
+                <div class="summary-badge">Leaf Links: <strong>Sequential Range Scan Chain</strong></div>
+                <div class="summary-badge">Fan-out: <strong>High Node Branching Factor</strong></div>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">B-Tree vs. B+ Tree Architectural Structures</div>
+                <ul>
+                    <li><strong>B-Tree Structure:</strong> A self-balancing search tree where internal nodes store search keys alongside their corresponding record pointers. This can reduce lookup times for frequently accessed records near the root, but limits the node's branching factor (fan-out).</li>
+                    <li><strong>B+ Tree Structure:</strong> Internal nodes store search keys exclusively to route lookups; **all actual data record pointers are stored in the leaf nodes**. This architecture maximizes the node branching factor, allowing the tree to remain short and reducing disk I/O operations.</li>
+                    <li><strong>Leaf Pointer Chain:</strong> Leaf nodes in a B+ Tree are linked together sequentially in a doubly-linked chain. This allows for highly efficient **range query scans**, whereas a standard B-Tree requires expensive cross-level tree traversals to perform range lookups.</li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">B+ Tree Node Structural Constraint Equations</div>
+                <p>For a B+ Tree node of order $p$ stored in a disk block of size $B$ bytes, where each search key takes $K$ bytes, each block pointer takes $P$ bytes, and each data record pointer takes $D$ bytes:</p>
+                <ul>
+                    <li><strong>Internal Node Order Constraint Equation:</strong>
+                        $$p \cdot P + (p - 1) \cdot K \le B$$
+                    </li>
+                    <li><strong>Leaf Node Order Constraint Equation:</strong>
+                        $$q \cdot K + q \cdot D + P \le B$$
+                    </li>
+                </ul>
+            </div>
+
+            <div class="grid-block">
+                <div class="alert-box">
+                    <strong>Critical Structural Limits:</strong>
+                    <ul>
+                        <li><strong>Node Fill Constraints:</strong> Except for the root node, all internal and leaf nodes in a B/B+ tree of order $p$ **must always remain at least half-full** to maintain balance. Each internal node must contain at least $\lceil p/2 \rceil$ block pointers, failing which triggers structural underflow merges or key redistribution operations.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Interactive Progress Engine Mechanics
+        const DBMS_Registry = [
+            { id: "fundamentals" },
+            { id: "relational" },
+            { id: "formal-query" },
+            { id: "sql" },
+            { id: "normalization" },
+            { id: "transactions" },
+            { id: "concurrency" },
+            { id: "indexing" }
+        ];
+
+        function scrollToCard(targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initAppTracker() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_dbms_dashboard_progress')) || {};
+            
+            DBMS_Registry.forEach(module => {
+                const status = !!userProgress[module.id];
+                
+                // Sync Checkboxes
+                const chk = document.getElementById(`nav-chk-${module.id}`);
+                if (chk) chk.checked = status;
+
+                // Sync Content Action Buttons
+                const btn = document.getElementById(`btn-${module.id}`);
+                if (btn) {
+                    if (status) {
+                        btn.innerText = "✓ Mastered";
+                        btn.classList.add('completed');
+                    } else {
+                        btn.innerText = "Mark Mastered";
+                        btn.classList.remove('completed');
+                    }
+                }
+            });
+            evaluateMetrics();
+        }
+
+        function updateProgressState(id, statusValue) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_dbms_dashboard_progress')) || {};
+            userProgress[id] = statusValue;
+            localStorage.setItem('gate_dbms_dashboard_progress', JSON.stringify(userProgress));
+
+            const chk = document.getElementById(`nav-chk-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+
+            if (chk) chk.checked = statusValue;
+            if (btn) {
+                if (statusValue) {
+                    btn.innerText = "✓ Mastered";
+                    btn.classList.add('completed');
+                } else {
+                    btn.innerText = "Mark Mastered";
+                    btn.classList.remove('completed');
+                }
+            }
+            evaluateMetrics();
+        }
+
+        function toggleTopicState(id) {
+            let userProgress = JSON.parse(localStorage.getItem('gate_dbms_dashboard_progress')) || {};
+            updateProgressState(id, !userProgress[id]);
+        }
+
+        function syncCheckbox(id) {
+            const chk = document.getElementById(`nav-chk-${id}`);
+            if (chk) updateProgressState(id, chk.checked);
+        }
+
+        function evaluateMetrics() {
+            let userProgress = JSON.parse(localStorage.getItem('gate_dbms_dashboard_progress')) || {};
+            let matchCounter = 0;
+
+            DBMS_Registry.forEach(module => {
+                if (userProgress[module.id] === true) matchCounter++;
+            });
+
+            const ratioFactor = DBMS_Registry.length > 0 ? Math.round((matchCounter / DBMS_Registry.length) * 100) : 0;
+            document.getElementById('metric-fill').style.width = ratioFactor + '%';
+            document.getElementById('metric-text').innerText = `${matchCounter}/${DBMS_Registry.length} Modules Mastered (${ratioFactor}%)`;
+        }
+
+        window.onload = initAppTracker;
+    </script>
+</body>
+</html>

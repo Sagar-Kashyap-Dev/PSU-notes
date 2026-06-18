@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE CSE — Ultimate Algorithms & Complexity Blueprint</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&family=JetBrains+Mono:wght=400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-workspace: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-element: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --text-muted: #64748b;
+            --brand-primary: #2563eb;
+            --brand-accent: #eff6ff;
+            --status-success: #10b981;
+            --status-alert: #ef4444;
+            --status-alert-bg: #fff5f5;
+            --radius-main: 12px;
+            --radius-interactive: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg-workspace); 
+            color: var(--text-main); 
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        #app-sidebar {
+            width: 320px;
+            height: 100vh;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        #app-viewport {
+            margin-left: 320px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1200px;
+            width: calc(100% - 320px);
+        }
+
+        .sidebar-brand-panel { padding: 2rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .sidebar-brand-panel h2 { font-size: 1.25rem; color: var(--text-bold); font-weight: 700; }
+        .sidebar-brand-panel p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+        .metric-card { background-color: var(--brand-accent); border: 1px solid #dbeafe; padding: 1.25rem; border-radius: var(--radius-interactive); margin: 1.5rem; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--brand-primary); letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.35rem; font-weight: 700; color: var(--text-bold); margin-top: 0.25rem; }
+        .progress-track { background-color: #e2e8f0; height: 6px; border-radius: 3px; margin-top: 0.75rem; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: var(--brand-primary); width: 0%; transition: width 0.3s ease; }
+
+        .navigation-menu { overflow-y: auto; flex: 1; padding: 0 1rem 2rem 1rem; list-style: none; }
+        .nav-heading { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; padding: 0.75rem 0.5rem; letter-spacing: 0.5px; }
+        .navigation-item { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0.75rem; border-radius: var(--radius-interactive); cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; margin-bottom: 0.25rem; }
+        .navigation-item:hover { background-color: var(--bg-element); color: var(--text-bold); }
+        .nav-checkbox { transform: scale(1.1); cursor: pointer; }
+
+        .viewport-header { margin-bottom: 3rem; }
+        .viewport-header h1 { font-size: 2.25rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+        .viewport-header p { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.05rem; }
+
+        .content-card { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-main); padding: 2.5rem; margin-bottom: 3rem; box-shadow: var(--shadow-sm); scroll-margin-top: 2rem; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+        .card-header-row h2 { font-size: 1.6rem; color: var(--text-bold); font-weight: 700; letter-spacing: -0.5px; }
+
+        .action-button { background-color: var(--bg-element); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.5rem 1rem; border-radius: var(--radius-interactive); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .action-button.completed { background-color: var(--status-success); color: white; border-color: var(--status-success); }
+
+        .grid-block { margin-bottom: 2.5rem; }
+        .block-title { font-size: 0.85rem; font-weight: 700; color: var(--brand-primary); text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 1rem; border-left: 4px solid var(--brand-primary); padding-left: 0.5rem; }
+        
+        ul, ol { margin-left: 1.5rem; color: var(--text-main); font-size: 0.95rem; }
+        li { margin-bottom: 0.65rem; line-height: 1.6; }
+        li strong { color: var(--text-bold); }
+
+        .data-table-wrapper { border: 1px solid var(--border-color); border-radius: var(--radius-interactive); overflow: hidden; margin: 1.25rem 0; box-shadow: var(--shadow-sm); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background-color: var(--bg-surface); min-width: 950px; }
+        th, td { padding: 0.9rem 1.15rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+        th { background-color: var(--bg-element); font-weight: 600; color: var(--text-bold); font-size: 0.85rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+
+        .diagnostic-tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .tag-fail { background-color: #fee2e2; color: #b91c1c; }
+        .tag-pass { background-color: #d1fae5; color: #065f46; }
+
+        .alert-box { background-color: var(--status-alert-bg); border-left: 4px solid var(--status-alert); padding: 1.25rem; border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0; margin: 1.5rem 0; }
+        .alert-box strong { color: var(--status-alert); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; }
+        
+        code { font-family: 'JetBrains Mono', monospace; background-color: var(--bg-element); padding: 0.15rem 0.35rem; border-radius: 4px; color: #0f172a; font-size: 0.9em; font-weight: 500; }
+    </style>
+</head>
+<body class="tex2jax_ignore">
+
+    <nav id="app-sidebar">
+        <div class="sidebar-brand-panel">
+            <h2>GATE Master Engine</h2>
+            <p>Algorithms & Complexities</p>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Blueprint Tracker</div>
+            <div class="metric-value" id="metric-text">0/5 Completed</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="metric-fill"></div>
+            </div>
+        </div>
+
+        <ul class="navigation-menu">
+            <div class="nav-heading">Searching Modality</div>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-searching')">
+                    <span>1. Searching Frameworks</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-searching" onclick="event.stopPropagation(); syncCheckbox('searching')">
+                </div>
+            </li>
+
+            <div class="nav-heading">Sorting Structures</div>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-sorting')">
+                    <span>2. Sorting Algorithms</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-sorting" onclick="event.stopPropagation(); syncCheckbox('sorting')">
+                </div>
+            </li>
+
+            <div class="nav-heading">Hierarchical Systems</div>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-trees')">
+                    <span>3. Binary & Balanced Trees</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-trees" onclick="event.stopPropagation(); syncCheckbox('trees')">
+                </div>
+            </li>
+
+            <div class="nav-heading">Graph Structures</div>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-graphs')">
+                    <span>4. Graph Traversals (BFS/DFS)</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-graphs" onclick="event.stopPropagation(); syncCheckbox('graphs')">
+                </div>
+            </li>
+            <li>
+                <div class="navigation-item" onclick="scrollToCard('sec-optimization')">
+                    <span>5. Optimization & Shortest Paths</span>
+                    <input type="checkbox" class="nav-checkbox" id="nav-chk-optimization" onclick="event.stopPropagation(); syncCheckbox('optimization')">
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <main id="app-viewport" class="tex2jax_process">
+        <header class="viewport-header">
+            <h1>Algorithms Comprehensive Architectural Blueprint</h1>
+            <p>Unified data matrices containing runtime complexities, theoretical explanations, execution edge cases, and structural failure constraints for GATE CSE.</p>
+        </header>
+
+        <section class="content-card" id="sec-searching">
+            <div class="card-header-row">
+                <h2>1. Searching Algorithms & Recurrence Complexities</h2>
+                <button class="action-button" id="btn-searching" onclick="toggleTopicState('searching')">Mark Completed</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Complexity Profile & Engine Properties</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Algorithm</th><th>Best Case</th><th>Worst Case</th><th>Average Case</th><th>Auxiliary Space</th><th>Edge Cases & Failure Points</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Linear Search</strong></td>
+                                <td>$\Omega(1)$</td>
+                                <td>$\mathcal{O}(N)$</td>
+                                <td>$\Theta(N)$</td>
+                                <td>$\mathcal{O}(1)$</td>
+                                <td>Processes items sequentially. **Edge Case:** Works on unsorted collections, but yields poor performance scaling over large scales.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Binary Search</strong></td>
+                                <td>$\Omega(1)$</td>
+                                <td>$\mathcal{O}(\log N)$</td>
+                                <td>$\Theta(\log N)$</td>
+                                <td>$\mathcal{O}(1)$ iterative / $\mathcal{O}(\log N)$ recursive</td>
+                                <td><span class="diagnostic-tag tag-fail">Fails</span> if data is unsorted or lacks random access indexes. `(low + high) / 2` causes integer overflow; use `low + (high - low) / 2`.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-sorting">
+            <div class="card-header-row">
+                <h2>2. Comparison & Non-Comparison Sorting Engines</h2>
+                <button class="action-button" id="btn-sorting" onclick="toggleTopicState('sorting')">Mark Completed</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Comprehensive Complexity & Stability Profile Matrix</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Algorithm</th><th>Best Case</th><th>Worst Case</th><th>Average Case</th><th>Space</th><th>Stability</th><th>Execution Bounds & Failure Triggers</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Insertion Sort</strong></td>
+                                <td>$\Omega(N)$</td>
+                                <td>$\mathcal{O}(N^2)$</td>
+                                <td>$\Theta(N^2)$</td>
+                                <td>$\mathcal{O}(1)$</td>
+                                <td>Stable</td>
+                                <td>**Best Case:** Runs efficiently on nearly sorted inputs. **Worst Case:** Degrades when processing reverse-sorted inputs.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Selection Sort</strong></td>
+                                <td>$\Omega(N^2)$</td>
+                                <td>$\mathcal{O}(N^2)$</td>
+                                <td>$\Theta(N^2)$</td>
+                                <td>$\mathcal{O}(1)$</td>
+                                <td>Unstable</td>
+                                <td>Always executes exactly $\frac{N(N-1)}{2}$ comparisons, regardless of structural array patterns.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Bubble Sort</strong></td>
+                                <td>$\Omega(N)$</td>
+                                <td>$\mathcal{O}(N^2)$</td>
+                                <td>$\Theta(N^2)$</td>
+                                <td>$\mathcal{O}(1)$</td>
+                                <td>Stable</td>
+                                <td>Requires an early-termination tracking flag to hit its $\Omega(N)$ optimal runtime on sorted inputs.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Merge Sort</strong></td>
+                                <td>$\Omega(N \log N)$</td>
+                                <td>$\mathcal{O}(N \log N)$</td>
+                                <td>$\Theta(N \log N)$</td>
+                                <td>$\mathcal{O}(N)$</td>
+                                <td>Stable</td>
+                                <td>Divides collections symmetrically. <span class="diagnostic-tag tag-fail">Fails on Space</span> under strict, low-memory limits.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Quick Sort</strong></td>
+                                <td>$\Omega(N \log N)$</td>
+                                <td>$\mathcal{O}(N^2)$</td>
+                                <td>$\Theta(N \log N)$</td>
+                                <td>$\mathcal{O}(\log N)$</td>
+                                <td>Unstable</td>
+                                <td><span class="diagnostic-tag tag-fail">Degrades to $\mathcal{O}(N^2)$</span> on sorted or reverse-sorted inputs if using extreme values as pivots.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Heap Sort</strong></td>
+                                <td>$\Omega(N \log N)$</td>
+                                <td>$\mathcal{O}(N \log N)$</td>
+                                <td>$\Theta(N \log N)$</td>
+                                <td>$\mathcal{O}(1)$</td>
+                                <td>Unstable</td>
+                                <td>Maintains consistent performance across inputs, but stability is lost during the tree heapification phases.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-trees">
+            <div class="card-header-row">
+                <h2>3. Tree Architecture & Balanced Configurations</h2>
+                <button class="action-button" id="btn-trees" onclick="toggleTopicState('trees')">Mark Completed</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Structural Properties & Time Frameworks</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Tree Concept</th><th>Search/Insert Best</th><th>Search/Insert Worst</th><th>Space Bound</th><th>Structural Failures & Invariants</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Standard BST</strong></td>
+                                <td>$\Omega(\log N)$</td>
+                                <td>$\mathcal{O}(N)$</td>
+                                <td>$\mathcal{O}(N)$</td>
+                                <td><span class="diagnostic-tag tag-fail">Degrades</span> to a linear chain when processing pre-sorted inputs, reducing performance to matching standard linked lists.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>AVL Tree</strong></td>
+                                <td>$\Omega(\log N)$</td>
+                                <td>$\mathcal{O}(\log N)$</td>
+                                <td>$\mathcal{O}(N)$</td>
+                                <td>Maintains a strict balance factor balance condition $|\text{height}_L - \text{height}_R| \le 1$. Node removal can cause cascading rebalancing up to the root.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-graphs">
+            <div class="card-header-row">
+                <h2>4. Graph Traversals, State Explanations & Limits</h2>
+                <button class="action-button" id="btn-graphs" onclick="toggleTopicState('graphs')">Mark Completed</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Traversal Matrix (Time & Space Breakdown)</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Algorithm</th><th>Adjacency List Time</th><th>Adjacency Matrix Time</th><th>Auxiliary Space</th><th>Behavioral Rules & Edge-Case Failure Vectors</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>BFS</strong></td>
+                                <td>$\mathcal{O}(V + E)$</td>
+                                <td>$\mathcal{O}(V^2)$</td>
+                                <td>$\mathcal{O}(V)$ (Queue tracking)</td>
+                                <td>Identifies short paths across unweighted environments. <span class="diagnostic-tag tag-pass">Partial Coverage</span> occurs if components are disconnected.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DFS</strong></td>
+                                <td>$\mathcal{O}(V + E)$</td>
+                                <td>$\mathcal{O}(V^2)$</td>
+                                <td>$\mathcal{O}(V)$ (Stack tracking)</td>
+                                <td>Examines depths using a tracking stack. <span class="diagnostic-tag tag-fail">Stack Overflow Risk</span> if deep graph paths exceed standard memory configurations.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Topological Sort</strong></td>
+                                <td>$\mathcal{O}(V + E)$</td>
+                                <td>$\mathcal{O}(V^2)$</td>
+                                <td>$\mathcal{O}(V)$</td>
+                                <td><span class="diagnostic-tag tag-fail">Fails completely</span> if a cycle exists, as remaining nodes will maintain in-degrees greater than zero.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-card" id="sec-optimization">
+            <div class="card-header-row">
+                <h2>5. Greedy Optimization & Shortest Paths</h2>
+                <button class="action-button" id="btn-optimization" onclick="toggleTopicState('optimization')">Mark Completed</button>
+            </div>
+
+            <div class="grid-block">
+                <div class="block-title">Graph Core Shortest Path & Optimization Engine</div>
+                <div class="data-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Algorithm</th><th>Time Complexity Bounds</th><th>Space Bounds</th><th>Negative Edge Capability</th><th>Failure Invariant Vectors</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Dijkstra (Min-Heap)</strong></td>
+                                <td>$\mathcal{O}((V + E) \log V)$</td>
+                                <td>$\mathcal{O}(V)$</td>
+                                <td>No</td>
+                                <td><span class="diagnostic-tag tag-fail">Produces Incorrect Path Metrics</span> if negative edges are reachable, because evaluated nodes are locked eagerly.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Bellman-Ford</strong></td>
+                                <td>$\mathcal{O}(V \times E)$</td>
+                                <td>$\mathcal{O}(V)$</td>
+                                <td>Yes</td>
+                                <td>Does not finalize paths if negative weight cycles are present, but flags them explicitly on its $V$-th validation scan.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Floyd-Warshall</strong></td>
+                                <td>$\mathcal{O}(V^3)$</td>
+                                <td>$\mathcal{O}(V^2)$</td>
+                                <td>Yes</td>
+                                <td>Computes all-pairs paths using dynamic planning matrices. Detects negative loop errors if diagonal values become negative (`W[i][i] < 0`).</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Kruskal's MST</strong></td>
+                                <td>$\mathcal{O}(E \log E)$</td>
+                                <td>$\mathcal{O}(V)$ via Disjoint Sets</td>
+                                <td>Yes</td>
+                                <td>Sorts input collections linearly. If edge costs match, the resulting structure remains valid but loses structural uniqueness.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Prim's MST</strong></td>
+                                <td>$\mathcal{O}(E \log V)$</td>
+                                <td>$\mathcal{O}(V)$</td>
+                                <td>Yes</td>
+                                <td>Grows trees greedily from a root node. Functions correctly with negative values, but breaks down on directed connections.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+  <script>
+        const totalTopics = 5;
+        
+        // 1. Core State Initialization: Load existing progress from localStorage, or default to false
+        const stateTracker = {
+            'searching': localStorage.getItem('gate_state_searching') === 'true',
+            'sorting': localStorage.getItem('gate_state_sorting') === 'true',
+            'trees': localStorage.getItem('gate_state_trees') === 'true',
+            'graphs': localStorage.getItem('gate_state_graphs') === 'true',
+            'optimization': localStorage.getItem('gate_state_optimization') === 'true'
+        };
+
+        // 2. Lifecycle Hook: Render saved state into the UI on initial page load
+        window.addEventListener('DOMContentLoaded', () => {
+            for (let key in stateTracker) {
+                // Sync the checkbox input element
+                const chk = document.getElementById('nav-chk-' + key);
+                if (chk) chk.checked = stateTracker[key];
+                
+                // Sync the main section action buttons
+                updateDomState(key);
+            }
+            // Recalculate metrics based on retrieved records
+            recalculateMetrics();
+        });
+
+        function scrollToCard(id) {
+            const element = document.getElementById(id);
+            if(element) element.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 3. Persistent Mutators: Save changed states back to disk instantly
+        function syncCheckbox(key) {
+            const chk = document.getElementById('nav-chk-' + key);
+            stateTracker[key] = chk.checked;
+            
+            // Persist choice immediately
+            localStorage.setItem('gate_state_' + key, stateTracker[key]);
+            
+            updateDomState(key);
+            recalculateMetrics();
+        }
+
+        function toggleTopicState(key) {
+            stateTracker[key] = !stateTracker[key];
+            const chk = document.getElementById('nav-chk-' + key);
+            if (chk) chk.checked = stateTracker[key];
+            
+            // Persist choice immediately
+            localStorage.setItem('gate_state_' + key, stateTracker[key]);
+            
+            updateDomState(key);
+            recalculateMetrics();
+        }
+
+        function updateDomState(key) {
+            const btn = document.getElementById('btn-' + key);
+            if (!btn) return;
+            
+            if(stateTracker[key]) {
+                btn.innerText = "Completed ✓";
+                btn.classList.add('completed');
+            } else {
+                btn.innerText = "Mark Completed";
+                btn.classList.remove('completed');
+            }
+        }
+
+        function recalculateMetrics() {
+            let count = 0;
+            for(let key in stateTracker) {
+                if(stateTracker[key]) count++;
+            }
+            document.getElementById('metric-text').innerText = count + "/" + totalTopics + " Completed";
+            const percent = (count / totalTopics) * 100;
+            document.getElementById('metric-fill').style.width = percent + "%";
+        }
+    </script>
+</body>
+</html>

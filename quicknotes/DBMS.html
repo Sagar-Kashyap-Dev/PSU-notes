@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBMS Quick Revision Guide</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --border-color: #334155;
+            --success-color: #10b981;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .reset-btn {
+            background-color: #f43f5e;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .reset-btn:hover {
+            background-color: #e11d48;
+        }
+
+        .topic-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* Class triggered when checkbox is checked */
+        .topic-card.completed {
+            opacity: 0.4;
+            filter: grayscale(60%);
+            border-color: var(--success-color);
+        }
+
+        .topic-card.completed h2 {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--accent-color);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            user-select: none;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            transition: all 0.2s;
+        }
+
+        .checkbox-container:hover {
+            background: rgba(56, 189, 248, 0.2);
+        }
+
+        .checkbox-container input {
+            cursor: pointer;
+            accent-color: var(--success-color);
+            width: 16px;
+            height: 16px;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        ul {
+            margin: 0 0 15px 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .sub-list {
+            list-style-type: circle;
+            margin-top: 4px;
+        }
+
+        .formula-box {
+            background-color: rgba(15, 23, 42, 0.6);
+            padding: 10px 15px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+            font-family: "Courier New", Courier, monospace;
+            margin-bottom: 15px;
+            overflow-x: auto;
+        }
+
+        .none-text {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>DBMS Ultimate MCQ Revision Portal</h1>
+        <p>Track your preparation. Check off topics as you master them.</p>
+        <button class="reset-btn" onclick="clearProgress()">Reset All Progress</button>
+    </header>
+
+    <div class="topic-card" data-topic="dbms_basics">
+        <div class="card-header">
+            <h2>1. DBMS Basics</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>DBMS</strong> = software for storing and managing data.</li>
+            <li>Reduces redundancy.</li>
+            <li>Ensures consistency.</li>
+            <li>Supports data sharing.</li>
+            <li>Provides security and recovery.</li>
+        </ul>
+        <div class="section-title">Common MCQ Traps</div>
+        <ul>
+            <li>File system &rarr; high redundancy.</li>
+            <li>DBMS &rarr; controlled redundancy.</li>
+            <li>Data independence is a key feature of DBMS.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <p class="none-text">None.</p>
+    </div>
+
+    <div class="topic-card" data-topic="db_architecture">
+        <div class="card-header">
+            <h2>2. Database Architecture</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Three-Level Architecture:
+                <ul class="sub-list">
+                    <li>External Level (View Level)</li>
+                    <li>Conceptual Level (Logical Level)</li>
+                    <li>Internal Level (Physical Level)</li>
+                </ul>
+            </li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Physical Data Independence:</strong> Change internal schema without affecting conceptual schema.</li>
+            <li><strong>Logical Data Independence:</strong> Change conceptual schema without affecting external schema.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <p class="none-text">None.</p>
+    </div>
+
+    <div class="topic-card" data-topic="er_model">
+        <div class="card-header">
+            <h2>3. ER Model</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Entity:</strong> Real-world object.</li>
+            <li><strong>Attribute:</strong> Property of entity.</li>
+            <li><strong>Relationship:</strong> Association between entities.</li>
+            <li><strong>Types of Attributes:</strong> Simple, Composite, Single-valued, Multi-valued, Derived.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Primary Key:</strong> Uniquely identifies tuple.</li>
+            <li><strong>Candidate Key:</strong> Can become primary key.</li>
+            <li><strong>Super Key:</strong> Uniquely identifies tuple (may contain extra attributes).</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <p class="none-text">None.</p>
+    </div>
+
+    <div class="topic-card" data-topic="keys">
+        <div class="card-header">
+            <h2>4. Keys</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Primary Key:</strong> Unique, Not NULL.</li>
+            <li><strong>Foreign Key:</strong> References primary key of another table.</li>
+            <li><strong>Candidate Key:</strong> Minimal super key.</li>
+            <li><strong>Alternate Key:</strong> Candidate key not selected as primary.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Every primary key is a candidate key.</li>
+            <li>Every candidate key is a super key.</li>
+            <li>Every super key is <strong>NOT</strong> a candidate key.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <p class="none-text">None.</p>
+    </div>
+
+    <div class="topic-card" data-topic="relational_algebra">
+        <div class="card-header">
+            <h2>5. Relational Algebra</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Selection: &sigma;</li>
+            <li>Projection: &pi;</li>
+            <li>Union: &cup;</li>
+            <li>Intersection: &cap;</li>
+            <li>Difference: &minus;</li>
+            <li>Cartesian Product: &times;</li>
+            <li>Join: &bowtie;</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Selection &rarr; Rows</li>
+            <li>Projection &rarr; Columns</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <p class="none-text">None.</p>
+    </div>
+
+    <div class="topic-card" data-topic="sql">
+        <div class="card-header">
+            <h2>6. SQL</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>DDL:</strong> CREATE, ALTER, DROP, TRUNCATE</li>
+            <li><strong>DML:</strong> INSERT, UPDATE, DELETE</li>
+            <li><strong>DQL:</strong> SELECT</li>
+            <li><strong>DCL:</strong> GRANT, REVOKE</li>
+            <li><strong>TCL:</strong> COMMIT, ROLLBACK, SAVEPOINT</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>DELETE:</strong> Can be rolled back.</li>
+            <li><strong>TRUNCATE:</strong> Faster than DELETE. Removes all rows.</li>
+            <li><strong>DROP:</strong> Removes table structure and data.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="joins">
+        <div class="card-header">
+            <h2>7. Joins</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Inner Join:</strong> Matching rows only.</li>
+            <li><strong>Left Join:</strong> All rows from left table.</li>
+            <li><strong>Right Join:</strong> All rows from right table.</li>
+            <li><strong>Full Outer Join:</strong> All rows from both tables.</li>
+            <li><strong>Self Join:</strong> Table joined with itself.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Natural Join:</strong> Removes duplicate join columns.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="functional_dependency">
+        <div class="card-header">
+            <h2>8. Functional Dependency</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>A &rarr; B</strong> means: A determines B.</li>
+            <li>Types: Full Functional Dependency, Partial Dependency, Transitive Dependency</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Used in normalization.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <div class="formula-box">
+            Armstrong's Axioms:<br>
+            - Reflexivity<br>
+            - Augmentation<br>
+            - Transitivity
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="normalization">
+        <div class="card-header">
+            <h2>9. Normalization</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts & Traps</div>
+        <ul>
+            <li><strong>1NF:</strong> Atomic values only. <em>Trap:</em> No repeating groups.</li>
+            <li><strong>2NF:</strong> Must be in 1NF. Remove partial dependency. <em>Trap:</em> Applies mainly when composite key exists.</li>
+            <li><strong>3NF:</strong> Must be in 2NF. Remove transitive dependency.</li>
+            <li><strong>BCNF:</strong> Stronger than 3NF. Condition: For every FD X &rarr; Y, <strong>X must be a super key</strong>.</li>
+        </ul>
+        <div class="section-title">Common MCQ Order</div>
+        <div class="formula-box" style="text-align: center; border-left: 4px solid var(--success-color);">
+            1NF &rarr; 2NF &rarr; 3NF &rarr; BCNF
+        </div>
+    </div>
+
+    <div class="topic-card" data-topic="transactions">
+        <div class="card-header">
+            <h2>10. Transactions</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Transaction:</strong> Logical unit of work.</li>
+            <li><strong>ACID Properties:</strong>
+                <ul class="sub-list">
+                    <li><strong>A</strong> = Atomicity</li>
+                    <li><strong>C</strong> = Consistency</li>
+                    <li><strong>I</strong> = Isolation</li>
+                    <li><strong>D</strong> = Durability</li>
+                </ul>
+            </li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Commit:</strong> Makes changes permanent.</li>
+            <li><strong>Rollback:</strong> Undoes transaction.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="concurrency_control">
+        <div class="card-header">
+            <h2>11. Concurrency Control</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Problems:</strong> Lost Update, Dirty Read, Unrepeatable Read, Phantom Read</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Dirty Read:</strong> Reading uncommitted data.</li>
+        </ul>
+        <div class="section-title">Formulas</div>
+        <p class="none-text">None.</p>
+    </div>
+
+    <div class="topic-card" data-topic="serializability">
+        <div class="card-header">
+            <h2>12. Serializability</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Serial Schedule:</strong> One transaction at a time.</li>
+            <li><strong>Concurrent Schedule:</strong> Multiple transactions.</li>
+            <li><strong>Conflict Serializable:</strong> Equivalent to serial schedule.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Conflict Serializability is checked using a <strong>precedence graph</strong>.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="locking">
+        <div class="card-header">
+            <h2>13. Locking</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Shared Lock (S):</strong> Read only.</li>
+            <li><strong>Exclusive Lock (X):</strong> Read + Write.</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>Two-Phase Locking (2PL):</strong>
+                <ul class="sub-list">
+                    <li><strong>Growing Phase:</strong> Acquire locks.</li>
+                    <li><strong>Shrinking Phase:</strong> Release locks.</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="deadlock">
+        <div class="card-header">
+            <h2>14. Deadlock</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Occurs when processes wait indefinitely.</li>
+            <li><strong>Necessary Conditions:</strong>
+                <ul class="sub-list">
+                    <li>Mutual Exclusion</li>
+                    <li>Hold and Wait</li>
+                    <li>No Preemption</li>
+                    <li>Circular Wait</li>
+                </ul>
+            </li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li><strong>All four</strong> conditions must hold simultaneously.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="indexing">
+        <div class="card-header">
+            <h2>15. Indexing</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Primary Index</li>
+            <li>Secondary Index</li>
+            <li>Clustered Index</li>
+            <li>Non-Clustered Index</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Index improves: <strong>Search speed</strong></li>
+            <li>Index increases: <strong>Storage requirement</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="btree">
+        <div class="card-header">
+            <h2>16. B-Tree</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Balanced tree.</li>
+            <li>Used in indexing.</li>
+            <li>All leaves at same level.</li>
+        </ul>
+        <div class="section-title">Common MCQs (Complexities)</div>
+        <ul>
+            <li>Search: O(log n)</li>
+            <li>Insert: O(log n)</li>
+            <li>Delete: O(log n)</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="bplus_tree">
+        <div class="card-header">
+            <h2>17. B+ Tree</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li>Data stored <strong>only in leaf nodes</strong>.</li>
+            <li>Leaves linked together.</li>
+            <li>Better for range queries.</li>
+        </ul>
+        <div class="section-title">Common MCQ</div>
+        <ul>
+            <li><strong>Difference from B-Tree:</strong> B+ Tree internal nodes contain only keys.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="raid">
+        <div class="card-header">
+            <h2>18. RAID</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>RAID 0:</strong> Striping | No redundancy</li>
+            <li><strong>RAID 1:</strong> Mirroring | High reliability</li>
+            <li><strong>RAID 5:</strong> Distributed parity</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Highest reliability &rarr; <strong>RAID 1</strong></li>
+            <li>Best performance &rarr; <strong>RAID 0</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="file_organization">
+        <div class="card-header">
+            <h2>19. File Organization</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Facts / Points</div>
+        <ul>
+            <li><strong>Heap File:</strong> Unordered</li>
+            <li><strong>Sequential File:</strong> Sorted</li>
+            <li><strong>Hash File:</strong> Hash function used</li>
+        </ul>
+        <div class="section-title">Common MCQs</div>
+        <ul>
+            <li>Fast equality search &rarr; <strong>Hashing</strong></li>
+            <li>Range queries &rarr; <strong>B+ Tree / Sequential File</strong></li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="formulas">
+        <div class="card-header">
+            <h2>20. DBMS Formulas Worth Memorizing</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <div class="section-title">Formulas</div>
+        
+        <div class="section-title" style="color:var(--accent-color)">Blocking Factor</div>
+        <div class="formula-box">
+            bfr = &lfloor; B / R &rfloor;
+        </div>
+        <p style="font-size:0.9rem; padding-left:10px;">Where: B = Block Size, R = Record Size</p>
+
+        <div class="section-title" style="color:var(--accent-color)">Number of Blocks</div>
+        <div class="formula-box">
+            b = &lceil; r / bfr &rceil;
+        </div>
+        <p style="font-size:0.9rem; padding-left:10px;">Where: r = number of records</p>
+
+        <div class="section-title">Indexing Types</div>
+        <ul>
+            <li><strong>Dense Index:</strong> One index entry per record.</li>
+            <li><strong>Sparse Index:</strong> One index entry per block.</li>
+        </ul>
+    </div>
+
+    <div class="topic-card" data-topic="traps" style="border: 1px dashed var(--accent-color);">
+        <div class="card-header">
+            <h2 style="color: #f43f5e;">&#9888; Final Quick-Fire MCQ Traps</h2>
+            <label class="checkbox-container">
+                <input type="checkbox" onchange="toggleComplete(this)"> Done
+            </label>
+        </div>
+        <ul>
+            <li>Primary Key &rarr; Unique + NOT NULL</li>
+            <li>Candidate Key &rarr; Minimal Super Key</li>
+            <li>Foreign Key can contain duplicates</li>
+            <li>Selection &rarr; Rows | Projection &rarr; Columns</li>
+            <li>DELETE can be rolled back | TRUNCATE removes all rows quickly | DROP removes schema</li>
+            <li>1NF removes repeating groups | 2NF removes partial dependency | 3NF removes transitive dependency</li>
+            <li>BCNF: determinant must be super key</li>
+            <li>ACID = Atomicity, Consistency, Isolation, Durability</li>
+            <li>Shared Lock = Read | Exclusive Lock = Read + Write</li>
+            <li>B+ Tree leaves are linked</li>
+            <li>Conflict Serializability &rarr; Precedence Graph</li>
+            <li>Dirty Read = Read uncommitted data</li>
+            <li>RAID 0 = No redundancy | RAID 1 = Mirroring</li>
+            <li>Hashing best for exact search, B+ Tree best for range queries</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // Storage configuration unique identifier key for DBMS
+    const STORAGE_KEY = 'cil_mt_dbms_progress';
+
+    // Run processing on page load to restore checkbox states
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        
+        document.querySelectorAll('.topic-card').forEach(card => {
+            const id = card.getAttribute('data-topic');
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            
+            if (id && savedProgress[id]) {
+                checkbox.checked = true;
+                card.classList.add('completed');
+            }
+        });
+    });
+
+    function toggleComplete(checkbox) {
+        // Find the closest parent topic-card div element
+        const card = checkbox.closest('.topic-card');
+        const id = card.getAttribute('data-topic');
+        
+        // Fetch existing dictionary tracking progress map
+        const currentProgress = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+        if (checkbox.checked) {
+            card.classList.add('completed');
+            if (id) currentProgress[id] = true;
+        } else {
+            card.classList.remove('completed');
+            if (id) delete currentProgress[id];
+        }
+
+        // Overwrite updated structural progress back to window storage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentProgress));
+    }
+
+    function clearProgress() {
+        if (confirm("Are you sure you want to reset all DBMS revision tracker marks?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            document.querySelectorAll('.topic-card').forEach(card => {
+                card.classList.remove('completed');
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                if (checkbox) checkbox.checked = false;
+            });
+        }
+    }
+</script>
+
+</body>
+</html>
