@@ -482,22 +482,28 @@
 
         const structuredSortedData = sortTopicsByPriority(rawDataset);
 
-        // ─── FIX: Anchor the 70-day window to a fixed start date ───────────────
-        // On first visit, save today as the start date. Every subsequent visit
-        // reads that same stored date so Day 1 never shifts and past data stays.
+        // ─── ADJUSTMENT: Offset the local window initialization by 3 days backwards ───
         function getOrSetStartDate() {
             const stored = localStorage.getItem('studyTracker_startDate');
             if (stored) return new Date(stored);
-            const today = new Date();
-            const dateStr = today.toISOString().split('T')[0];
+            
+            // Set start date to 3 days ago from today
+            const calculatedStart = new Date();
+            calculatedStart.setDate(calculatedStart.getDate() - 3);
+            
+            const dateStr = calculatedStart.toISOString().split('T')[0];
             localStorage.setItem('studyTracker_startDate', dateStr);
-            return today;
+            return calculatedStart;
         }
 
         function confirmResetStartDate() {
-            if (confirm('Reset the 70-day window to start from today?\n\nYour existing check data will be kept but will no longer align with old day columns. Only do this if you want to start a fresh 70-day window.')) {
-                const today = new Date().toISOString().split('T')[0];
-                localStorage.setItem('studyTracker_startDate', today);
+            if (confirm('Reset the start date?\n\nThis will shift day columns relative to today.')) {
+                // Resetting anchor point also sets it to 3 days prior so history stays intact
+                const calculatedStart = new Date();
+                calculatedStart.setDate(calculatedStart.getDate() - 3);
+                const dateStr = calculatedStart.toISOString().split('T')[0];
+                
+                localStorage.setItem('studyTracker_startDate', dateStr);
                 location.reload();
             }
         }
@@ -505,7 +511,6 @@
         const startDate = getOrSetStartDate();
         const todayStr = new Date().toISOString().split('T')[0];
 
-        // Build the fixed 70-day array from startDate
         const datesArray = [];
         for (let i = 0; i < 70; i++) {
             const d = new Date(startDate);
@@ -519,7 +524,7 @@
                 isPast: raw < todayStr
             });
         }
-        // ───────────────────────────────────────────────────────────────────────
+        // ───────────────────────────────────────────────────────────────────────────────
 
         let trackingData = JSON.parse(localStorage.getItem('studyTracker_checks')) || {};
         let commentData  = JSON.parse(localStorage.getItem('studyTracker_comments')) || {};
@@ -532,7 +537,6 @@
         const sidebarScrollContainer = document.querySelector('.topics-list');
         const gridScrollContainer    = document.getElementById('grid-container');
 
-        // Sync vertical scroll
         gridScrollContainer.addEventListener('scroll', () => {
             sidebarScrollContainer.scrollTop = gridScrollContainer.scrollTop;
         });
@@ -541,7 +545,6 @@
         });
 
         function initApp() {
-            // Render column headers
             let headerHtml = '';
             datesArray.forEach(d => {
                 let cls = d.isToday ? 'today' : (d.isPast ? 'past' : '');
@@ -575,10 +578,10 @@
             gridCheckboxBody.innerHTML   = bodyHtml;
             updateMetrics();
 
-            // Auto-scroll to today's column
+            // Auto-focus lookahead scroll straight to Day 4 (Today)
             const todayIndex = datesArray.findIndex(d => d.isToday);
             if (todayIndex > 0) {
-                gridScrollContainer.scrollLeft = todayIndex * 75;
+                gridScrollContainer.scrollLeft = (todayIndex * 75) - 75; 
             }
         }
 
@@ -634,8 +637,6 @@
             let totalGlobalChecked = 0;
 
             Object.keys(trackingData).forEach(key => {
-                // Key format: topicId_YYYY-MM-DD  — topicId itself may contain underscores,
-                // so split on the date pattern rather than the first underscore.
                 const match = key.match(/^(.+)_(\d{4}-\d{2}-\d{2})$/);
                 if (!match) return;
                 const topicId = match[1];
