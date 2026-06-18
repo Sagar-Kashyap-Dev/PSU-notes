@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>70-Day Core CS Numerical Tracker</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --sidebar-width: 360px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            z-index: 10;
+            gap: 12px;
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .controls-pane {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background-color: #1e293b;
+            color: white;
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            background-color: var(--card-bg);
+            border-right: 2px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 5;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.03);
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            background-color: #f1f5f9;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #334155;
+        }
+
+        .topics-list {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .topic-row {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            user-select: none;
+        }
+
+        .topic-row.heading-1 { 
+            background-color: #cbd5e1; 
+            font-weight: 700; 
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+
+        .topic-row.item { 
+            padding-left: 25px; 
+            background-color: #ffffff; 
+        }
+        
+        .topic-row.hidden {
+            display: none !important;
+        }
+
+        .topic-label-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .top20-badge {
+            background-color: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 2px 5px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .counter-badge {
+            background-color: #f1f5f9;
+            color: #64748b;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .grid-container {
+            flex: 1;
+            overflow: auto;
+            background-color: #fff;
+        }
+
+        .sheet-table {
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .grid-header-row {
+            height: 60px;
+            background-color: #f1f5f9;
+        }
+
+        .date-cell {
+            width: 75px;
+            min-width: 75px;
+            max-width: 75px;
+            text-align: center;
+            border-right: 1px solid var(--border-color);
+            border-bottom: 2px solid var(--border-color);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 5px;
+            background-color: #f1f5f9;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            color: #475569;
+        }
+
+        .date-cell.today {
+            background-color: #fde047;
+            color: #0f172a;
+        }
+
+        .date-cell.past {
+            background-color: #e2e8f0;
+            color: #64748b;
+        }
+
+        .grid-row { height: 48px; }
+        .grid-row.heading-1-space { background-color: #cbd5e1; }
+        .grid-row.hidden { display: none !important; }
+
+        .checkbox-cell {
+            width: 75px;
+            text-align: center;
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            vertical-align: middle;
+        }
+
+        .checkbox-cell:hover { background-color: #f8fafc; }
+        .checkbox-cell.past-cell { background-color: #fdfdfd; }
+
+        .cell-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+
+        .tracker-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #2563eb;
+        }
+
+        .comment-icon {
+            position: absolute;
+            bottom: 3px;
+            right: 3px;
+            width: 8px;
+            height: 8px;
+            background-color: #cbd5e1;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+        }
+
+        .checkbox-cell:hover .comment-icon,
+        .comment-icon.has-comment {
+            display: block;
+        }
+
+        .comment-icon.has-comment {
+            background-color: #3b82f6;
+            width: 9px;
+            height: 9px;
+            border-radius: 2px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(2px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            transform: scale(0.95);
+            transition: transform 0.15s ease;
+        }
+
+        .modal-overlay.active .modal { transform: scale(1); }
+        .modal h3 { margin-bottom: 4px; font-size: 1.1rem; color: #0f172a; }
+        .modal p { font-size: 0.8rem; color: #64748b; margin-bottom: 16px; }
+        
+        .modal textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            resize: none;
+            margin-bottom: 16px;
+            font-size: 0.88rem;
+            outline: none;
+        }
+        .modal textarea:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+        }
+
+        .modal-actions { display: flex; justify-content: space-between; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        .btn-primary { background-color: #2563eb; color: white; }
+        .btn-secondary { background-color: #f1f5f9; color: #475569; }
+        .btn-danger { background-color: #ef4444; color: white; }
+
+        .reset-link {
+            font-size: 0.75rem;
+            color: #93c5fd;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .reset-link:hover { color: white; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>70-Day CS Numerical Drill Matrix</h1>
+            <span class="reset-link" onclick="confirmResetStartDate()">Recalibrate 70-Day Window Anchor</span>
+        </div>
+        <div class="controls-pane">
+            <select class="filter-select" id="subject-filter" onchange="applySubjectFilter()">
+                <option value="all">All Modules</option>
+                <option value="dsa">DSA</option>
+                <option value="algo">Algorithms</option>
+                <option value="os">Operating System</option>
+                <option value="dbms">DBMS</option>
+                <option value="cn">Computer Networks</option>
+                <option value="coa">COA</option>
+                <option value="digital">Digital Logic</option>
+                <option value="toc">TOC</option>
+                <option value="compiler">Compiler Design</option>
+                <option value="cprog">C Programming</option>
+                <option value="top20">🔥 Top 20 Must-Do</option>
+            </select>
+            <div id="overall-progress" style="font-weight: 600; font-size: 0.9rem; background: #1e293b; padding: 6px 12px; border-radius: 6px; border: 1px solid #334155;">Sessions: 0 Done</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-header">Syllabus Grid Structures</div>
+            <div class="topics-list" id="sidebar-topics"></div>
+        </div>
+
+        <div class="grid-container" id="grid-container">
+            <table class="sheet-table">
+                <thead>
+                    <tr class="grid-header-row" id="grid-header-dates"></tr>
+                </thead>
+                <tbody id="grid-checkbox-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="comment-modal">
+        <div class="modal">
+            <h3 id="modal-title">Log Numerical Content</h3>
+            <p id="modal-subtitle">Metadata context info</p>
+            <textarea id="comment-text" placeholder="E.g., Done 15 Questions. Checked address offset variations for 2D/3D spaces..."></textarea>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <div>
+                    <button class="btn btn-danger" id="btn-delete-comment" onclick="deleteComment()">Clear</button>
+                    <button class="btn btn-primary" onclick="saveComment()">Save Entry</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // High priority targets
+        const priorityTop20Set = new Set([
+            "os_fcfs", "os_sjf", "os_rr", "os_bankers", "os_lru", "os_fifo",
+            "dbms_ck", "dbms_closure", "dbms_conflict", "dbms_norm",
+            "cn_subnet", "cn_cidr", "cn_crc", "cn_tdelay",
+            "coa_map", "coa_hit", "coa_pipe",
+            "dig_kmap", "dsa_addr", "dsa_traversal"
+        ]);
+
+        const structuredDataset = [
+            {
+                id: "dsa", name: "Data Structures", type: "h1", children: [
+                    { id: "dsa_addr", name: "Array Address Calculation", type: "item" },
+                    { id: "dsa_rmajor", name: "Row Major Address Calculation", type: "item" },
+                    { id: "dsa_cmajor", name: "Column Major Address Calculation", type: "item" },
+                    { id: "dsa_inf_post", name: "Infix → Postfix Conversion", type: "item" },
+                    { id: "dsa_inf_pre", name: "Infix → Prefix Conversion", type: "item" },
+                    { id: "dsa_post_eval", name: "Postfix Evaluation Mechanics", type: "item" },
+                    { id: "dsa_pre_eval", name: "Prefix Evaluation Mechanics", type: "item" },
+                    { id: "dsa_circ_queue", name: "Circular Queue Matrix Position", type: "item" },
+                    { id: "dsa_hash", name: "Hash Function Calculation", type: "item" },
+                    { id: "dsa_probing", name: "Linear Probing Collisions", type: "item" },
+                    { id: "dsa_bst", name: "BST Construction Trees", type: "item" },
+                    { id: "dsa_traversal", name: "Tree Traversals Metrics", type: "item" },
+                    { id: "dsa_heap", name: "Heap Construction Bounds", type: "item" },
+                    { id: "dsa_bfs", name: "BFS Traversal Trace", type: "item" },
+                    { id: "dsa_dfs", name: "DFS Traversal Trace", type: "item" }
+                ]
+            },
+            {
+                id: "algo", name: "Algorithms", type: "h1", children: [
+                    { id: "algo_time", name: "Time Complexity Verification", type: "item" },
+                    { id: "algo_recurrence", name: "Recurrence Relations Systems", type: "item" },
+                    { id: "algo_master", name: "Master Theorem Application", type: "item" },
+                    { id: "algo_dijkstra", name: "Dijkstra Path Mechanics", type: "item" },
+                    { id: "algo_kruskal", name: "Kruskal MST Weights", type: "item" },
+                    { id: "algo_prim", name: "Prim MST Computations", type: "item" },
+                    { id: "algo_huffman", name: "Huffman Coding Compression", type: "item" },
+                    { id: "algo_knapsack", name: "Knapsack Fractional/0-1 Optimization", type: "item" },
+                    { id: "algo_topological", name: "Topological Sorting Computations", type: "item" }
+                ]
+            },
+            {
+                id: "os", name: "Operating Systems", type: "h1", children: [
+                    { id: "os_fcfs", name: "FCFS Process Scheduling", type: "item" },
+                    { id: "os_sjf", name: "SJF Non-Preemptive Execution", type: "item" },
+                    { id: "os_srtf", name: "SRTF Preemptive Process Logic", type: "item" },
+                    { id: "os_priority", name: "Priority Scheduling Allocations", type: "item" },
+                    { id: "os_rr", name: "Round Robin Quantum Swaps", type: "item" },
+                    { id: "os_wait", name: "Waiting Time Assertions", type: "item" },
+                    { id: "os_tat", name: "Turnaround Time Assertions", type: "item" },
+                    { id: "os_response", name: "Response Time Calculations", type: "item" },
+                    { id: "os_bankers", name: "Banker's Algorithm Calculations", type: "item" },
+                    { id: "os_safe", name: "Safe Sequence Evaluation", type: "item" },
+                    { id: "os_fifo", name: "FIFO Page Replacement", type: "item" },
+                    { id: "os_lru", name: "LRU Page Replacement Frame Maps", type: "item" },
+                    { id: "os_optimal", name: "Optimal Page Replacement Metrics", type: "item" },
+                    { id: "os_fault", name: "Page Fault Calculation Rates", type: "item" },
+                    { id: "os_eat", name: "Effective Access Time Bounds", type: "item" },
+                    { id: "os_paging", name: "Paging Address Translation", type: "item" },
+                    { id: "os_disk_fcfs", name: "FCFS Disk Arm Scheduling", type: "item" },
+                    { id: "os_sstf", name: "SSTF Seek Execution", type: "item" },
+                    { id: "os_scan", name: "SCAN Elevator Passages", type: "item" },
+                    { id: "os_cscan", name: "C-SCAN Circular Lookups", type: "item" }
+                ]
+            },
+            {
+                id: "dbms", name: "Database Management Systems", type: "h1", children: [
+                    { id: "dbms_ck", name: "Candidate Key Derivations", type: "item" },
+                    { id: "dbms_closure", name: "Attribute Closure Resolutions", type: "item" },
+                    { id: "dbms_fd", name: "Functional Dependency Deductions", type: "item" },
+                    { id: "dbms_norm", name: "Normalization Schema Testing (1NF-4NF)", type: "item" },
+                    { id: "dbms_lossless", name: "Lossless Decomposition Auditing", type: "item" },
+                    { id: "dbms_preservation", name: "Dependency Preservation Auditing", type: "item" },
+                    { id: "dbms_conflict", name: "Conflict Serializability Verification", type: "item" },
+                    { id: "dbms_view", name: "View Serializability Verification", type: "item" },
+                    { id: "dbms_schedule", name: "Transaction Schedule Evaluation", type: "item" },
+                    { id: "dbms_sql", name: "SQL Output Execution Tracing", type: "item" },
+                    { id: "dbms_btree", name: "B Tree Insertion Structural Splits", type: "item" },
+                    { id: "dbms_bplus", name: "B+ Tree Question Parameters", type: "item" }
+                ]
+            },
+            {
+                id: "cn", name: "Computer Networks", type: "h1", children: [
+                    { id: "cn_ip", name: "IP Addressing Class Identifiers", type: "item" },
+                    { id: "cn_subnet", name: "Subnetting Mask Allocations", type: "item" },
+                    { id: "cn_cidr", name: "CIDR Prefix Calculations", type: "item" },
+                    { id: "cn_net_addr", name: "Network Address Resolution", type: "item" },
+                    { id: "cn_broadcast", name: "Broadcast Address Resolution", type: "item" },
+                    { id: "cn_hosts", name: "Host Calculation Constraints", type: "item" },
+                    { id: "cn_crc", name: "CRC Polynomial Divisions", type: "item" },
+                    { id: "cn_hamming", name: "Hamming Code Error Detection", type: "item" },
+                    { id: "cn_sliding", name: "Sliding Window Window Sizing", type: "item" },
+                    { id: "cn_tdelay", name: "Transmission Delay Rates", type: "item" },
+                    { id: "cn_pdelay", name: "Propagation Delay Ranges", type: "item" },
+                    { id: "cn_ete", name: "End-to-End Delay Multipliers", type: "item" },
+                    { id: "cn_throughput", name: "Throughput Capacity Metrics", type: "item" }
+                ]
+            },
+            {
+                id: "coa", name: "Computer Organization", type: "h1", children: [
+                    { id: "coa_binary_arith", name: "Binary Arithmetic Overflow Logic", type: "item" },
+                    { id: "coa_1comp", name: "1's Complement System Bounds", type: "item" },
+                    { id: "coa_2comp", name: "2's Complement System Bounds", type: "item" },
+                    { id: "coa_float", name: "Floating Point IEEE Representation", type: "item" },
+                    { id: "coa_booth", name: "Booth Multiplication Steps", type: "item" },
+                    { id: "coa_map", name: "Cache Mapping Strategy (Direct/Assoc)", type: "item" },
+                    { id: "coa_hit", name: "Cache Hit Ratio Optimization", type: "item" },
+                    { id: "coa_miss", name: "Cache Miss Ratio Optimization", type: "item" },
+                    { id: "coa_eat", name: "Effective Access Time Chains", type: "item" },
+                    { id: "coa_pipe", name: "Pipeline Speedup Hazards", type: "item" },
+                    { id: "coa_cpi", name: "CPI Cycle Allocations", type: "item" },
+                    { id: "coa_mips", name: "MIPS Execution Throughput", type: "item" }
+                ]
+            },
+            {
+                id: "digital", name: "Digital Logic", type: "h1", children: [
+                    { id: "dig_bin", name: "Binary Base Conversion", type: "item" },
+                    { id: "dig_oct", name: "Octal Base Conversion", type: "item" },
+                    { id: "dig_hex", name: "Hex Base Conversion", type: "item" },
+                    { id: "dig_gray", name: "Gray Code Translation", type: "item" },
+                    { id: "dig_ex3", name: "Excess-3 Code Shift Logic", type: "item" },
+                    { id: "dig_bool_sim", name: "Boolean Simplification Laws", type: "item" },
+                    { id: "dig_kmap", name: "K-Map Implicant Loops", type: "item" },
+                    { id: "dig_minterm", name: "Minterm SOP Expansions", type: "item" },
+                    { id: "dig_maxterm", name: "Maxterm POS Expansions", type: "item" },
+                    { id: "dig_adder", name: "Adder Propagate/Delay Vectors", type: "item" },
+                    { id: "dig_sub", name: "Subtractor Implementations", type: "item" },
+                    { id: "dig_mux", name: "Multiplexer Routing Trees", type: "item" },
+                    { id: "dig_dec", name: "Decoder Logic Construction", type: "item" },
+                    { id: "dig_ff", name: "Flip-Flop Characteristic Shifts", type: "item" },
+                    { id: "dig_counter", name: "Counter Sequence State Vectors", type: "item" }
+                ]
+            },
+            {
+                id: "toc", name: "Theory of Computation", type: "h1", children: [
+                    { id: "toc_dfa", name: "DFA Construction String States", type: "item" },
+                    { id: "toc_nfa", name: "NFA Construction Branching", type: "item" },
+                    { id: "toc_nfa_dfa", name: "NFA → DFA Subset Mapping", type: "item" },
+                    { id: "toc_dfa_min", name: "DFA Minimization Equivalence Equat.", type: "item" },
+                    { id: "toc_regex", name: "Regular Expression Closure Sets", type: "item" },
+                    { id: "toc_cfg", name: "CFG Derivation Ambiguity Checks", type: "item" },
+                    { id: "toc_parse", name: "Parse Tree Generation", type: "item" },
+                    { id: "toc_pda", name: "PDA Trace Stack Transitions", type: "item" }
+                ]
+            },
+            {
+                id: "compiler", name: "Compiler Design", type: "h1", children: [
+                    { id: "comp_first", name: "FIRST Set Generation Logic", type: "item" },
+                    { id: "comp_follow", name: "FOLLOW Set Generation Logic", type: "item" },
+                    { id: "comp_ll1", name: "LL(1) Table Conflict Tracking", type: "item" },
+                    { id: "comp_sr", name: "Shift Reduce Parsing Conflicts", type: "item" },
+                    { id: "comp_tree", name: "Parse Tree Synthesized Actions", type: "item" },
+                    { id: "comp_tac", name: "Three Address Code Formats", type: "item" },
+                    { id: "comp_quad", name: "Quadruples Multi-Address Vectors", type: "item" },
+                    { id: "comp_triple", name: "Triples Indirect References", type: "item" }
+                ]
+            },
+            {
+                id: "cprog", name: "C Programming", type: "h1", children: [
+                    { id: "c_ptr", name: "Pointer Arithmetic Offsets", type: "item" },
+                    { id: "c_addr", name: "Address Calculation Adjustments", type: "item" },
+                    { id: "c_struct", name: "Structure Size Byte Padding", type: "item" },
+                    { id: "c_union", name: "Union Size Shared Memories", type: "item" },
+                    { id: "c_bitwise", name: "Bitwise Operations Mask Shifts", type: "item" },
+                    { id: "c_recursion", name: "Recursion Trace Stack Evaluations", type: "item" }
+                ]
+            }
+        ];
+
+        function getOrSetStartDate() {
+            const stored = localStorage.getItem('csTracker_startDate');
+            if (stored) return new Date(stored);
+            
+            const calculatedStart = new Date();
+            calculatedStart.setDate(calculatedStart.getDate() - 3); // 3-day history shift
+            
+            const dateStr = calculatedStart.toISOString().split('T')[0];
+            localStorage.setItem('csTracker_startDate', dateStr);
+            return calculatedStart;
+        }
+
+        function confirmResetStartDate() {
+            if (confirm('Re-anchor the window?\n\nThis maps Day 4 to today, retaining past performance indexes.')) {
+                const calculatedStart = new Date();
+                calculatedStart.setDate(calculatedStart.getDate() - 3);
+                const dateStr = calculatedStart.toISOString().split('T')[0];
+                localStorage.setItem('csTracker_startDate', dateStr);
+                location.reload();
+            }
+        }
+
+        const startDate = getOrSetStartDate();
+        const todayStr  = new Date().toISOString().split('T')[0];
+        const datesArray = [];
+
+        for (let i = 0; i < 70; i++) {
+            const d = new Date(startDate);
+            d.setDate(startDate.getDate() + i);
+            const raw = d.toISOString().split('T')[0];
+            datesArray.push({
+                raw,
+                dayNum: i + 1,
+                displayStr: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                isToday: raw === todayStr,
+                isPast: raw < todayStr
+            });
+        }
+
+        let trackingData = JSON.parse(localStorage.getItem('csTracker_checks')) || {};
+        let commentData  = JSON.parse(localStorage.getItem('csTracker_comments')) || {};
+        let activeCellTarget = { topicId: null, dateStr: null };
+
+        const sidebarContainer       = document.getElementById('sidebar-topics');
+        const gridHeaderDates        = document.getElementById('grid-header-dates');
+        const gridCheckboxBody       = document.getElementById('grid-checkbox-body');
+        const sidebarScrollContainer = document.querySelector('.topics-list');
+        const gridScrollContainer    = document.getElementById('grid-container');
+
+        gridScrollContainer.addEventListener('scroll', () => { sidebarScrollContainer.scrollTop = gridScrollContainer.scrollTop; });
+        sidebarScrollContainer.addEventListener('scroll', () => { gridScrollContainer.scrollTop = sidebarScrollContainer.scrollTop; });
+
+        function initApp() {
+            let headerHtml = '';
+            datesArray.forEach(d => {
+                let cls = d.isToday ? 'today' : (d.isPast ? 'past' : '');
+                headerHtml += `<th class="date-cell ${cls}">Day ${d.dayNum}<br>${d.displayStr}</th>`;
+            });
+            gridHeaderDates.innerHTML = headerHtml;
+
+            let sidebarHtml = '';
+            let bodyHtml = '';
+
+            structuredDataset.forEach(h1 => {
+                sidebarHtml += `<div class="topic-row heading-1" data-subject="${h1.id}">${h1.name}</div>`;
+                bodyHtml += `<tr class="grid-row heading-1-space" data-subject="${h1.id}">${datesArray.map(() => `<td class="checkbox-cell" style="background:#cbd5e1;"></td>`).join('')}</tr>`;
+
+                h1.children.forEach(item => {
+                    const isTop20 = priorityTop20Set.has(item.id);
+                    const top20Badge = isTop20 ? `<span class="top20-badge">🔥 Top 20</span>` : '';
+                    
+                    sidebarHtml += `
+                        <div class="topic-row item" data-subject="${h1.id}" data-item-id="${item.id}">
+                            <div class="topic-label-container">
+                                ${top20Badge}
+                                <span>${item.name}</span>
+                            </div>
+                            <span class="counter-badge" id="counter-${item.id}">0</span>
+                        </div>`;
+
+                    let rowHtml = `<tr class="grid-row" data-subject="${h1.id}" data-item-id="${item.id}">`;
+                    datesArray.forEach(dateObj => {
+                        const cellId     = `${item.id}_${dateObj.raw}`;
+                        const isChecked  = trackingData[cellId] ? 'checked' : '';
+                        const hasComment = commentData[cellId] ? 'has-comment' : '';
+                        const pastClass  = dateObj.isPast ? 'past-cell' : '';
+
+                        rowHtml += `
+                            <td class="checkbox-cell ${pastClass}">
+                                <div class="cell-wrapper">
+                                    <input type="checkbox" class="tracker-checkbox"
+                                        data-topic="${item.id}" data-date="${dateObj.raw}"
+                                        ${isChecked}
+                                        onchange="toggleCheckbox(this)">
+                                    <div class="comment-icon ${hasComment}" id="cmt-ico-${cellId}"
+                                        onclick="openCommentModal('${item.id}', '${dateObj.raw}', '${item.name.replace(/'/g, "\\'")}', '${dateObj.displayStr}')"></div>
+                                </div>
+                            </td>`;
+                    });
+                    rowHtml += `</tr>`;
+                    bodyHtml += rowHtml;
+                });
+            });
+
+            sidebarContainer.innerHTML = sidebarHtml;
+            gridCheckboxBody.innerHTML = bodyHtml;
+            updateMetrics();
+
+            const todayIndex = datesArray.findIndex(d => d.isToday);
+            if (todayIndex > 0) {
+                gridScrollContainer.scrollLeft = (todayIndex * 75) - 75; 
+            }
+        }
+
+        function toggleCheckbox(element) {
+            const topicId = element.getAttribute('data-topic');
+            const dateStr = element.getAttribute('data-date');
+            const cellId  = `${topicId}_${dateStr}`;
+
+            if (element.checked) {
+                trackingData[cellId] = true;
+            } else {
+                delete trackingData[cellId];
+            }
+
+            localStorage.setItem('csTracker_checks', JSON.stringify(trackingData));
+            updateMetrics();
+        }
+
+        function updateMetrics() {
+            const countsMap = {};
+            let totalGlobalChecked = 0;
+
+            Object.keys(trackingData).forEach(key => {
+                const match = key.match(/^(.+)_(\d{4}-\d{2}-\d{2})$/);
+                if (!match) return;
+                const topicId = match[1];
+                countsMap[topicId] = (countsMap[topicId] || 0) + 1;
+                totalGlobalChecked++;
+            });
+
+            document.querySelectorAll('.counter-badge').forEach(badge => {
+                const id = badge.id.replace('counter-', '');
+                badge.innerText = countsMap[id] || 0;
+            });
+
+            document.getElementById('overall-progress').innerText = `Sessions: ${totalGlobalChecked} Done`;
+        }
+
+        function applySubjectFilter() {
+            const filterValue = document.getElementById('subject-filter').value;
+            
+            const rowsAndHeaders = document.querySelectorAll('[data-subject]');
+            rowsAndHeaders.forEach(el => {
+                const rowSub = el.getAttribute('data-subject');
+                const itemId = el.getAttribute('data-item-id');
+
+                if (filterValue === 'all') {
+                    el.classList.remove('hidden');
+                } else if (filterValue === 'top20') {
+                    if (itemId && priorityTop20Set.has(itemId)) {
+                        el.classList.remove('hidden');
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                } else {
+                    if (rowSub === filterValue) {
+                        el.classList.remove('hidden');
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                }
+            });
+        }
+
+        function openCommentModal(topicId, dateStr, topicName, dateDisplay) {
+            activeCellTarget.topicId = topicId;
+            activeCellTarget.dateStr = dateStr;
+            const cellId = `${topicId}_${dateStr}`;
+
+            document.getElementById('modal-title').innerText    = topicName;
+            document.getElementById('modal-subtitle').innerText = `Notes for ${dateDisplay}`;
+
+            const currentComment = commentData[cellId] || '';
+            document.getElementById('comment-text').value = currentComment;
+            document.getElementById('btn-delete-comment').style.display = currentComment ? 'inline-block' : 'none';
+            document.getElementById('comment-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('comment-modal').classList.remove('active');
+        }
+
+        function saveComment() {
+            const cellId      = `${activeCellTarget.topicId}_${activeCellTarget.dateStr}`;
+            const textValue   = document.getElementById('comment-text').value.trim();
+            const iconElement = document.getElementById(`cmt-ico-${cellId}`);
+
+            if (textValue) {
+                commentData[cellId] = textValue;
+                if (iconElement) iconElement.classList.add('has-comment');
+            } else {
+                delete commentData[cellId];
+                if (iconElement) iconElement.classList.remove('has-comment');
+            }
+
+            localStorage.setItem('csTracker_comments', JSON.stringify(commentData));
+            closeModal();
+        }
+
+        function deleteComment() {
+            const cellId      = `${activeCellTarget.topicId}_${activeCellTarget.dateStr}`;
+            const iconElement = document.getElementById(`cmt-ico-${cellId}`);
+
+            delete commentData[cellId];
+            if (iconElement) iconElement.classList.remove('has-comment');
+
+            localStorage.setItem('csTracker_comments', JSON.stringify(commentData));
+            closeModal();
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
