@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Application Tracker Pro</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -17,7 +16,6 @@
 <body class="p-4 md:p-8">
 
     <div class="max-w-7xl mx-auto">
-        <!-- Header -->
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 bg-white p-6 rounded-2xl shadow-xs border border-slate-100">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
@@ -30,7 +28,6 @@
             </button>
         </header>
 
-        <!-- Metrics Dashboard -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-4">
                 <div class="p-3 bg-blue-50 text-blue-600 rounded-xl text-xl">📊</div>
@@ -69,7 +66,6 @@
             </div>
         </div>
 
-        <!-- Filter & Search Controls -->
         <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-xs flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
             <div class="w-full md:w-72">
                 <input type="text" id="search-bar" oninput="renderTable()" placeholder="🔍 Search company or role..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
@@ -82,7 +78,6 @@
             </div>
         </div>
 
-        <!-- Data Table Section -->
         <div class="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -108,14 +103,13 @@
         </div>
     </div>
 
-    <!-- Universal Modal for Create & Edit Updates -->
-    <div id="job-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden justify-center items-center p-4 z-50 transition-all">
-        <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-slate-100 overflow-hidden transform transition-all scale-95 duration-200">
-            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+    <div id="job-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden justify-center items-center p-4 z-50 transition-all overflow-y-auto">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-slate-100 my-8 overflow-hidden transform transition-all scale-95 duration-200 flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center shrink-0">
                 <h3 id="modal-title" class="font-bold text-slate-800 text-lg">Add New Application Track</h3>
                 <button onclick="closeModal()" class="cursor-pointer text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
             </div>
-            <form id="job-form" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+            <form id="job-form" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4 overflow-y-auto">
                 <input type="hidden" id="form-job-id">
                 
                 <div>
@@ -148,6 +142,20 @@
                     </div>
                 </div>
 
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Exam / Test Date</label>
+                        <input type="date" id="form-exam-date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Exam Date Status</label>
+                        <select id="form-exam-status" class="w-full border border-slate-200 bg-white rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
+                            <option value="Tentative">⏳ Tentative Date</option>
+                            <option value="Confirmed">✅ Confirmed Date</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Application Fee (₹)</label>
                     <input type="number" id="form-fee" min="0" placeholder="0 if free" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
@@ -158,7 +166,7 @@
                     <textarea id="form-patterns" rows="3" placeholder="e.g., Round 1: Aptitude & Coding Test, Round 2: Technical Interview (React/JS)" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none"></textarea>
                 </div>
 
-                <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                <div class="pt-4 flex justify-end gap-2 border-t border-slate-100 shrink-0">
                     <button type="button" onclick="closeModal()" class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold px-4 py-2 rounded-lg text-sm transition">Cancel</button>
                     <button type="submit" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition shadow-xs">Save Details</button>
                 </div>
@@ -166,7 +174,6 @@
         </div>
     </div>
 
-    <!-- Firebase SDK Imports via CDN -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot } 
@@ -243,7 +250,25 @@
                 // Format timeline window metrics
                 const start = job.startDate ? new Date(job.startDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) : '—';
                 const end = job.lastDate ? new Date(job.lastDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
-                const timelineDisplay = `<div class="text-xs text-slate-600 font-medium"><span class="text-slate-400">Start:</span> ${start}<br><span class="text-slate-400">End:</span> ${end}</div>`;
+                
+                // Formulate inline visualization badge details for exam configurations
+                let examBadge = '';
+                if (job.examDate) {
+                    const formattedExamDate = new Date(job.examDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+                    if (job.examStatus === 'Confirmed') {
+                        examBadge = `<div class="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-medium bg-indigo-50 border border-indigo-100 text-indigo-700 rounded">📝 Exam: ${formattedExamDate} (Confirmed)</div>`;
+                    } else {
+                        examBadge = `<div class="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-medium bg-amber-50 border border-amber-100 text-amber-600 rounded">📝 Exam: ${formattedExamDate} (Tentative)</div>`;
+                    }
+                }
+
+                const timelineDisplay = `
+                    <div class="text-xs text-slate-600 font-medium">
+                        <span class="text-slate-400">Start:</span> ${start}<br>
+                        <span class="text-slate-400">End:</span> ${end}
+                        ${examBadge}
+                    </div>
+                `;
 
                 const feeDisplay = job.fee && parseFloat(job.fee) > 0 ? `₹${parseFloat(job.fee).toLocaleString('en-IN')}` : '<span class="text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded text-xs">Free</span>';
 
@@ -279,6 +304,8 @@
                 status: document.getElementById('form-status').value,
                 startDate: document.getElementById('form-start-date').value,
                 lastDate: document.getElementById('form-last-date').value,
+                examDate: document.getElementById('form-exam-date').value,
+                examStatus: document.getElementById('form-exam-status').value,
                 fee: document.getElementById('form-fee').value ? parseFloat(document.getElementById('form-fee').value) : 0,
                 patterns: document.getElementById('form-patterns').value.trim()
             };
@@ -305,6 +332,8 @@
             document.getElementById('form-status').value = target.status;
             document.getElementById('form-start-date').value = target.startDate || '';
             document.getElementById('form-last-date').value = target.lastDate || '';
+            document.getElementById('form-exam-date').value = target.examDate || '';
+            document.getElementById('form-exam-status').value = target.examStatus || 'Tentative';
             document.getElementById('form-fee').value = target.fee || '';
             document.getElementById('form-patterns').value = target.patterns || '';
 
