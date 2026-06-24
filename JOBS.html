@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application Tracker Pro + Smart AI Parser</title>
+    <title>Application Tracker Pro</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
@@ -21,15 +21,13 @@
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 bg-white p-6 rounded-2xl shadow-xs border border-slate-100">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                    💼 Application Tracker Pro <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded-full">AI Powered</span>
+                    💼 Application Tracker Pro
                 </h1>
-                <p class="text-slate-500 text-sm mt-1">Manage, update, and automatically parse your active professional interview pipelines.</p>
+                <p class="text-slate-500 text-sm mt-1">Manage, update, and track your active and upcoming professional interview pipelines.</p>
             </div>
-            <div class="flex flex-wrap gap-2">
-                <button onclick="openModal('add')" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition shadow-sm flex items-center gap-2 text-sm">
-                    <span>+</span> Add New Application
-                </button>
-            </div>
+            <button onclick="openModal('add')" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl transition shadow-sm flex items-center gap-2 text-sm">
+                <span>+</span> Add New Application
+            </button>
         </header>
 
         <!-- Metrics Dashboard -->
@@ -111,88 +109,68 @@
     </div>
 
     <!-- Universal Modal for Create & Edit Updates -->
-    <div id="job-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden justify-center items-center p-4 z-50 transition-all overflow-y-auto">
-        <div class="bg-white w-full max-w-xl rounded-2xl shadow-xl border border-slate-100 my-8 overflow-hidden transform transition-all scale-95 duration-200 flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center shrink-0">
+    <div id="job-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden justify-center items-center p-4 z-50 transition-all">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-slate-100 overflow-hidden transform transition-all scale-95 duration-200">
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
                 <h3 id="modal-title" class="font-bold text-slate-800 text-lg">Add New Application Track</h3>
                 <button onclick="closeModal()" class="cursor-pointer text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
             </div>
-            
-            <div class="p-6 overflow-y-auto space-y-6">
-                <!-- AI Smart Paste Box -->
-                <div id="ai-parser-section" class="bg-blue-50/50 border border-blue-100 p-4 rounded-xl space-y-2">
-                    <label class="block text-xs font-bold text-blue-700 uppercase tracking-wider flex items-center gap-1">
-                        ✨ AI Smart Paste Auto-Fill
-                    </label>
-                    <p class="text-xs text-slate-500">Paste any messy job description, email info, or page scrap below to parse fields instantly.</p>
-                    <div class="flex gap-2">
-                        <textarea id="ai-raw-text" rows="2" placeholder="Paste raw job description / salary info / dates here..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500 resize-none"></textarea>
-                        <button type="button" onclick="runAIParser()" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 rounded-lg text-xs transition whitespace-nowrap" id="parse-btn">Parse text</button>
+            <form id="job-form" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="form-job-id">
+                
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Company Name *</label>
+                    <input type="text" id="form-company" required placeholder="e.g., Cognizant" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Job Role / Position *</label>
+                    <input type="text" id="form-role" required placeholder="e.g., Front-End Developer Intern" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Application Pipeline Status</label>
+                    <select id="form-status" class="w-full border border-slate-200 bg-white rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
+                        <option value="Upcoming">📅 Upcoming (Not Started / Plan to Apply)</option>
+                        <option value="Not Applied">⏳ Not Applied (Active Window Open)</option>
+                        <option value="Applied">✓ Applied</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Start Date to Apply</label>
+                        <input type="date" id="form-start-date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Last Date to Apply</label>
+                        <input type="date" id="form-last-date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
                     </div>
                 </div>
 
-                <form id="job-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
-                    <input type="hidden" id="form-job-id">
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Company Name *</label>
-                            <input type="text" id="form-company" required placeholder="e.g., Cognizant" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Job Role / Position *</label>
-                            <input type="text" id="form-role" required placeholder="e.g., Front-End Developer Intern" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
-                        </div>
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Application Fee (₹)</label>
+                    <input type="number" id="form-fee" min="0" placeholder="0 if free" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
+                </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Application Pipeline Status</label>
-                        <select id="form-status" class="w-full border border-slate-200 bg-white rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
-                            <option value="Upcoming">📅 Upcoming (Not Started / Plan to Apply)</option>
-                            <option value="Not Applied">⏳ Not Applied (Active Window Open)</option>
-                            <option value="Applied">✓ Applied</option>
-                        </select>
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Test Patterns & Rounds Process</label>
+                    <textarea id="form-patterns" rows="3" placeholder="e.g., Round 1: Aptitude & Coding Test, Round 2: Technical Interview (React/JS)" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none"></textarea>
+                </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Start Date to Apply</label>
-                            <input type="date" id="form-start-date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Last Date to Apply</label>
-                            <input type="date" id="form-last-date" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Application Fee (₹)</label>
-                        <input type="number" id="form-fee" min="0" placeholder="0 if free" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Test Patterns & Process Details (Includes Salary if parsed)</label>
-                        <textarea id="form-patterns" rows="4" placeholder="e.g., Round 1: Aptitude & Coding Test, Round 2: Technical Interview (React/JS)&#10;Salary: ₹4,50,000 PA" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none"></textarea>
-                    </div>
-
-                    <div class="pt-4 flex justify-end gap-2 border-t border-slate-100 shrink-0">
-                        <button type="button" onclick="closeModal()" class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold px-4 py-2 rounded-lg text-sm transition">Cancel</button>
-                        <button type="submit" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition shadow-xs">Save Details</button>
-                    </div>
-                </form>
-            </div>
+                <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closeModal()" class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold px-4 py-2 rounded-lg text-sm transition">Cancel</button>
+                    <button type="submit" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition shadow-xs">Save Details</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Firebase & Gemini SDK Modules -->
+    <!-- Firebase SDK Imports via CDN -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot } 
         from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { GoogleGenAI } from "https://esm.run/@google/generative-ai";
-
-        // Baked Gemini API Key Configuration 
-        const GEMINI_API_KEY = "AIzaSyDaO1yTv93EhIXduncvmiW5eBMSjYDrDVc";
 
         const firebaseConfig = {
             apiKey: "AIzaSyADLkt00Bt6VFkg2-Yqv-ueN890QnnEq1g",
@@ -211,59 +189,6 @@
         let localJobsCache = [];
         let globalFilter = 'all';
 
-        // AI Text Parser Core Logic Engine
-        window.runAIParser = async function() {
-            const rawText = document.getElementById('ai-raw-text').value.trim();
-            if(!rawText) {
-                alert("Please paste some job text or list data to parse.");
-                return;
-            }
-
-            const btn = document.getElementById('parse-btn');
-            btn.innerText = "Parsing...";
-            btn.disabled = true;
-
-            try {
-                const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-                const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-                const prompt = `Analyze the following raw text from a job posting or application notification. 
-                Extract the required values and return them strictly in a clean JSON object structure with no markdown blocks or surrounding ticks. 
-
-                Required JSON parameters to output:
-                - company: (String)
-                - role: (String)
-                - startDate: (String format YYYY-MM-DD, set as "" if not found)
-                - lastDate: (String format YYYY-MM-DD, set as "" if not found)
-                - fee: (Number amount, extract numeric value, 0 if free or not found)
-                - patterns: (String summary details. Make sure to append any extracted Salary package details here along with the pattern structure clearly)
-
-                Raw Text to Parse:
-                "${rawText}"`;
-
-                const result = await model.generateContent(prompt);
-                const responseText = result.response.text().trim();
-                
-                const cleanJsonStr = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-                const data = JSON.parse(cleanJsonStr);
-
-                if(data.company) document.getElementById('form-company').value = data.company;
-                if(data.role) document.getElementById('form-role').value = data.role;
-                if(data.startDate) document.getElementById('form-start-date').value = data.startDate;
-                if(data.lastDate) document.getElementById('form-last-date').value = data.lastDate;
-                if(data.fee) document.getElementById('form-fee').value = data.fee;
-                if(data.patterns) document.getElementById('form-patterns').value = data.patterns;
-
-            } catch (err) {
-                console.error("AI Extractor Fault: ", err);
-                alert("Failed parsing information structure automatically. Please try pasting the text structure directly.");
-            } finally {
-                btn.innerText = "Parse text";
-                btn.disabled = false;
-            }
-        }
-
-        // Firestore Stream Listener Synchronization
         onSnapshot(jobsCollectionRef, (snapshot) => {
             localJobsCache = [];
             snapshot.forEach((doc) => {
@@ -272,6 +197,11 @@
             localJobsCache.sort((a, b) => a.company.localeCompare(b.company));
             renderTable();
             recalculateMetrics();
+        }, (error) => {
+            console.error("Firebase Sync Failure: ", error);
+            document.getElementById('jobs-tbody').innerHTML = `
+                <tr><td colspan='6' class='text-center py-6 text-red-500 font-semibold'>⚠️ Cloud Synchronization Error.</td></tr>
+            `;
         });
 
         window.recalculateMetrics = function() {
@@ -310,6 +240,7 @@
                     statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold bg-amber-50 text-amber-700 rounded-md border border-amber-100 flex items-center gap-1 w-max">⏳ Open</span>`;
                 }
 
+                // Format timeline window metrics
                 const start = job.startDate ? new Date(job.startDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }) : '—';
                 const end = job.lastDate ? new Date(job.lastDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
                 const timelineDisplay = `<div class="text-xs text-slate-600 font-medium"><span class="text-slate-400">Start:</span> ${start}<br><span class="text-slate-400">End:</span> ${end}</div>`;
@@ -327,7 +258,7 @@
                     <td class="py-4 px-6">${timelineDisplay}</td>
                     <td class="py-4 px-6 font-semibold text-slate-700">${feeDisplay}</td>
                     <td class="py-4 px-6 max-w-xs md:max-w-md">
-                        <p class="text-xs text-slate-600 whitespace-pre-line line-clamp-2 hover:line-clamp-none cursor-help">${job.patterns ? escapeHtml(job.patterns) : '<span class="text-slate-300 italic">No structure configured</span>'}</p>
+                        <p class="text-xs text-slate-600 whitespace-pre-line line-clamp-2 hover:line-clamp-none cursor-help">${job.patterns ? escapeHtml(job.patterns) : '<span class="text-slate-300 italic">No specific structure details configured</span>'}</p>
                     </td>
                     <td class="py-4 px-6 text-right space-x-1 whitespace-nowrap">
                         <button onclick="editJob('${job.id}')" class="cursor-pointer text-xs font-semibold bg-slate-50 hover:bg-slate-200 border border-slate-200 px-3 py-1.5 rounded-lg text-slate-700 transition">Edit</button>
@@ -405,15 +336,9 @@
         function openModal(mode = 'add') {
             const modal = document.getElementById('job-modal');
             document.getElementById('modal-title').innerText = mode === 'add' ? 'Add New Application Track' : 'Update Application Details';
-            
-            const aiSection = document.getElementById('ai-parser-section');
             if(mode === 'add') {
                 document.getElementById('job-form').reset();
                 document.getElementById('form-job-id').value = '';
-                document.getElementById('ai-raw-text').value = '';
-                aiSection.style.display = "block";
-            } else {
-                aiSection.style.display = "none";
             }
             modal.classList.remove('hidden');
             modal.classList.add('flex');
